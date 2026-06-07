@@ -1,0 +1,19 @@
+-- Rollback education domain tables
+-- Drop in reverse order of creation
+DROP TABLE IF EXISTS audit_logs;
+DROP TABLE IF EXISTS narrative_reports;
+DROP TABLE IF EXISTS evaluations;
+DROP TABLE IF EXISTS evidences;
+DROP TABLE IF EXISTS rubrics;
+DROP TABLE IF EXISTS assessments;
+DROP TABLE IF EXISTS modul_ajar;
+DROP TABLE IF EXISTS modul_ajar_sets;
+DROP TABLE IF EXISTS atp;
+DROP TABLE IF EXISTS atp_sets;
+DROP TABLE IF EXISTS tp;
+DROP TABLE IF EXISTS tp_sets;
+DROP TABLE IF EXISTS cp;
+DROP TABLE IF EXISTS curriculum_subelements;
+DROP TABLE IF EXISTS curriculum_elements;
+DROP TABLE IF EXISTS curriculum_phases;
+DROP TABLE IF EXISTS curriculum_subjects;

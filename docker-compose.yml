@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8080
+    depends_on:
+      - backend
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=nusa
+      - DB_USER=nusa
+      - DB_PASSWORD=nusa_password
+      - JWT_SECRET=your_jwt_secret_here
+      - AI_RUNTIME_URL=http://ai-runtime:8000
+    depends_on:
+      - postgres
+      - ai-runtime
+
+  # AI Runtime
+  ai-runtime:
+    build:
+      context: ./ai-runtime
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - LLM_PROVIDER=openai
+      - LLM_API_KEY=your_llm_api_key_here
+      - LLM_MODEL=gpt-4
+      - BACKEND_API_URL=http://backend:8080
+
+  # PostgreSQL
+  postgres:
+    image: postgres:15
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=nusa
+      - POSTGRES_USER=nusa
+      - POSTGRES_PASSWORD=nusa_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=nusa
+      - RABBITMQ_DEFAULT_PASS=nusa_password
+
+volumes:
+  postgres_data:

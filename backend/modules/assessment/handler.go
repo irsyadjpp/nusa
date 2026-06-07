@@ -1,0 +1,199 @@
+package assessment
+
+import (
+	"context"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/nusa/backend/internal/domain"
+	"github.com/nusa/backend/internal/middleware"
+	"github.com/nusa/backend/internal/service"
+	"github.com/nusa/backend/pkg/response"
+)
+
+type Handler struct {
+	assessmentService *service.AssessmentService
+}
+
+func NewHandler(assessmentService *service.AssessmentService) *Handler {
+	return &Handler{assessmentService: assessmentService}
+}
+
+// Assessment handlers
+func (h *Handler) CreateAssessment(c *gin.Context) {
+	ctx := context.Background()
+	authCtx := middleware.GetAuthContext(c)
+	
+	var req domain.CreateAssessmentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, 400, "Invalid request")
+		return
+	}
+
+	assessment, err := h.assessmentService.CreateAssessment(ctx, &req, authCtx.UserID)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, assessment)
+}
+
+func (h *Handler) ListAssessments(c *gin.Context) {
+	ctx := context.Background()
+	
+	var modulAjarID *string
+	if id := c.Query("modul_ajar_id"); id != "" {
+		modulAjarID = &id
+	}
+
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+
+	assessments, total, err := h.assessmentService.ListAssessments(ctx, modulAjarID, nil, nil, nil, page, pageSize)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, gin.H{"assessments": assessments, "total": total, "page": page, "page_size": pageSize})
+}
+
+func (h *Handler) GetAssessment(c *gin.Context) {
+	ctx := context.Background()
+	id := c.Param("id")
+	
+	assessment, err := h.assessmentService.GetAssessment(ctx, id)
+	if err != nil {
+		response.Error(c, 404, "Not found")
+		return
+	}
+
+	response.Success(c, assessment)
+}
+
+// Rubric handlers
+func (h *Handler) CreateRubric(c *gin.Context) {
+	ctx := context.Background()
+	authCtx := middleware.GetAuthContext(c)
+	
+	var req domain.CreateRubricRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, 400, "Invalid request")
+		return
+	}
+
+	rubric, err := h.assessmentService.CreateRubric(ctx, &req, authCtx.UserID)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, rubric)
+}
+
+func (h *Handler) ListRubrics(c *gin.Context) {
+	ctx := context.Background()
+	
+	var assessmentID *string
+	if id := c.Query("assessment_id"); id != "" {
+		assessmentID = &id
+	}
+
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+
+	rubrics, total, err := h.assessmentService.ListRubrics(ctx, assessmentID, nil, nil, nil, page, pageSize)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, gin.H{"rubrics": rubrics, "total": total, "page": page, "page_size": pageSize})
+}
+
+// Evidence handlers
+func (h *Handler) CreateEvidence(c *gin.Context) {
+	ctx := context.Background()
+	authCtx := middleware.GetAuthContext(c)
+	
+	var req domain.CreateEvidenceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, 400, "Invalid request")
+		return
+	}
+
+	evidence, err := h.assessmentService.CreateEvidence(ctx, &req, authCtx.UserID)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, evidence)
+}
+
+func (h *Handler) ListEvidences(c *gin.Context) {
+	ctx := context.Background()
+	
+	var studentID, assessmentID *string
+	if id := c.Query("student_id"); id != "" {
+		studentID = &id
+	}
+	if id := c.Query("assessment_id"); id != "" {
+		assessmentID = &id
+	}
+
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+
+	evidences, total, err := h.assessmentService.ListEvidences(ctx, studentID, assessmentID, nil, nil, page, pageSize)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, gin.H{"evidences": evidences, "total": total, "page": page, "page_size": pageSize})
+}
+
+// Evaluation handlers
+func (h *Handler) CreateEvaluation(c *gin.Context) {
+	ctx := context.Background()
+	authCtx := middleware.GetAuthContext(c)
+	
+	var req domain.CreateEvaluationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, 400, "Invalid request")
+		return
+	}
+
+	evaluation, err := h.assessmentService.CreateEvaluation(ctx, &req, authCtx.UserID)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, evaluation)
+}
+
+func (h *Handler) ListEvaluations(c *gin.Context) {
+	ctx := context.Background()
+	
+	var studentID, rubricID *string
+	if id := c.Query("student_id"); id != "" {
+		studentID = &id
+	}
+	if id := c.Query("rubric_id"); id != "" {
+		rubricID = &id
+	}
+
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+
+	evaluations, total, err := h.assessmentService.ListEvaluations(ctx, studentID, rubricID, nil, nil, page, pageSize)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, gin.H{"evaluations": evaluations, "total": total, "page": page, "page_size": pageSize})
+}

@@ -1,0 +1,27 @@
+-- Drop all tables in reverse order
+DROP INDEX IF EXISTS idx_ai_generation_logs_created_at;
+DROP INDEX IF EXISTS idx_ai_generation_logs_artifact;
+DROP INDEX IF EXISTS idx_ai_generation_logs_school_id;
+DROP INDEX IF EXISTS idx_ai_generation_logs_user_id;
+DROP TABLE IF EXISTS ai_generation_logs;
+DROP INDEX IF EXISTS idx_refresh_tokens_expires_at;
+DROP INDEX IF EXISTS idx_refresh_tokens_token;
+DROP INDEX IF EXISTS idx_refresh_tokens_user_id;
+DROP TABLE IF EXISTS refresh_tokens;
+DROP INDEX IF EXISTS idx_users_created_at;
+DROP INDEX IF EXISTS idx_users_is_active;
+DROP INDEX IF EXISTS idx_users_school_id;
+DROP INDEX IF EXISTS idx_users_role_id;
+DROP INDEX IF EXISTS idx_users_email;
+DROP TABLE IF EXISTS users;
+DROP INDEX IF EXISTS idx_permissions_resource;
+DROP INDEX IF EXISTS idx_permissions_role_id;
+DROP TABLE IF EXISTS permissions;
+DROP INDEX IF EXISTS idx_roles_is_active;
+DROP INDEX IF EXISTS idx_roles_name;
+DROP TABLE IF EXISTS roles;
+DROP INDEX IF EXISTS idx_schools_is_active;
+DROP INDEX IF EXISTS idx_schools_code;
+DROP TABLE IF EXISTS schools;
+DROP FUNCTION IF EXISTS gen_uuid_v7();
+DROP EXTENSION IF EXISTS "uuid-ossp";

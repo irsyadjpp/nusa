@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Exec(make docker-up)",
+      "Exec(lsof)",
+      "Exec(ss)",
+      "Exec(netstat)",
+      "Exec(fuser)",
+      "Exec(docker ps)",
+      "Exec(docker compose)",
+      "Exec(cat)",
+      "Exec(xargs)",
+      "Exec(curl)",
+      "Exec(sudo mv)",
+      "Exec(mkdir)",
+      "Exec(make migrate-up)",
+      "Exec(make run)",
+      "Exec(psql)",
+      "Exec(docker exec)",
+      "Exec(migrate)",
+      "Exec(sleep)",
+      "Exec(rm)",
+      "Exec(go get)",
+      "Exec(go mod)",
+      "Exec(find migrations)",
+      "Exec(make build)",
+      "Exec(make seed)",
+      "Exec(timeout make)",
+      "Exec(kill)"
+    ]
+  }
+}
