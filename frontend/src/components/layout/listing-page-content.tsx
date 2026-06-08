@@ -17,7 +17,7 @@ import {
 
 import NiSearch from "@/icons/nexture/ni-search";
 import NextureIcons, { IconName } from "@/icons/nexture-icons";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 import { leftMenuItems } from "@/menu-items";
 import { MenuItem } from "@/types/types";
 

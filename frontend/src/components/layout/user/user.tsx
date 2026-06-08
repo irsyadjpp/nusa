@@ -34,7 +34,7 @@ import NiQuestionHexagon from "@/icons/nexture/ni-question-hexagon";
 import NiSettings from "@/icons/nexture/ni-settings";
 import NiUser from "@/icons/nexture/ni-user";
 import NiUsers from "@/icons/nexture/ni-users";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 export default function User() {
   const [open, setOpen] = useState(false);

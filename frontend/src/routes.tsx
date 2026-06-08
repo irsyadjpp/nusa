@@ -7,6 +7,7 @@ import AuthLayout from "@/pages/auth/layout";
 import Loading from "@/pages/loading.tsx";
 import NotFound from "@/pages/not-found";
 import { MenuItem } from "@/types/types";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 // Statically import all possible pages for build
 const modules = import.meta.glob("./pages/**/page.tsx");
@@ -52,8 +53,14 @@ const generateRoutesFromMenuItems = (menuItems: MenuItem[]): React.ReactElement[
       return [];
     }
 
-    // Add route for current item
-    routes.push(<Route key={item.id} path={item.href} element={lazyLoad(item.href)} />);
+    // Add route for current item with role protection
+    const routeElement = lazyLoad(item.href);
+    const protectedElement = item.roles ? (
+      <ProtectedRoute allowedRoles={item.roles}>{routeElement}</ProtectedRoute>
+    ) : (
+      routeElement
+    );
+    routes.push(<Route key={item.id} path={item.href} element={protectedElement} />);
 
     // Add routes for children
     if (item.children && item.children.length > 0) {

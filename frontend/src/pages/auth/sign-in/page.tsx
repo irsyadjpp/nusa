@@ -77,6 +77,7 @@ export default function Page() {
         setSubmitted(false);
       }
     },
+    validateOnChange: false,
     validateOnBlur: false,
     validateOnMount: false,
   });

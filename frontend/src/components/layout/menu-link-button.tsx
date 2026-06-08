@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Avatar, Button, ButtonProps } from "@mui/material";
 
 import NextureIcons from "@/icons/nexture-icons";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 interface MenuLinkButtonProps {
   to: string;

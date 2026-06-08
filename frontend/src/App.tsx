@@ -6,7 +6,7 @@ import { Box, StyledEngineProvider } from "@mui/material";
 
 import BackgroundWrapper from "@/components/layout/containers/background-wrapper";
 import SnackbarWrapper from "@/components/layout/containers/snackbar-wrapper";
-import LayoutContextProvider from "@/components/layout/layout-context-provider";
+import LayoutContextProvider from "@/components/layout/layout-context";
 import Loading from "@/pages/loading";
 import AppRoutes from "@/routes";
 import AppRouteWrapper from "@/components/app-route-wrapper";

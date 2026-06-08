@@ -7,7 +7,7 @@ import NiCalendar from "@/icons/nexture/ni-calendar";
 import NiChevronDownSmall from "@/icons/nexture/ni-chevron-down-small";
 import NiChevronLeftSmall from "@/icons/nexture/ni-chevron-left-small";
 import NiChevronRightSmall from "@/icons/nexture/ni-chevron-right-small";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 export default function DataGridDate(props: GridRenderEditCellParams) {
   const { id, value, field } = props;

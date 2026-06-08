@@ -8,6 +8,7 @@ export const leftMenuItems: MenuItem[] = [
     description: "Main dashboard",
     color: "text-primary",
     href: "/dashboard",
+    roles: ["teacher", "admin", "principal"],
   },
   {
     id: "curriculum",
@@ -16,6 +17,7 @@ export const leftMenuItems: MenuItem[] = [
     description: "Curriculum management",
     color: "text-primary",
     href: "/curriculum",
+    roles: ["teacher", "admin", "principal"],
     children: [
       {
         id: "cp",
@@ -23,6 +25,7 @@ export const leftMenuItems: MenuItem[] = [
         label: "CP",
         href: "/cp",
         description: "Curriculum Plan",
+        roles: ["teacher", "admin", "principal"],
       },
       {
         id: "tp",
@@ -30,6 +33,7 @@ export const leftMenuItems: MenuItem[] = [
         label: "TP",
         href: "/tp",
         description: "Teaching Plan",
+        roles: ["teacher", "admin", "principal"],
       },
       {
         id: "atp",
@@ -37,6 +41,7 @@ export const leftMenuItems: MenuItem[] = [
         label: "ATP",
         href: "/atp",
         description: "Annual Teaching Plan",
+        roles: ["teacher", "admin", "principal"],
       },
     ],
   },
@@ -47,6 +52,7 @@ export const leftMenuItems: MenuItem[] = [
     description: "Learning design and materials",
     color: "text-primary",
     href: "/learning-design",
+    roles: ["teacher", "admin", "principal"],
     children: [
       {
         id: "modul-ajar",
@@ -54,6 +60,7 @@ export const leftMenuItems: MenuItem[] = [
         label: "Modul Ajar",
         href: "/modul-ajar",
         description: "Teaching modules",
+        roles: ["teacher", "admin", "principal"],
       },
     ],
   },
@@ -64,6 +71,7 @@ export const leftMenuItems: MenuItem[] = [
     description: "Assessment management",
     color: "text-primary",
     href: "/assessment",
+    roles: ["teacher", "admin", "principal"],
     children: [
       {
         id: "assessment-list",
@@ -71,6 +79,7 @@ export const leftMenuItems: MenuItem[] = [
         label: "Assessment",
         href: "/assessment",
         description: "Assessment list",
+        roles: ["teacher", "admin", "principal"],
       },
       {
         id: "rubric",
@@ -78,6 +87,7 @@ export const leftMenuItems: MenuItem[] = [
         label: "Rubric",
         href: "/rubric",
         description: "Assessment rubrics",
+        roles: ["teacher", "admin", "principal"],
       },
       {
         id: "narrative-report",
@@ -85,6 +95,7 @@ export const leftMenuItems: MenuItem[] = [
         label: "Narrative Report",
         href: "/narrative-report",
         description: "Narrative reports",
+        roles: ["teacher", "admin", "principal"],
       },
     ],
   },
@@ -95,6 +106,7 @@ export const leftMenuItems: MenuItem[] = [
     description: "Workflow and approvals",
     color: "text-primary",
     href: "/workflow",
+    roles: ["admin", "principal"],
     children: [
       {
         id: "approval-queue",
@@ -102,6 +114,7 @@ export const leftMenuItems: MenuItem[] = [
         label: "Approval Queue",
         href: "/workflow",
         description: "Pending approvals",
+        roles: ["admin", "principal"],
       },
     ],
   },
@@ -114,6 +127,7 @@ export const leftMenuBottomItems: MenuItem[] = [
     label: "Administration",
     href: "/settings",
     color: "text-primary",
+    roles: ["admin"],
     children: [
       {
         id: "settings",
@@ -121,6 +135,7 @@ export const leftMenuBottomItems: MenuItem[] = [
         label: "Settings",
         href: "/settings",
         description: "System settings",
+        roles: ["admin"],
       },
     ],
   },

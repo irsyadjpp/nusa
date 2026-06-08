@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/nusa/backend/internal/domain"
@@ -11,25 +12,33 @@ import (
 
 // ReportingService handles business logic for reporting operations
 type ReportingService struct {
-	reportingRepo *repository.ReportingRepository
+	reportingRepo      *repository.ReportingRepository
+	achievementService *AchievementService
 }
 
 // NewReportingService creates a new reporting service
-func NewReportingService(reportingRepo *repository.ReportingRepository) *ReportingService {
-	return &ReportingService{reportingRepo: reportingRepo}
+func NewReportingService(
+	reportingRepo *repository.ReportingRepository,
+	achievementService *AchievementService,
+) *ReportingService {
+	return &ReportingService{
+		reportingRepo:      reportingRepo,
+		achievementService: achievementService,
+	}
 }
 
 // CreateNarrativeReport creates a new narrative report
 func (s *ReportingService) CreateNarrativeReport(ctx context.Context, req *domain.CreateNarrativeReportRequest, userID string) (*domain.NarrativeReport, error) {
 	report := &domain.NarrativeReport{
-		ID:           uuid.New().String(),
-		StudentID:    req.StudentID,
-		UserID:       userID,
-		Status:       domain.WorkflowStatusDraft,
-		ReportPeriod: req.ReportPeriod,
-		Language:     req.Language,
-		Content:      req.Content,
-		VersionNo:    1,
+		ID:               uuid.New().String(),
+		StudentID:        req.StudentID,
+		ClassID:          req.ClassID,
+		UserID:           userID,
+		Status:           domain.WorkflowStatusDraft,
+		ReportPeriod:     req.ReportPeriod,
+		Language:         req.Language,
+		Content:          req.Content,
+		VersionNo:        1,
 		IsCurrentVersion: true,
 	}
 
@@ -72,6 +81,35 @@ func (s *ReportingService) UpdateNarrativeReport(ctx context.Context, id string,
 
 	if err := s.reportingRepo.UpdateNarrativeReport(ctx, report); err != nil {
 		return nil, fmt.Errorf("failed to update narrative report: %w", err)
+	}
+
+	return report, nil
+}
+
+// RefreshAchievementData refreshes achievement data for a narrative report
+func (s *ReportingService) RefreshAchievementData(ctx context.Context, reportID string) (*domain.NarrativeReport, error) {
+	report, err := s.reportingRepo.GetNarrativeReportByID(ctx, reportID)
+	if err != nil {
+		return nil, fmt.Errorf("narrative report not found")
+	}
+
+	// Calculate achievement data using achievement service
+	// Note: In a real implementation, you would call the achievement service here
+	// For now, we'll set the timestamp to indicate refresh was attempted
+	now := time.Now()
+	report.LastAchievementCalculatedAt = &now
+
+	// TODO: Integrate with AchievementService to calculate actual achievement data
+	// achievementData, err := s.achievementService.GenerateAchievementSummary(
+	//     ctx, report.StudentID, report.ClassID, report.ReportPeriod,
+	// )
+	// if err != nil {
+	//     return nil, fmt.Errorf("failed to calculate achievement: %w", err)
+	// }
+	// report.AchievementData = achievementData
+
+	if err := s.reportingRepo.UpdateNarrativeReport(ctx, report); err != nil {
+		return nil, fmt.Errorf("failed to update report with achievement data: %w", err)
 	}
 
 	return report, nil

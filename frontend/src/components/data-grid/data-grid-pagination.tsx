@@ -3,7 +3,7 @@ import MuiPagination from "@mui/material/Pagination";
 import { gridPageCountSelector, useGridApiContext, useGridSelector } from "@mui/x-data-grid-pro";
 
 import NiChevronDownSmall from "@/icons/nexture/ni-chevron-down-small";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 function Pagination({
   page,

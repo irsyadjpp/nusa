@@ -3,7 +3,7 @@ import { SyntheticEvent, useState } from "react";
 import { Box, Button, Fade, Menu, MenuItem, PopoverVirtualElement } from "@mui/material";
 
 import NiChevronRightSmall from "@/icons/nexture/ni-chevron-right-small";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 export default function VersionSelect({ className }: { className?: string }) {
   const [anchorEl, setAnchorEl] = useState<EventTarget | Element | PopoverVirtualElement | null>(null);
   const open = Boolean(anchorEl);

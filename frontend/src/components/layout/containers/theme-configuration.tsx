@@ -19,7 +19,7 @@ import NiMoon from "@/icons/nexture/ni-moon";
 import NiPalette from "@/icons/nexture/ni-palette";
 import NiScreen from "@/icons/nexture/ni-screen";
 import NiSun from "@/icons/nexture/ni-sun";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 import { useThemeContext } from "@/theme/theme-provider";
 import { ContentType, MenuType } from "@/types/types";
 

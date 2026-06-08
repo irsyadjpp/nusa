@@ -6,7 +6,7 @@ import { Chip, Fade, ListItemIcon, Menu, MenuItem, PopoverVirtualElement } from 
 import NiChevronRightSmall from "@/icons/nexture/ni-chevron-right-small";
 import NiPaintRoller from "@/icons/nexture/ni-paint-roller";
 import NiSquircle from "@/icons/nexture/ni-squircle";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 import { useThemeContext } from "@/theme/theme-provider";
 
 export default function UserThemeSwitch() {

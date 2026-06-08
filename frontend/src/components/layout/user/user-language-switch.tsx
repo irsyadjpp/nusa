@@ -7,7 +7,7 @@ import { LocaleOption } from "@/constants";
 import { setClientLocale } from "@/i18n/locale";
 import NiChevronRightSmall from "@/icons/nexture/ni-chevron-right-small";
 import NiMessages from "@/icons/nexture/ni-messages";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 export default function UserLanguageSwitch() {
   const [anchorElLang, setAnchorElLang] = useState<EventTarget | Element | PopoverVirtualElement | null>(null);

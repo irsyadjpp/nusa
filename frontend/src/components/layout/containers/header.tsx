@@ -13,7 +13,7 @@ import { useLayoutContext } from "@/components/layout/layout-context";
 import Logo from "@/components/logo/logo";
 import NiListSquare from "@/icons/nexture/ni-list-square";
 import NiMenuSplit from "@/icons/nexture/ni-menu-split";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 import { MenuShowState } from "@/types/types";
 
 export default function Header() {

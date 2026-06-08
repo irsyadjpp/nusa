@@ -26,7 +26,7 @@ import NiPercent from "@/icons/nexture/ni-percent";
 import NiPlus from "@/icons/nexture/ni-plus";
 import NiTelescope from "@/icons/nexture/ni-telescope";
 import NiUsers from "@/icons/nexture/ni-users";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 export default function Shortcuts() {
   const [tooltipShow, setTooltipShow] = useState(false);

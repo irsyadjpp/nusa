@@ -4,7 +4,7 @@ import { Box, Button, Paper, Typography } from "@mui/material";
 
 import Logo from "@/components/logo/logo";
 import NiHome from "@/icons/nexture/ni-home";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 import { useThemeContext } from "@/theme/theme-provider";
 
 export default function Page() {

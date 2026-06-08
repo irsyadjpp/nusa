@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/nusa/backend/internal/domain"
@@ -11,7 +12,7 @@ import (
 
 // AssessmentService handles business logic for assessment operations
 type AssessmentService struct {
-	assessmentRepo  *repository.AssessmentRepository
+	assessmentRepo *repository.AssessmentRepository
 }
 
 // NewAssessmentService creates a new assessment service
@@ -22,16 +23,18 @@ func NewAssessmentService(assessmentRepo *repository.AssessmentRepository) *Asse
 // CreateAssessment creates a new assessment
 func (s *AssessmentService) CreateAssessment(ctx context.Context, req *domain.CreateAssessmentRequest, userID string) (*domain.Assessment, error) {
 	assessment := &domain.Assessment{
-		ID:                uuid.New().String(),
-		ModulAjarID:       req.ModulAjarID,
-		UserID:            userID,
-		AssessmentType:    req.AssessmentType,
-		Status:            domain.WorkflowStatusDraft,
-		AssessmentItems:   req.AssessmentItems,
-		AnswerKey:         req.AnswerKey,
-		ScoringGuidelines: req.ScoringGuidelines,
-		VersionNo:         1,
-		IsCurrentVersion:  true,
+		ID:                      uuid.New().String(),
+		TPID:                    req.TPID,
+		TPVersionNo:             req.TPVersionNo,
+		SuccessCriteriaSnapshot: req.SuccessCriteriaSnapshot,
+		UserID:                  userID,
+		AssessmentType:          req.AssessmentType,
+		Status:                  domain.WorkflowStatusDraft,
+		AssessmentItems:         req.AssessmentItems,
+		AnswerKey:               req.AnswerKey,
+		ScoringGuidelines:       req.ScoringGuidelines,
+		VersionNo:               1,
+		IsCurrentVersion:        true,
 	}
 
 	if err := s.assessmentRepo.CreateAssessment(ctx, assessment); err != nil {
@@ -47,10 +50,10 @@ func (s *AssessmentService) GetAssessment(ctx context.Context, id string) (*doma
 }
 
 // ListAssessments retrieves assessments with optional filters
-func (s *AssessmentService) ListAssessments(ctx context.Context, modulAjarID, userID *string, assessmentType *domain.AssessmentType, status *domain.WorkflowStatus, page, pageSize int) ([]*domain.Assessment, int, error) {
+func (s *AssessmentService) ListAssessments(ctx context.Context, tpID, userID *string, assessmentType *domain.AssessmentType, status *domain.WorkflowStatus, page, pageSize int) ([]*domain.Assessment, int, error) {
 	limit := pageSize
 	offset := (page - 1) * pageSize
-	assessments, err := s.assessmentRepo.ListAssessments(ctx, modulAjarID, userID, assessmentType, status, limit, offset)
+	assessments, err := s.assessmentRepo.ListAssessments(ctx, tpID, userID, assessmentType, status, limit, offset)
 	return assessments, len(assessments), err
 }
 
@@ -85,7 +88,7 @@ func (s *AssessmentService) UpdateAssessment(ctx context.Context, id string, req
 func (s *AssessmentService) CreateRubric(ctx context.Context, req *domain.CreateRubricRequest, userID string) (*domain.Rubric, error) {
 	rubric := &domain.Rubric{
 		ID:                  uuid.New().String(),
-		AssessmentID:         req.AssessmentID,
+		AssessmentID:        req.AssessmentID,
 		UserID:              userID,
 		RubricType:          req.RubricType,
 		Status:              domain.WorkflowStatusDraft,
@@ -146,15 +149,15 @@ func (s *AssessmentService) UpdateRubric(ctx context.Context, id string, req *do
 // CreateEvidence creates a new evidence
 func (s *AssessmentService) CreateEvidence(ctx context.Context, req *domain.CreateEvidenceRequest, userID string) (*domain.Evidence, error) {
 	evidence := &domain.Evidence{
-		ID:           uuid.New().String(),
-		StudentID:    req.StudentID,
-		AssessmentID: req.AssessmentID,
-		UserID:       userID,
-		EvidenceType: req.EvidenceType,
-		Status:       domain.EvidenceStatusCollected,
-		EvidenceData: req.EvidenceData,
-		TeacherNotes: req.TeacherNotes,
-		RubricID:     req.RubricID,
+		ID:             uuid.New().String(),
+		StudentID:      req.StudentID,
+		AssessmentID:   req.AssessmentID,
+		UserID:         userID,
+		EvidenceType:   req.EvidenceType,
+		Status:         domain.EvidenceStatusCollected,
+		EvidenceData:   req.EvidenceData,
+		TeacherNotes:   req.TeacherNotes,
+		RubricID:       req.RubricID,
 		LinkedCriteria: req.LinkedCriteria,
 	}
 
@@ -214,19 +217,41 @@ func (s *AssessmentService) UpdateEvidence(ctx context.Context, id string, req *
 // CreateEvaluation creates a new evaluation
 func (s *AssessmentService) CreateEvaluation(ctx context.Context, req *domain.CreateEvaluationRequest, userID string) (*domain.Evaluation, error) {
 	evaluation := &domain.Evaluation{
-		ID:               uuid.New().String(),
-		StudentID:        req.StudentID,
-		RubricID:         req.RubricID,
-		EvidenceID:       req.EvidenceID,
-		UserID:           userID,
+		ID:                uuid.New().String(),
+		StudentID:         req.StudentID,
+		RubricID:          req.RubricID,
+		EvidenceID:        req.EvidenceID,
+		UserID:            userID,
 		PerformanceScores: req.PerformanceScores,
-		TotalScore:       req.TotalScore,
-		MaxScore:         req.MaxScore,
-		PerformanceLevel: req.PerformanceLevel,
+		TotalScore:        req.TotalScore,
+		MaxScore:          req.MaxScore,
+		PerformanceLevel:  req.PerformanceLevel,
+		TeacherFeedback:   req.TeacherFeedback,
+		RevisionNo:        1,
+		IsCurrentVersion:  true,
+		ParentRevisionID:  nil,
+		EvaluatedAt:       time.Now(),
+		CreatedAt:         time.Now(),
+		UpdatedAt:         time.Now(),
 	}
 
 	if err := s.assessmentRepo.CreateEvaluation(ctx, evaluation); err != nil {
 		return nil, fmt.Errorf("failed to create evaluation: %w", err)
+	}
+
+	// Create initial feedback history entry if feedback is provided
+	if req.TeacherFeedback != nil && *req.TeacherFeedback != "" {
+		feedbackHistory := &domain.EvaluationFeedbackHistory{
+			ID:              uuid.New().String(),
+			EvaluationID:    evaluation.ID,
+			TeacherFeedback: *req.TeacherFeedback,
+			ChangedBy:       userID,
+			ChangedAt:       time.Now(),
+		}
+
+		if err := s.assessmentRepo.CreateFeedbackHistory(ctx, feedbackHistory); err != nil {
+			return nil, fmt.Errorf("failed to create feedback history: %w", err)
+		}
 	}
 
 	return evaluation, nil
@@ -245,29 +270,91 @@ func (s *AssessmentService) ListEvaluations(ctx context.Context, studentID, rubr
 	return evaluations, len(evaluations), err
 }
 
-// UpdateEvaluation updates an evaluation
-func (s *AssessmentService) UpdateEvaluation(ctx context.Context, id string, req *domain.UpdateEvaluationRequest) (*domain.Evaluation, error) {
-	evaluation, err := s.assessmentRepo.GetEvaluationByID(ctx, id)
+// UpdateEvaluation updates an evaluation (creates new revision instead of in-place update)
+func (s *AssessmentService) UpdateEvaluation(ctx context.Context, id string, req *domain.UpdateEvaluationRequest, userID string) (*domain.Evaluation, error) {
+	oldEval, err := s.assessmentRepo.GetEvaluationByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("evaluation not found")
 	}
 
+	// Mark old version as not current
+	oldEval.IsCurrentVersion = false
+	if err := s.assessmentRepo.UpdateEvaluation(ctx, oldEval); err != nil {
+		return nil, fmt.Errorf("failed to mark old version: %w", err)
+	}
+
+	// Prepare new revision values
+	performanceScores := oldEval.PerformanceScores
+	totalScore := oldEval.TotalScore
+	maxScore := oldEval.MaxScore
+	performanceLevel := oldEval.PerformanceLevel
+	teacherFeedback := oldEval.TeacherFeedback
+
 	if req.PerformanceScores != nil {
-		evaluation.PerformanceScores = req.PerformanceScores
+		performanceScores = req.PerformanceScores
 	}
 	if req.TotalScore != nil {
-		evaluation.TotalScore = *req.TotalScore
+		totalScore = *req.TotalScore
 	}
 	if req.MaxScore != nil {
-		evaluation.MaxScore = *req.MaxScore
+		maxScore = *req.MaxScore
 	}
 	if req.PerformanceLevel != nil {
-		evaluation.PerformanceLevel = *req.PerformanceLevel
+		performanceLevel = *req.PerformanceLevel
+	}
+	if req.TeacherFeedback != nil {
+		teacherFeedback = req.TeacherFeedback
 	}
 
-	if err := s.assessmentRepo.UpdateEvaluation(ctx, evaluation); err != nil {
-		return nil, fmt.Errorf("failed to update evaluation: %w", err)
+	// Create new revision
+	newEval := &domain.Evaluation{
+		ID:                uuid.New().String(),
+		StudentID:         oldEval.StudentID,
+		RubricID:          oldEval.RubricID,
+		EvidenceID:        oldEval.EvidenceID,
+		UserID:            userID,
+		PerformanceScores: performanceScores,
+		TotalScore:        totalScore,
+		MaxScore:          maxScore,
+		PerformanceLevel:  performanceLevel,
+		TeacherFeedback:   teacherFeedback,
+		RevisionNo:        oldEval.RevisionNo + 1,
+		IsCurrentVersion:  true,
+		ParentRevisionID:  &oldEval.ID,
+		EvaluatedAt:       time.Now(),
+		CreatedAt:         oldEval.CreatedAt,
+		UpdatedAt:         time.Now(),
 	}
 
-	return evaluation, nil
+	if err := s.assessmentRepo.CreateEvaluation(ctx, newEval); err != nil {
+		return nil, fmt.Errorf("failed to create new revision: %w", err)
+	}
+
+	// Create feedback history entry if feedback changed
+	if req.TeacherFeedback != nil && oldEval.TeacherFeedback != nil && *req.TeacherFeedback != *oldEval.TeacherFeedback {
+		feedbackHistory := &domain.EvaluationFeedbackHistory{
+			ID:              uuid.New().String(),
+			EvaluationID:    newEval.ID,
+			TeacherFeedback: *req.TeacherFeedback,
+			ChangedBy:       userID,
+			ChangedAt:       time.Now(),
+		}
+
+		if err := s.assessmentRepo.CreateFeedbackHistory(ctx, feedbackHistory); err != nil {
+			return nil, fmt.Errorf("failed to create feedback history: %w", err)
+		}
+	}
+
+	return newEval, nil
 }
+
+// GetEvaluationHistory retrieves all revisions of an evaluation for a given evidence
+func (s *AssessmentService) GetEvaluationHistory(ctx context.Context, evidenceID string) ([]*domain.Evaluation, error) {
+	return s.assessmentRepo.GetEvaluationHistory(ctx, evidenceID)
+}
+
+// GetEvaluationFeedbackHistory retrieves the feedback history for an evaluation
+func (s *AssessmentService) GetEvaluationFeedbackHistory(ctx context.Context, evaluationID string) ([]*domain.EvaluationFeedbackHistory, error) {
+	return s.assessmentRepo.GetFeedbackHistory(ctx, evaluationID)
+}
+

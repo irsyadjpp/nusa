@@ -3,7 +3,7 @@ import { PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 import { useLayoutContext } from "@/components/layout/layout-context";
-import { isPathMatch } from "@/lib/utils";
+import { isPathMatch } from "@/shared/utils";
 import { leftMenuBottomItems } from "@/menu-items";
 import { leftMenuItems } from "@/menu-items";
 import { MenuItem, MenuShowState } from "@/types/types";

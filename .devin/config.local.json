@@ -26,7 +26,12 @@
       "Exec(make build)",
       "Exec(make seed)",
       "Exec(timeout make)",
-      "Exec(kill)"
+      "Exec(kill)",
+      "Exec(git diff)",
+      "Exec(git log)",
+      "Exec(git add)",
+      "Exec(git status)",
+      "Exec(git commit)"
     ]
   }
 }

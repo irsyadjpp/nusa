@@ -18,10 +18,11 @@ import (
 	"github.com/nusa/backend/internal/router"
 	"github.com/nusa/backend/internal/server"
 	"github.com/nusa/backend/internal/service"
+	"github.com/nusa/backend/modules/achievement"
+	assessmentHandler "github.com/nusa/backend/modules/assessment"
 	authHandler "github.com/nusa/backend/modules/auth"
 	curriculumHandler "github.com/nusa/backend/modules/curriculum"
 	learningPlanningHandler "github.com/nusa/backend/modules/learning_planning"
-	assessmentHandler "github.com/nusa/backend/modules/assessment"
 	reportingHandler "github.com/nusa/backend/modules/reporting"
 	roleHandler "github.com/nusa/backend/modules/roles"
 	schoolHandler "github.com/nusa/backend/modules/schools"
@@ -82,7 +83,7 @@ func New() (*App, error) {
 	roleRepo := repository.NewRoleRepository(sqlxDB)
 	schoolRepo := repository.NewSchoolRepository(sqlxDB)
 	refreshTokenRepo := repository.NewRefreshTokenRepository(sqlxDB)
-	
+
 	// Education domain repositories
 	curriculumRepo := repository.NewCurriculumRepository(sqlxDB)
 	tpRepo := repository.NewTPRepository(sqlxDB)
@@ -95,14 +96,15 @@ func New() (*App, error) {
 	userService := service.NewUserService(userRepo, roleRepo)
 	schoolService := service.NewSchoolService(schoolRepo)
 	roleService := service.NewRoleService(roleRepo)
-	
+
 	// Education domain services
 	curriculumService := service.NewCurriculumService(curriculumRepo)
 	tpService := service.NewTPService(tpRepo)
 	atpService := service.NewLearningPlanningService(learningPlanningRepo, learningPlanningRepo)
 	modulAjarService := service.NewLearningPlanningService(learningPlanningRepo, learningPlanningRepo)
 	assessmentService := service.NewAssessmentService(assessmentRepo)
-	reportingService := service.NewReportingService(reportingRepo)
+	achievementService := service.NewAchievementService(assessmentRepo, tpRepo)
+	reportingService := service.NewReportingService(reportingRepo, achievementService)
 
 	// Initialize JWT service
 	log.Info("Initializing JWT service")
@@ -119,16 +121,17 @@ func New() (*App, error) {
 	userH := userHandler.NewHandler(userService, roleRepo, schoolRepo)
 	schoolH := schoolHandler.NewHandler(schoolService)
 	roleH := roleHandler.NewHandler(roleService)
-	
+
 	// Education domain handlers
 	curriculumH := curriculumHandler.NewHandler(curriculumService)
 	learningPlanningH := learningPlanningHandler.NewHandler(tpService, atpService, modulAjarService)
 	assessmentH := assessmentHandler.NewHandler(assessmentService)
+	achievementH := achievement.NewHandler(achievementService)
 	reportingH := reportingHandler.NewHandler(reportingService)
 
 	// Initialize router with all handlers
 	log.Info("Initializing router with routes")
-	r := router.NewRouter(authH, userH, schoolH, roleH, curriculumH, learningPlanningH, assessmentH, reportingH, jwtSvc, userRepo, schoolRepo)
+	r := router.NewRouter(authH, userH, schoolH, roleH, curriculumH, learningPlanningH, assessmentH, achievementH, reportingH, jwtSvc, userRepo, schoolRepo)
 
 	// Create server with configured router
 	srv := server.NewWithRouter(cfg, log, r.GetEngine())

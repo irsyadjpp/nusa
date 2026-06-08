@@ -9,7 +9,7 @@ import { PrimaryItem } from "@/components/layout/menu/primary-item";
 import { SecondaryItem } from "@/components/layout/menu/secondary-item";
 import { DEFAULTS } from "@/config";
 import IllustrationLaunch from "@/icons/illustrations/illustration-launch";
-import { cn, isPathMatch } from "@/lib/utils";
+import { cn, isPathMatch } from "@/shared/utils";
 import { leftMenuBottomItems, leftMenuItems } from "@/menu-items";
 import { MenuItem, MenuShowState, MenuType } from "@/types/types";
 import { useAuth } from "@/features/auth";

@@ -88,10 +88,14 @@ func (s *TPService) CreateTP(ctx context.Context, req *domain.CreateTPRequest) (
 		UserID:             req.UserID,
 		Status:             domain.WorkflowStatusDraft,
 		Title:              req.Title,
-		LearningObjectives:  req.LearningObjectives,
+		LearningObjectives: req.LearningObjectives,
 		TimeAllocation:     req.TimeAllocation,
 		Prerequisites:      req.Prerequisites,
 		EstimatedWeeks:     req.EstimatedWeeks,
+		SuccessCriteria:    req.SuccessCriteria,
+		VersionNo:          1,
+		IsCurrentVersion:   true,
+		ParentVersionID:    nil,
 	}
 
 	if err := s.tpRepo.CreateTP(ctx, tp); err != nil {
@@ -119,35 +123,85 @@ func (s *TPService) ListTPs(ctx context.Context, tpSetID, cpID *string, status *
 	return tps, len(tps), nil
 }
 
-// UpdateTP updates a TP
+// UpdateTP updates a TP (creates new version instead of in-place update)
 func (s *TPService) UpdateTP(ctx context.Context, id string, req *domain.UpdateTPRequest) (*domain.TP, error) {
-	tp, err := s.tpRepo.GetTPByID(ctx, id)
+	oldTP, err := s.tpRepo.GetTPByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("tp not found")
 	}
 
+	// Check if TP has downstream assessments before allowing update
+	hasDownstream, err := s.tpRepo.HasDownstreamAssessments(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check downstream assessments: %w", err)
+	}
+	if hasDownstream {
+		return nil, fmt.Errorf("cannot update TP with downstream assessments")
+	}
+
+	// Mark old version as not current
+	oldTP.IsCurrentVersion = false
+	if err := s.tpRepo.UpdateTP(ctx, oldTP); err != nil {
+		return nil, fmt.Errorf("failed to mark old version: %w", err)
+	}
+
+	// Prepare new version values
+	title := oldTP.Title
+	learningObjectives := oldTP.LearningObjectives
+	timeAllocation := oldTP.TimeAllocation
+	prerequisites := oldTP.Prerequisites
+	estimatedWeeks := oldTP.EstimatedWeeks
+	successCriteria := oldTP.SuccessCriteria
+	status := oldTP.Status
+
 	if req.Title != nil {
-		tp.Title = req.Title
+		title = req.Title
 	}
 	if req.LearningObjectives != nil {
-		tp.LearningObjectives = req.LearningObjectives
+		learningObjectives = req.LearningObjectives
 	}
 	if req.TimeAllocation != nil {
-		tp.TimeAllocation = req.TimeAllocation
+		timeAllocation = req.TimeAllocation
 	}
 	if req.Prerequisites != nil {
-		tp.Prerequisites = req.Prerequisites
+		prerequisites = req.Prerequisites
 	}
 	if req.EstimatedWeeks != nil {
-		tp.EstimatedWeeks = req.EstimatedWeeks
+		estimatedWeeks = req.EstimatedWeeks
+	}
+	if req.SuccessCriteria != nil {
+		successCriteria = req.SuccessCriteria
 	}
 	if req.Status != nil {
-		tp.Status = *req.Status
+		status = *req.Status
 	}
 
-	if err := s.tpRepo.UpdateTP(ctx, tp); err != nil {
-		return nil, fmt.Errorf("failed to update TP: %w", err)
+	// Create new version
+	newTP := &domain.TP{
+		ID:                 uuid.New().String(),
+		TPSetID:            oldTP.TPSetID,
+		SequenceNumber:     oldTP.SequenceNumber,
+		CPID:               oldTP.CPID,
+		SubjectID:          oldTP.SubjectID,
+		PhaseID:            oldTP.PhaseID,
+		ElementID:          oldTP.ElementID,
+		SubelementID:       oldTP.SubelementID,
+		UserID:             oldTP.UserID,
+		Status:             status,
+		Title:              title,
+		LearningObjectives: learningObjectives,
+		TimeAllocation:     timeAllocation,
+		Prerequisites:      prerequisites,
+		EstimatedWeeks:     estimatedWeeks,
+		SuccessCriteria:    successCriteria,
+		VersionNo:          oldTP.VersionNo + 1,
+		IsCurrentVersion:   true,
+		ParentVersionID:    &oldTP.ID,
 	}
 
-	return tp, nil
+	if err := s.tpRepo.CreateTP(ctx, newTP); err != nil {
+		return nil, fmt.Errorf("failed to create new version: %w", err)
+	}
+
+	return newTP, nil
 }

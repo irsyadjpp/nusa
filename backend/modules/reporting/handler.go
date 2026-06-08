@@ -23,7 +23,7 @@ func NewHandler(reportingService *service.ReportingService) *Handler {
 func (h *Handler) CreateNarrativeReport(c *gin.Context) {
 	ctx := context.Background()
 	authCtx := middleware.GetAuthContext(c)
-	
+
 	var req domain.CreateNarrativeReportRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, 400, "Invalid request")
@@ -41,7 +41,7 @@ func (h *Handler) CreateNarrativeReport(c *gin.Context) {
 
 func (h *Handler) ListNarrativeReports(c *gin.Context) {
 	ctx := context.Background()
-	
+
 	var studentID *string
 	if id := c.Query("student_id"); id != "" {
 		studentID = &id
@@ -62,10 +62,23 @@ func (h *Handler) ListNarrativeReports(c *gin.Context) {
 func (h *Handler) GetNarrativeReport(c *gin.Context) {
 	ctx := context.Background()
 	id := c.Param("id")
-	
+
 	report, err := h.reportingService.GetNarrativeReport(ctx, id)
 	if err != nil {
 		response.Error(c, 404, "Not found")
+		return
+	}
+
+	response.Success(c, report)
+}
+
+func (h *Handler) RefreshReportAchievement(c *gin.Context) {
+	ctx := context.Background()
+	id := c.Param("id")
+
+	report, err := h.reportingService.RefreshAchievementData(ctx, id)
+	if err != nil {
+		response.Error(c, 500, err.Error())
 		return
 	}
 

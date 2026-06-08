@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 import { Box, Button, Tooltip, Typography } from "@mui/material";
 
 import NextureIcons from "@/icons/nexture-icons";
-import { cn, isPathMatch } from "@/lib/utils";
+import { cn, isPathMatch } from "@/shared/utils";
 import { MenuItem, MenuType } from "@/types/types";
 
 type Props = {

@@ -37,7 +37,7 @@ import NiSettings from "@/icons/nexture/ni-settings";
 import NiStructure from "@/icons/nexture/ni-structure";
 import NiUsers from "@/icons/nexture/ni-users";
 import NextureIcons, { IconName } from "@/icons/nexture-icons";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 type ChipData = {
   id: string;

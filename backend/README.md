@@ -5,7 +5,7 @@ Backend foundation for NUSA Education Operating System MVP.
 ## Prerequisites
 
 - Go 1.25+
-- Docker and Docker Compose
+- Docker and Docker Compose **OR** Podman and podman-compose
 - PostgreSQL 15+
 - RabbitMQ 3.12+
 
@@ -25,6 +25,23 @@ docker-compose logs -f backend
 ```
 
 The API will be available at `http://localhost:8080`
+
+### Using Podman Compose
+
+```bash
+# Start all services (PostgreSQL, RabbitMQ, Backend)
+make podman-up
+
+# Run database migrations
+make migrate-up
+
+# View logs
+make podman-logs
+```
+
+The API will be available at `http://localhost:8080`
+
+**Note:** If you're using Podman, ensure you have podman-compose installed. See [PODMAN_SETUP.md](../../PODMAN_SETUP.md) for installation instructions.
 
 ### Local Development
 
@@ -67,6 +84,9 @@ make clean          # Clean build artifacts
 make install-deps   # Install dependencies
 make docker-up      # Start Docker Compose services
 make docker-down    # Stop Docker Compose services
+make podman-up      # Start Podman Compose services
+make podman-down    # Stop Podman Compose services
+make podman-logs    # View Podman Compose logs
 ```
 
 ## Configuration

@@ -23,7 +23,7 @@ func NewHandler(assessmentService *service.AssessmentService) *Handler {
 func (h *Handler) CreateAssessment(c *gin.Context) {
 	ctx := context.Background()
 	authCtx := middleware.GetAuthContext(c)
-	
+
 	var req domain.CreateAssessmentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, 400, "Invalid request")
@@ -41,7 +41,7 @@ func (h *Handler) CreateAssessment(c *gin.Context) {
 
 func (h *Handler) ListAssessments(c *gin.Context) {
 	ctx := context.Background()
-	
+
 	var modulAjarID *string
 	if id := c.Query("modul_ajar_id"); id != "" {
 		modulAjarID = &id
@@ -62,7 +62,7 @@ func (h *Handler) ListAssessments(c *gin.Context) {
 func (h *Handler) GetAssessment(c *gin.Context) {
 	ctx := context.Background()
 	id := c.Param("id")
-	
+
 	assessment, err := h.assessmentService.GetAssessment(ctx, id)
 	if err != nil {
 		response.Error(c, 404, "Not found")
@@ -76,7 +76,7 @@ func (h *Handler) GetAssessment(c *gin.Context) {
 func (h *Handler) CreateRubric(c *gin.Context) {
 	ctx := context.Background()
 	authCtx := middleware.GetAuthContext(c)
-	
+
 	var req domain.CreateRubricRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, 400, "Invalid request")
@@ -94,7 +94,7 @@ func (h *Handler) CreateRubric(c *gin.Context) {
 
 func (h *Handler) ListRubrics(c *gin.Context) {
 	ctx := context.Background()
-	
+
 	var assessmentID *string
 	if id := c.Query("assessment_id"); id != "" {
 		assessmentID = &id
@@ -116,7 +116,7 @@ func (h *Handler) ListRubrics(c *gin.Context) {
 func (h *Handler) CreateEvidence(c *gin.Context) {
 	ctx := context.Background()
 	authCtx := middleware.GetAuthContext(c)
-	
+
 	var req domain.CreateEvidenceRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, 400, "Invalid request")
@@ -134,7 +134,7 @@ func (h *Handler) CreateEvidence(c *gin.Context) {
 
 func (h *Handler) ListEvidences(c *gin.Context) {
 	ctx := context.Background()
-	
+
 	var studentID, assessmentID *string
 	if id := c.Query("student_id"); id != "" {
 		studentID = &id
@@ -159,7 +159,7 @@ func (h *Handler) ListEvidences(c *gin.Context) {
 func (h *Handler) CreateEvaluation(c *gin.Context) {
 	ctx := context.Background()
 	authCtx := middleware.GetAuthContext(c)
-	
+
 	var req domain.CreateEvaluationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		response.Error(c, 400, "Invalid request")
@@ -177,7 +177,7 @@ func (h *Handler) CreateEvaluation(c *gin.Context) {
 
 func (h *Handler) ListEvaluations(c *gin.Context) {
 	ctx := context.Background()
-	
+
 	var studentID, rubricID *string
 	if id := c.Query("student_id"); id != "" {
 		studentID = &id
@@ -196,4 +196,30 @@ func (h *Handler) ListEvaluations(c *gin.Context) {
 	}
 
 	response.Success(c, gin.H{"evaluations": evaluations, "total": total, "page": page, "page_size": pageSize})
+}
+
+func (h *Handler) GetEvaluationHistory(c *gin.Context) {
+	ctx := context.Background()
+	evidenceID := c.Param("evidence_id")
+
+	history, err := h.assessmentService.GetEvaluationHistory(ctx, evidenceID)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, history)
+}
+
+func (h *Handler) GetEvaluationFeedbackHistory(c *gin.Context) {
+	ctx := context.Background()
+	evaluationID := c.Param("evaluation_id")
+
+	history, err := h.assessmentService.GetEvaluationFeedbackHistory(ctx, evaluationID)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, history)
 }

@@ -27,6 +27,7 @@ export type MenuItem = {
   color?: ButtonProps["color"];
   children?: MenuItem[];
   canAccess?: Viewer[];
+  roles?: string[];
   isExternalLink?: boolean;
   content?: React.ReactNode;
   hideInMenu?: boolean;

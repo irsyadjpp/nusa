@@ -2,7 +2,7 @@ import { Button, Tooltip } from "@mui/material";
 
 import NiMoon from "@/icons/nexture/ni-moon";
 import NiSun from "@/icons/nexture/ni-sun";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 import { useThemeContext } from "@/theme/theme-provider";
 
 export default function Mode() {

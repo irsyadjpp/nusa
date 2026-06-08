@@ -2,7 +2,7 @@ import { PropsWithChildren } from "react";
 
 import { Box, Paper } from "@mui/material";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 import { useThemeContext } from "@/theme/theme-provider";
 import { ContentType } from "@/types/types";
 

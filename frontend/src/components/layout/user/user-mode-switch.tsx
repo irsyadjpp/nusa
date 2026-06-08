@@ -7,7 +7,7 @@ import NiChevronRightSmall from "@/icons/nexture/ni-chevron-right-small";
 import NiMoon from "@/icons/nexture/ni-moon";
 import NiScreen from "@/icons/nexture/ni-screen";
 import NiSun from "@/icons/nexture/ni-sun";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 import { useThemeContext } from "@/theme/theme-provider";
 
 export default function UserModeSwitch() {

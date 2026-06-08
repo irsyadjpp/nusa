@@ -23,7 +23,7 @@ import { DEFAULTS } from "@/config";
 import NiCheck from "@/icons/nexture/ni-check";
 import NiCross from "@/icons/nexture/ni-cross";
 import NiCrossSquare from "@/icons/nexture/ni-cross-square";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 const validationSchema = yup.object({
   password: yup

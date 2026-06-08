@@ -6,10 +6,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nusa/backend/internal/domain"
 	"github.com/nusa/backend/internal/middleware"
+	achievementModule "github.com/nusa/backend/modules/achievement"
+	assessmentHandler "github.com/nusa/backend/modules/assessment"
 	authHandler "github.com/nusa/backend/modules/auth"
 	curriculumHandler "github.com/nusa/backend/modules/curriculum"
 	learningPlanningHandler "github.com/nusa/backend/modules/learning_planning"
-	assessmentHandler "github.com/nusa/backend/modules/assessment"
 	reportingHandler "github.com/nusa/backend/modules/reporting"
 	roleHandler "github.com/nusa/backend/modules/roles"
 	schoolHandler "github.com/nusa/backend/modules/schools"
@@ -29,6 +30,7 @@ func NewRouter(
 	curriculumHandler *curriculumHandler.Handler,
 	learningPlanningHandler *learningPlanningHandler.Handler,
 	assessmentHandler *assessmentHandler.Handler,
+	achievementHandler *achievementModule.Handler,
 	reportingHandler *reportingHandler.Handler,
 	jwtService *jwtService.Service,
 	userRepo interface{},
@@ -39,7 +41,7 @@ func NewRouter(
 
 	r := &Router{engine: engine}
 
-	r.setupRoutes(authHandler, userHandler, schoolHandler, roleHandler, curriculumHandler, learningPlanningHandler, assessmentHandler, reportingHandler, jwtService, userRepo, schoolRepo)
+	r.setupRoutes(authHandler, userHandler, schoolHandler, roleHandler, curriculumHandler, learningPlanningHandler, assessmentHandler, achievementHandler, reportingHandler, jwtService, userRepo, schoolRepo)
 
 	return r
 }
@@ -52,6 +54,7 @@ func (r *Router) setupRoutes(
 	curriculumHandler *curriculumHandler.Handler,
 	learningPlanningHandler *learningPlanningHandler.Handler,
 	assessmentHandler *assessmentHandler.Handler,
+	achievementHandler *achievementModule.Handler,
 	reportingHandler *reportingHandler.Handler,
 	jwtService *jwtService.Service,
 	userRepo interface{},
@@ -125,7 +128,7 @@ func (r *Router) setupRoutes(
 			curriculum.POST("/subjects", curriculumHandler.CreateCurriculumSubject)
 			curriculum.GET("/subjects", curriculumHandler.ListCurriculumSubjects)
 			curriculum.GET("/subjects/:id", curriculumHandler.GetCurriculumSubject)
-			
+
 			curriculum.POST("/cp/import", curriculumHandler.ImportCP)
 			curriculum.GET("/cp", curriculumHandler.ListCPs)
 			curriculum.GET("/cp/:id", curriculumHandler.GetCP)
@@ -137,10 +140,10 @@ func (r *Router) setupRoutes(
 			learningPlanning.GET("/tp-sets", learningPlanningHandler.ListTPSets)
 			learningPlanning.GET("/tp-sets/:id", learningPlanningHandler.GetTPSet)
 			learningPlanning.POST("/tp-sets/:id/approve", learningPlanningHandler.ApproveTPSet)
-			
+
 			learningPlanning.POST("/atp-sets", learningPlanningHandler.CreateATPSet)
 			learningPlanning.GET("/atp-sets", learningPlanningHandler.ListATPSets)
-			
+
 			learningPlanning.POST("/modul-ajar-sets", learningPlanningHandler.CreateModulAjarSet)
 			learningPlanning.GET("/modul-ajar-sets", learningPlanningHandler.ListModulAjarSets)
 		}
@@ -150,15 +153,17 @@ func (r *Router) setupRoutes(
 			assessment.POST("", assessmentHandler.CreateAssessment)
 			assessment.GET("", assessmentHandler.ListAssessments)
 			assessment.GET("/:id", assessmentHandler.GetAssessment)
-			
+
 			assessment.POST("/rubrics", assessmentHandler.CreateRubric)
 			assessment.GET("/rubrics", assessmentHandler.ListRubrics)
-			
+
 			assessment.POST("/evidences", assessmentHandler.CreateEvidence)
 			assessment.GET("/evidences", assessmentHandler.ListEvidences)
-			
+
 			assessment.POST("/evaluations", assessmentHandler.CreateEvaluation)
 			assessment.GET("/evaluations", assessmentHandler.ListEvaluations)
+			assessment.GET("/evaluations/history/:evidence_id", assessmentHandler.GetEvaluationHistory)
+			assessment.GET("/evaluations/:evaluation_id/feedback-history", assessmentHandler.GetEvaluationFeedbackHistory)
 		}
 
 		reporting := protected.Group("/reporting")
@@ -166,6 +171,24 @@ func (r *Router) setupRoutes(
 			reporting.POST("/narrative-reports", reportingHandler.CreateNarrativeReport)
 			reporting.GET("/narrative-reports", reportingHandler.ListNarrativeReports)
 			reporting.GET("/narrative-reports/:id", reportingHandler.GetNarrativeReport)
+			reporting.POST("/narrative-reports/:id/refresh-achievement", reportingHandler.RefreshReportAchievement)
+		}
+
+		// Achievement Routes
+		students := protected.Group("/students")
+		{
+			students.GET("/:id/achievement", achievementHandler.GetStudentAchievement)
+			students.GET("/:id/progress", achievementHandler.GetStudentProgress)
+		}
+
+		classes := protected.Group("/classes")
+		{
+			classes.GET("/:id/achievement", achievementHandler.GetClassAchievement)
+		}
+
+		reports := protected.Group("/reports")
+		{
+			reports.GET("/:id/achievement-summary", achievementHandler.GetReportAchievementSummary)
 		}
 	}
 }

@@ -25,14 +25,14 @@ func NewAssessmentRepository(db *sqlx.DB) *AssessmentRepository {
 // CreateAssessment creates a new assessment
 func (r *AssessmentRepository) CreateAssessment(ctx context.Context, assessment *domain.Assessment) error {
 	query := `
-		INSERT INTO assessments (id, modul_ajar_id, user_id, assessment_type, status, assessment_items, 
+		INSERT INTO assessments (id, tp_id, tp_version_no, success_criteria_snapshot, user_id, assessment_type, status, assessment_items, 
 		                    answer_key, scoring_guidelines, ai_confidence_score, ai_generated_at, ai_agent_version,
 		                    version_no, is_current_version, parent_version_id, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
 	`
 
 	_, err := r.db.ExecContext(ctx, query,
-		assessment.ID, assessment.ModulAjarID, assessment.UserID, assessment.AssessmentType, assessment.Status,
+		assessment.ID, assessment.TPID, assessment.TPVersionNo, assessment.SuccessCriteriaSnapshot, assessment.UserID, assessment.AssessmentType, assessment.Status,
 		assessment.AssessmentItems, assessment.AnswerKey, assessment.ScoringGuidelines, assessment.AiConfidenceScore,
 		assessment.AiGeneratedAt, assessment.AiAgentVersion, assessment.VersionNo, assessment.IsCurrentVersion,
 		assessment.ParentVersionID, assessment.CreatedAt, assessment.UpdatedAt)
@@ -42,7 +42,7 @@ func (r *AssessmentRepository) CreateAssessment(ctx context.Context, assessment 
 // GetAssessmentByID retrieves an assessment by ID
 func (r *AssessmentRepository) GetAssessmentByID(ctx context.Context, id string) (*domain.Assessment, error) {
 	query := `
-		SELECT id, modul_ajar_id, user_id, assessment_type, status, assessment_items, 
+		SELECT id, tp_id, tp_version_no, success_criteria_snapshot, user_id, assessment_type, status, assessment_items, 
 		       answer_key, scoring_guidelines, ai_confidence_score, ai_generated_at, ai_agent_version,
 		       version_no, is_current_version, parent_version_id, created_at, updated_at, 
 		       approved_at, approved_by
@@ -54,7 +54,7 @@ func (r *AssessmentRepository) GetAssessmentByID(ctx context.Context, id string)
 	var aiGeneratedAt, aiAgentVersion, parentVersionID, approvedAt, approvedBy sql.NullString
 
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
-		&assessment.ID, &assessment.ModulAjarID, &assessment.UserID, &assessment.AssessmentType, &assessment.Status,
+		&assessment.ID, &assessment.TPID, &assessment.TPVersionNo, &assessment.SuccessCriteriaSnapshot, &assessment.UserID, &assessment.AssessmentType, &assessment.Status,
 		&assessment.AssessmentItems, &assessment.AnswerKey, &assessment.ScoringGuidelines, &aiConfidenceScore,
 		&aiGeneratedAt, &aiAgentVersion, &assessment.VersionNo, &assessment.IsCurrentVersion, &parentVersionID,
 		&assessment.CreatedAt, &assessment.UpdatedAt, &approvedAt, &approvedBy,
@@ -96,9 +96,9 @@ func (r *AssessmentRepository) GetAssessmentByID(ctx context.Context, id string)
 }
 
 // ListAssessments retrieves assessments with optional filters
-func (r *AssessmentRepository) ListAssessments(ctx context.Context, modulAjarID *string, userID *string, assessmentType *domain.AssessmentType, status *domain.WorkflowStatus, limit, offset int) ([]*domain.Assessment, error) {
+func (r *AssessmentRepository) ListAssessments(ctx context.Context, tpID *string, userID *string, assessmentType *domain.AssessmentType, status *domain.WorkflowStatus, limit, offset int) ([]*domain.Assessment, error) {
 	query := `
-		SELECT id, modul_ajar_id, user_id, assessment_type, status, assessment_items, 
+		SELECT id, tp_id, tp_version_no, success_criteria_snapshot, user_id, assessment_type, status, assessment_items, 
 		       answer_key, scoring_guidelines, ai_confidence_score, ai_generated_at, ai_agent_version,
 		       version_no, is_current_version, parent_version_id, created_at, updated_at,
 		       approved_at, approved_by
@@ -109,9 +109,9 @@ func (r *AssessmentRepository) ListAssessments(ctx context.Context, modulAjarID 
 	args := []interface{}{}
 	argIndex := 1
 
-	if modulAjarID != nil {
-		query += fmt.Sprintf(" AND modul_ajar_id = $%d", argIndex)
-		args = append(args, *modulAjarID)
+	if tpID != nil {
+		query += fmt.Sprintf(" AND tp_id = $%d", argIndex)
+		args = append(args, *tpID)
 		argIndex++
 	}
 
@@ -159,7 +159,7 @@ func (r *AssessmentRepository) ListAssessments(ctx context.Context, modulAjarID 
 		var aiGeneratedAt, aiAgentVersion, parentVersionID, approvedAt, approvedBy sql.NullString
 
 		err := rows.Scan(
-			&assessment.ID, &assessment.ModulAjarID, &assessment.UserID, &assessment.AssessmentType, &assessment.Status,
+			&assessment.ID, &assessment.TPID, &assessment.TPVersionNo, &assessment.SuccessCriteriaSnapshot, &assessment.UserID, &assessment.AssessmentType, &assessment.Status,
 			&assessment.AssessmentItems, &assessment.AnswerKey, &assessment.ScoringGuidelines, &aiConfidenceScore,
 			&aiGeneratedAt, &aiAgentVersion, &assessment.VersionNo, &assessment.IsCurrentVersion, &parentVersionID,
 			&assessment.CreatedAt, &assessment.UpdatedAt, &approvedAt, &approvedBy,
@@ -597,13 +597,15 @@ func (r *AssessmentRepository) UpdateEvidence(ctx context.Context, evidence *dom
 func (r *AssessmentRepository) CreateEvaluation(ctx context.Context, evaluation *domain.Evaluation) error {
 	query := `
 		INSERT INTO evaluations (id, student_id, rubric_id, evidence_id, user_id, performance_scores, 
-		                    total_score, max_score, performance_level, evaluated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+		                    total_score, max_score, performance_level, teacher_feedback, revision_no, 
+		                    evaluated_at, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 	`
 
 	_, err := r.db.ExecContext(ctx, query,
 		evaluation.ID, evaluation.StudentID, evaluation.RubricID, evaluation.EvidenceID, evaluation.UserID,
-		evaluation.PerformanceScores, evaluation.TotalScore, evaluation.MaxScore, evaluation.PerformanceLevel, evaluation.EvaluatedAt)
+		evaluation.PerformanceScores, evaluation.TotalScore, evaluation.MaxScore, evaluation.PerformanceLevel,
+		evaluation.TeacherFeedback, evaluation.RevisionNo, evaluation.EvaluatedAt, evaluation.CreatedAt, evaluation.UpdatedAt)
 	return err
 }
 
@@ -611,15 +613,18 @@ func (r *AssessmentRepository) CreateEvaluation(ctx context.Context, evaluation 
 func (r *AssessmentRepository) GetEvaluationByID(ctx context.Context, id string) (*domain.Evaluation, error) {
 	query := `
 		SELECT id, student_id, rubric_id, evidence_id, user_id, performance_scores, 
-		       total_score, max_score, performance_level, evaluated_at
+		       total_score, max_score, performance_level, teacher_feedback, revision_no, 
+		       evaluated_at, created_at, updated_at
 		FROM evaluations WHERE id = $1
 	`
 
 	var evaluation domain.Evaluation
+	var teacherFeedback sql.NullString
 
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&evaluation.ID, &evaluation.StudentID, &evaluation.RubricID, &evaluation.EvidenceID, &evaluation.UserID,
-		&evaluation.PerformanceScores, &evaluation.TotalScore, &evaluation.MaxScore, &evaluation.PerformanceLevel, &evaluation.EvaluatedAt,
+		&evaluation.PerformanceScores, &evaluation.TotalScore, &evaluation.MaxScore, &evaluation.PerformanceLevel,
+		&teacherFeedback, &evaluation.RevisionNo, &evaluation.EvaluatedAt, &evaluation.CreatedAt, &evaluation.UpdatedAt,
 	)
 
 	if err == sql.ErrNoRows {
@@ -629,6 +634,10 @@ func (r *AssessmentRepository) GetEvaluationByID(ctx context.Context, id string)
 		return nil, err
 	}
 
+	if teacherFeedback.Valid {
+		evaluation.TeacherFeedback = &teacherFeedback.String
+	}
+
 	return &evaluation, nil
 }
 
@@ -636,7 +645,8 @@ func (r *AssessmentRepository) GetEvaluationByID(ctx context.Context, id string)
 func (r *AssessmentRepository) ListEvaluations(ctx context.Context, studentID, rubricID, evidenceID *string, performanceLevel *domain.PerformanceLevel, limit, offset int) ([]*domain.Evaluation, error) {
 	query := `
 		SELECT id, student_id, rubric_id, evidence_id, user_id, performance_scores, 
-		       total_score, max_score, performance_level, evaluated_at
+		       total_score, max_score, performance_level, teacher_feedback, revision_no, 
+		       evaluated_at, created_at, updated_at
 		FROM evaluations
 		WHERE 1=1
 	`
@@ -690,13 +700,19 @@ func (r *AssessmentRepository) ListEvaluations(ctx context.Context, studentID, r
 	var evaluations []*domain.Evaluation
 	for rows.Next() {
 		var evaluation domain.Evaluation
+		var teacherFeedback sql.NullString
 
 		err := rows.Scan(
 			&evaluation.ID, &evaluation.StudentID, &evaluation.RubricID, &evaluation.EvidenceID, &evaluation.UserID,
-			&evaluation.PerformanceScores, &evaluation.TotalScore, &evaluation.MaxScore, &evaluation.PerformanceLevel, &evaluation.EvaluatedAt,
+			&evaluation.PerformanceScores, &evaluation.TotalScore, &evaluation.MaxScore, &evaluation.PerformanceLevel,
+			&teacherFeedback, &evaluation.RevisionNo, &evaluation.EvaluatedAt, &evaluation.CreatedAt, &evaluation.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
+		}
+
+		if teacherFeedback.Valid {
+			evaluation.TeacherFeedback = &teacherFeedback.String
 		}
 
 		evaluations = append(evaluations, &evaluation)
@@ -708,13 +724,16 @@ func (r *AssessmentRepository) ListEvaluations(ctx context.Context, studentID, r
 // UpdateEvaluation updates an evaluation
 func (r *AssessmentRepository) UpdateEvaluation(ctx context.Context, evaluation *domain.Evaluation) error {
 	query := `
-		UPDATE evaluations 
-		SET performance_scores = $2, total_score = $3, max_score = $4, performance_level = $5
+		UPDATE evaluations
+		SET performance_scores = $2, total_score = $3, max_score = $4, performance_level = $5,
+		    teacher_feedback = $6, revision_no = $7, is_current_version = $8, parent_revision_id = $9, updated_at = NOW()
 		WHERE id = $1
 	`
 
 	result, err := r.db.ExecContext(ctx, query,
-		evaluation.ID, evaluation.PerformanceScores, evaluation.TotalScore, evaluation.MaxScore, evaluation.PerformanceLevel)
+		evaluation.ID, evaluation.PerformanceScores, evaluation.TotalScore, evaluation.MaxScore,
+		evaluation.PerformanceLevel, evaluation.TeacherFeedback, evaluation.RevisionNo,
+		evaluation.IsCurrentVersion, evaluation.ParentRevisionID)
 	if err != nil {
 		return err
 	}
@@ -725,4 +744,57 @@ func (r *AssessmentRepository) UpdateEvaluation(ctx context.Context, evaluation 
 	}
 
 	return nil
+}
+
+// GetEvaluationHistory retrieves all revisions of an evaluation for a given evidence
+func (r *AssessmentRepository) GetEvaluationHistory(ctx context.Context, evidenceID string) ([]*domain.Evaluation, error) {
+	query := `
+		SELECT id, student_id, rubric_id, evidence_id, user_id, performance_scores,
+		       total_score, max_score, performance_level, teacher_feedback, revision_no,
+		       is_current_version, parent_revision_id, evaluated_at, created_at, updated_at
+		FROM evaluations
+		WHERE evidence_id = $1
+		ORDER BY revision_no ASC
+	`
+
+	var evaluations []*domain.Evaluation
+	err := r.db.SelectContext(ctx, &evaluations, query, evidenceID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get evaluation history: %w", err)
+	}
+
+	return evaluations, nil
+}
+
+// CreateFeedbackHistory creates a new feedback history entry
+func (r *AssessmentRepository) CreateFeedbackHistory(ctx context.Context, history *domain.EvaluationFeedbackHistory) error {
+	query := `
+		INSERT INTO evaluation_feedback_history (id, evaluation_id, teacher_feedback, changed_by, changed_at)
+		VALUES ($1, $2, $3, $4, $5)
+	`
+
+	_, err := r.db.ExecContext(ctx, query, history.ID, history.EvaluationID, history.TeacherFeedback, history.ChangedBy, history.ChangedAt)
+	if err != nil {
+		return fmt.Errorf("failed to create feedback history: %w", err)
+	}
+
+	return nil
+}
+
+// GetFeedbackHistory retrieves the feedback history for an evaluation
+func (r *AssessmentRepository) GetFeedbackHistory(ctx context.Context, evaluationID string) ([]*domain.EvaluationFeedbackHistory, error) {
+	query := `
+		SELECT id, evaluation_id, teacher_feedback, changed_by, changed_at
+		FROM evaluation_feedback_history
+		WHERE evaluation_id = $1
+		ORDER BY changed_at ASC
+	`
+
+	var history []*domain.EvaluationFeedbackHistory
+	err := r.db.SelectContext(ctx, &history, query, evaluationID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get feedback history: %w", err)
+	}
+
+	return history, nil
 }

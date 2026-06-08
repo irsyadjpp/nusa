@@ -26,7 +26,7 @@ import NiChevronLeftSmall from "@/icons/nexture/ni-chevron-left-small";
 import NiChevronRightSmall from "@/icons/nexture/ni-chevron-right-small";
 import NiPen from "@/icons/nexture/ni-pen";
 import NiPlus from "@/icons/nexture/ni-plus";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 interface PublicInfoData {
   id: string;

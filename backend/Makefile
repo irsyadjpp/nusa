@@ -1,4 +1,4 @@
-.PHONY: help build run test lint migrate-up migrate-down migrate-create clean install-deps docker-up docker-down generate seed
+.PHONY: help build run test lint migrate-up migrate-down migrate-create clean install-deps docker-up docker-down podman-up podman-down podman-logs generate seed
 
 help:
 	@echo "Available commands:"
@@ -14,6 +14,9 @@ help:
 	@echo "  make install-deps   - Install dependencies"
 	@echo "  make docker-up      - Start Docker Compose services"
 	@echo "  make docker-down    - Stop Docker Compose services"
+	@echo "  make podman-up      - Start Podman Compose services"
+	@echo "  make podman-down    - Stop Podman Compose services"
+	@echo "  make podman-logs    - View Podman Compose logs"
 	@echo "  make seed           - Seed database with initial data"
 
 build:
@@ -52,6 +55,15 @@ docker-up:
 
 docker-down:
 	docker compose down
+
+podman-up:
+	podman-compose up -d
+
+podman-down:
+	podman-compose down
+
+podman-logs:
+	podman-compose logs -f
 
 seed:
 	go run cmd/seed/main.go

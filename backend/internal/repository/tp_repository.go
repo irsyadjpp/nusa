@@ -242,36 +242,36 @@ func (r *TPRepository) UpdateTPSetStatus(ctx context.Context, id string, status 
 // CreateTP creates a new TP
 func (r *TPRepository) CreateTP(ctx context.Context, tp *domain.TP) error {
 	query := `
-		INSERT INTO tp (id, tp_set_id, sequence_number, cp_id, subject_id, phase_id, element_id, 
-		              subelement_id, user_id, status, title, learning_objectives, time_allocation, 
-		              prerequisites, estimated_weeks)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+		INSERT INTO tp (id, tp_set_id, sequence_number, cp_id, subject_id, phase_id, element_id,
+		              subelement_id, user_id, status, title, learning_objectives, time_allocation,
+		              prerequisites, estimated_weeks, success_criteria, version_no, is_current_version, parent_version_id)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
 	`
 
 	_, err := r.db.ExecContext(ctx, query,
 		tp.ID, tp.TPSetID, tp.SequenceNumber, tp.CPID, tp.SubjectID, tp.PhaseID, tp.ElementID,
 		tp.SubelementID, tp.UserID, tp.Status, tp.Title, tp.LearningObjectives, tp.TimeAllocation,
-		tp.Prerequisites, tp.EstimatedWeeks)
+		tp.Prerequisites, tp.EstimatedWeeks, tp.SuccessCriteria, tp.VersionNo, tp.IsCurrentVersion, tp.ParentVersionID)
 	return err
 }
 
 // GetTPByID retrieves a TP by ID
 func (r *TPRepository) GetTPByID(ctx context.Context, id string) (*domain.TP, error) {
 	query := `
-		SELECT id, tp_set_id, sequence_number, cp_id, subject_id, phase_id, element_id, 
-		       subelement_id, user_id, status, title, learning_objectives, time_allocation, 
-		       prerequisites, estimated_weeks, created_at, updated_at
+		SELECT id, tp_set_id, sequence_number, cp_id, subject_id, phase_id, element_id,
+		       subelement_id, user_id, status, title, learning_objectives, time_allocation,
+		       prerequisites, estimated_weeks, success_criteria, version_no, is_current_version, parent_version_id, created_at, updated_at
 		FROM tp WHERE id = $1
 	`
 
 	var tp domain.TP
-	var title, prerequisites sql.NullString
+	var title, prerequisites, parentVersionID sql.NullString
 	var estimatedWeeks sql.NullInt32
 
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&tp.ID, &tp.TPSetID, &tp.SequenceNumber, &tp.CPID, &tp.SubjectID, &tp.PhaseID, &tp.ElementID,
 		&tp.SubelementID, &tp.UserID, &tp.Status, &title, &tp.LearningObjectives, &tp.TimeAllocation,
-		&prerequisites, &estimatedWeeks, &tp.CreatedAt, &tp.UpdatedAt,
+		&prerequisites, &estimatedWeeks, &tp.SuccessCriteria, &tp.VersionNo, &tp.IsCurrentVersion, &parentVersionID, &tp.CreatedAt, &tp.UpdatedAt,
 	)
 
 	if err == sql.ErrNoRows {
@@ -291,6 +291,9 @@ func (r *TPRepository) GetTPByID(ctx context.Context, id string) (*domain.TP, er
 		weeks := int(estimatedWeeks.Int32)
 		tp.EstimatedWeeks = &weeks
 	}
+	if parentVersionID.Valid {
+		tp.ParentVersionID = &parentVersionID.String
+	}
 
 	return &tp, nil
 }
@@ -300,7 +303,7 @@ func (r *TPRepository) ListTPsBySet(ctx context.Context, tpSetID string) ([]*dom
 	query := `
 		SELECT id, tp_set_id, sequence_number, cp_id, subject_id, phase_id, element_id, 
 		       subelement_id, user_id, status, title, learning_objectives, time_allocation, 
-		       prerequisites, estimated_weeks, created_at, updated_at
+		       prerequisites, estimated_weeks, success_criteria, created_at, updated_at
 		FROM tp WHERE tp_set_id = $1 ORDER BY sequence_number ASC
 	`
 
@@ -319,7 +322,7 @@ func (r *TPRepository) ListTPsBySet(ctx context.Context, tpSetID string) ([]*dom
 		err := rows.Scan(
 			&tp.ID, &tp.TPSetID, &tp.SequenceNumber, &tp.CPID, &tp.SubjectID, &tp.PhaseID, &tp.ElementID,
 			&tp.SubelementID, &tp.UserID, &tp.Status, &title, &tp.LearningObjectives, &tp.TimeAllocation,
-			&prerequisites, &estimatedWeeks, &tp.CreatedAt, &tp.UpdatedAt,
+			&prerequisites, &estimatedWeeks, &tp.SuccessCriteria, &tp.CreatedAt, &tp.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -347,7 +350,7 @@ func (r *TPRepository) ListTPs(ctx context.Context, tpSetID, cpID *string, statu
 	query := `
 		SELECT id, tp_set_id, sequence_number, cp_id, subject_id, phase_id, element_id, 
 		       subelement_id, user_id, status, title, learning_objectives, time_allocation, 
-		       prerequisites, estimated_weeks, created_at, updated_at
+		       prerequisites, estimated_weeks, success_criteria, created_at, updated_at
 		FROM tp
 		WHERE 1=1
 	`
@@ -401,7 +404,7 @@ func (r *TPRepository) ListTPs(ctx context.Context, tpSetID, cpID *string, statu
 		err := rows.Scan(
 			&tp.ID, &tp.TPSetID, &tp.SequenceNumber, &tp.CPID, &tp.SubjectID, &tp.PhaseID, &tp.ElementID,
 			&tp.SubelementID, &tp.UserID, &tp.Status, &title, &tp.LearningObjectives, &tp.TimeAllocation,
-			&prerequisites, &estimatedWeeks, &tp.CreatedAt, &tp.UpdatedAt,
+			&prerequisites, &estimatedWeeks, &tp.SuccessCriteria, &tp.CreatedAt, &tp.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -427,14 +430,14 @@ func (r *TPRepository) ListTPs(ctx context.Context, tpSetID, cpID *string, statu
 // UpdateTP updates a TP
 func (r *TPRepository) UpdateTP(ctx context.Context, tp *domain.TP) error {
 	query := `
-		UPDATE tp 
-		SET title = $2, learning_objectives = $3, time_allocation = $4, prerequisites = $5, 
-		    estimated_weeks = $6, status = $7, updated_at = NOW()
+		UPDATE tp
+		SET title = $2, learning_objectives = $3, time_allocation = $4, prerequisites = $5,
+		    estimated_weeks = $6, status = $7, success_criteria = $8, version_no = $9, is_current_version = $10, parent_version_id = $11, updated_at = NOW()
 		WHERE id = $1
 	`
 
 	result, err := r.db.ExecContext(ctx, query,
-		tp.ID, tp.Title, tp.LearningObjectives, tp.TimeAllocation, tp.Prerequisites, tp.EstimatedWeeks, tp.Status)
+		tp.ID, tp.Title, tp.LearningObjectives, tp.TimeAllocation, tp.Prerequisites, tp.EstimatedWeeks, tp.Status, tp.SuccessCriteria, tp.VersionNo, tp.IsCurrentVersion, tp.ParentVersionID)
 	if err != nil {
 		return err
 	}
@@ -445,4 +448,73 @@ func (r *TPRepository) UpdateTP(ctx context.Context, tp *domain.TP) error {
 	}
 
 	return nil
+}
+
+// HasDownstreamAssessments checks if a TP has downstream assessments
+func (r *TPRepository) HasDownstreamAssessments(ctx context.Context, tpID string) (bool, error) {
+	query := `
+		SELECT COUNT(*) FROM assessments WHERE tp_version_no IN (
+			SELECT version_no FROM tp WHERE id = $1
+		)
+	`
+
+	var count int
+	err := r.db.QueryRowContext(ctx, query, tpID).Scan(&count)
+	if err != nil {
+		return false, fmt.Errorf("failed to check downstream assessments: %w", err)
+	}
+
+	return count > 0, nil
+}
+
+// GetTPVersionHistory retrieves all versions of a TP for a given TP set and sequence
+func (r *TPRepository) GetTPVersionHistory(ctx context.Context, tpSetID string, sequenceNumber int) ([]*domain.TP, error) {
+	query := `
+		SELECT id, tp_set_id, sequence_number, cp_id, subject_id, phase_id, element_id,
+		       subelement_id, user_id, status, title, learning_objectives, time_allocation,
+		       prerequisites, estimated_weeks, success_criteria, version_no, is_current_version, parent_version_id, created_at, updated_at
+		FROM tp
+		WHERE tp_set_id = $1 AND sequence_number = $2
+		ORDER BY version_no ASC
+	`
+
+	var tps []*domain.TP
+	rows, err := r.db.QueryContext(ctx, query, tpSetID, sequenceNumber)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get TP version history: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var tp domain.TP
+		var title, prerequisites, parentVersionID sql.NullString
+		var estimatedWeeks sql.NullInt32
+
+		err := rows.Scan(
+			&tp.ID, &tp.TPSetID, &tp.SequenceNumber, &tp.CPID, &tp.SubjectID, &tp.PhaseID, &tp.ElementID,
+			&tp.SubelementID, &tp.UserID, &tp.Status, &title, &tp.LearningObjectives, &tp.TimeAllocation,
+			&prerequisites, &estimatedWeeks, &tp.SuccessCriteria, &tp.VersionNo, &tp.IsCurrentVersion, &parentVersionID, &tp.CreatedAt, &tp.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if title.Valid {
+			tp.Title = &title.String
+		}
+		if prerequisites.Valid {
+			tp.Prerequisites = prerequisites.String
+		}
+		if estimatedWeeks.Valid {
+			weeks := int(estimatedWeeks.Int32)
+			tp.EstimatedWeeks = &weeks
+		}
+		if parentVersionID.Valid {
+			tp.ParentVersionID = &parentVersionID.String
+		}
+
+		tps = append(tps, &tp)
+	}
+
+	return tps, nil
 }

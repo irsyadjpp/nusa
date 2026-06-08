@@ -7,7 +7,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Button } from "@mui/mate
 
 import NiChevronRightSmall from "@/icons/nexture/ni-chevron-right-small";
 import NextureIcons from "@/icons/nexture-icons";
-import { cn, isPathMatch } from "@/lib/utils";
+import { cn, isPathMatch } from "@/shared/utils";
 import { MenuItem } from "@/types/types";
 
 type Props = {

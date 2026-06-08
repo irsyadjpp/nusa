@@ -38,7 +38,7 @@ import NiSearch from "@/icons/nexture/ni-search";
 import NiSlashHexagon from "@/icons/nexture/ni-slash-hexagon";
 import NiStructure from "@/icons/nexture/ni-structure";
 import NiUsers from "@/icons/nexture/ni-users";
-import { cn } from "@/lib/utils";
+import { cn } from "@/shared/utils";
 
 export default function Search() {
   const isMac = navigator.userAgent.includes("Mac");
