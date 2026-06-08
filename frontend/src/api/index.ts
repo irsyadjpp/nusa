@@ -79,3 +79,90 @@ export type {
   ListPermissionsParams,
 } from './permissions';
 export { default as permissionsApiDefault } from './permissions';
+
+// Narrative Report API
+export {
+  getNarrativeReports,
+  getNarrativeReportById,
+  createNarrativeReport,
+  updateNarrativeReport,
+  deleteNarrativeReport,
+  publishNarrativeReport,
+  getAchievementSummary,
+} from './narrative-report';
+export type {
+  NarrativeReport,
+  CreateNarrativeReportRequest,
+  UpdateNarrativeReportRequest,
+  NarrativeReportResponse,
+} from './narrative-report';
+export { default as narrativeReportApiDefault } from './narrative-report';
+
+// CP (Capaian Pembelajaran) API
+export {
+  getSubjects,
+  getSubjectById,
+  getPhases,
+  getPhaseById,
+  getCPs,
+  getCPById,
+  getElementsByPhase,
+  getElementById,
+  getSubelementsByElement,
+  getSubelementById,
+} from './cp';
+export type {
+  CP,
+  Subject,
+  Phase,
+  Element,
+  Subelement,
+} from './cp';
+export { default as cpApiDefault } from './cp';
+
+// ATP (Alur Tujuan Pembelajaran) API
+export {
+  getATPs,
+  getATPById,
+  getATPsBySet,
+  createATP,
+  updateATP,
+  deleteATP,
+  getATPSets,
+  getATPSetById,
+  createATPSet,
+  updateATPSet,
+  approveATPSet,
+} from './atp';
+export type {
+  ATP,
+  ATPSet,
+  CreateATPRequest,
+  UpdateATPRequest,
+  CreateATPSetRequest,
+  UpdateATPSetRequest,
+} from './atp';
+export { default as atpApiDefault } from './atp';
+
+// Modul Ajar API
+export {
+  getModulAjars,
+  getModulAjarById,
+  getModulAjarsBySet,
+  createModulAjar,
+  updateModulAjar,
+  deleteModulAjar,
+  getModulAjarSets,
+  getModulAjarSetById,
+  createModulAjarSet,
+  updateModulAjarSet,
+} from './modul-ajar';
+export type {
+  ModulAjar,
+  ModulAjarSet,
+  CreateModulAjarRequest,
+  UpdateModulAjarRequest,
+  CreateModulAjarSetRequest,
+  UpdateModulAjarSetRequest,
+} from './modul-ajar';
+export { default as modulAjarApiDefault } from './modul-ajar';

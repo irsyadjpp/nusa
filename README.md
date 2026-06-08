@@ -1,190 +1,439 @@
-[![GitHub Workflow Status (branch)](https://img.shields.io/github/actions/workflow/status/golang-migrate/migrate/ci.yaml?branch=master)](https://github.com/golang-migrate/migrate/actions/workflows/ci.yaml?query=branch%3Amaster)
-[![GoDoc](https://pkg.go.dev/badge/github.com/golang-migrate/migrate)](https://pkg.go.dev/github.com/golang-migrate/migrate/v4)
-[![Coverage Status](https://img.shields.io/coveralls/github/golang-migrate/migrate/master.svg)](https://coveralls.io/github/golang-migrate/migrate?branch=master)
-[![packagecloud.io](https://img.shields.io/badge/deb-packagecloud.io-844fec.svg)](https://packagecloud.io/golang-migrate/migrate?filter=debs)
-[![Docker Pulls](https://img.shields.io/docker/pulls/migrate/migrate.svg)](https://hub.docker.com/r/migrate/migrate/)
-![Supported Go Versions](https://img.shields.io/badge/Go-1.19%2C%201.20-lightgrey.svg)
-[![GitHub Release](https://img.shields.io/github/release/golang-migrate/migrate.svg)](https://github.com/golang-migrate/migrate/releases)
-[![Go Report Card](https://goreportcard.com/badge/github.com/golang-migrate/migrate/v4)](https://goreportcard.com/report/github.com/golang-migrate/migrate/v4)
+# NUSA - Education Operating System
 
-# migrate
+![Supported Go Versions](https://img.shields.io/badge/Go-1.25%2B-lightgrey.svg)
+[![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
+![React](https://img.shields.io/badge/React-18%2B-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5%2B-blue.svg)
+![Node](https://img.shields.io/badge/Node-18%2B-green.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-blue.svg)
+![Podman](https://img.shields.io/badge/Podman-4%2B-informational.svg)
+[![Development Status](https://img.shields.io/badge/status-Development-yellow.svg)](https://github.com/{username}/nusa)
+![Microservices](https://img.shields.io/badge/architecture-Microservices-orange.svg)
+![REST API](https://img.shields.io/badge/API-REST-green.svg)
+![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3%2B-orange.svg)
+![Redis](https://img.shields.io/badge/Redis-7%2B-red.svg)
+![Education](https://img.shields.io/badge/domain-Education-blue.svg)
+![Indonesia](https://img.shields.io/badge/country-Indonesia-red.svg)
 
-__Database migrations written in Go. Use as [CLI](#cli-usage) or import as [library](#use-in-your-go-project).__
+A comprehensive education management system designed for Indonesian schools, featuring curriculum planning, learning design, assessment tools, and administrative workflows.
 
-* Migrate reads migrations from [sources](#migration-sources)
-   and applies them in correct order to a [database](#databases).
-* Drivers are "dumb", migrate glues everything together and makes sure the logic is bulletproof.
-   (Keeps the drivers lightweight, too.)
-* Database drivers don't assume things or try to correct user input. When in doubt, fail.
+## 🎯 Overview
 
-Forked from [mattes/migrate](https://github.com/mattes/migrate)
+NUSA (National Unified System Administration) is a modern full-stack web application that streamlines educational processes for teachers, administrators, and students in Indonesia. Built with a focus on the Kurikulum Merdeka implementation, it provides tools for curriculum planning, teaching material development, assessment management, and school administration.
 
-## Databases
+## ✨ Features
 
-Database drivers run migrations. [Add a new database?](database/driver.go)
+### 📚 Curriculum Management
+- **Curriculum Plan (CP)** - Create and manage curriculum plans
+- **Teaching Plan (TP)** - Detailed teaching plans and lesson preparation
+- **Annual Teaching Plan (ATP)** - Yearly teaching schedules and planning
 
-* [PostgreSQL](database/postgres)
-* [PGX v4](database/pgx)
-* [PGX v5](database/pgx/v5)
-* [Redshift](database/redshift)
-* [Ql](database/ql)
-* [Cassandra](database/cassandra)
-* [SQLite](database/sqlite)
-* [SQLite3](database/sqlite3) ([todo #165](https://github.com/mattes/migrate/issues/165))
-* [SQLCipher](database/sqlcipher)
-* [MySQL/ MariaDB](database/mysql)
-* [Neo4j](database/neo4j)
-* [MongoDB](database/mongodb)
-* [CrateDB](database/crate) ([todo #170](https://github.com/mattes/migrate/issues/170))
-* [Shell](database/shell) ([todo #171](https://github.com/mattes/migrate/issues/171))
-* [Google Cloud Spanner](database/spanner)
-* [CockroachDB](database/cockroachdb)
-* [YugabyteDB](database/yugabytedb)
-* [ClickHouse](database/clickhouse)
-* [Firebird](database/firebird)
-* [MS SQL Server](database/sqlserver)
+### 🎓 Learning Design
+- **Modul Ajar** - Teaching modules and learning materials
+- **Resource Management** - Educational content and resources
 
-### Database URLs
+### 📊 Assessment & Evaluation
+- **Assessment Tools** - Create and manage various assessment types
+- **Rubrics** - Define and use assessment rubrics
+- **Narrative Reports** - Generate narrative student reports
+- **Evaluation Tracking** - Track and manage evaluation revisions
 
-Database connection strings are specified via URLs. The URL format is driver dependent but generally has the form: `dbdriver://username:password@host:port/dbname?param1=true&param2=false`
+### 👥 User Management
+- **Role-based Access Control** - Admin, Teacher, Principal roles
+- **School Management** - Multi-school support
+- **User Authentication** - Secure JWT-based authentication
 
-Any [reserved URL characters](https://en.wikipedia.org/wiki/Percent-encoding#Percent-encoding_reserved_characters) need to be escaped. Note, the `%` character also [needs to be escaped](https://en.wikipedia.org/wiki/Percent-encoding#Percent-encoding_the_percent_character)
+### 🔧 Administrative Features
+- **Settings Management** - System configuration
+- **Approval Workflows** - Content approval processes
+- **Reporting** - Comprehensive reporting tools
 
-Explicitly, the following characters need to be escaped:
-`!`, `#`, `$`, `%`, `&`, `'`, `(`, `)`, `*`, `+`, `,`, `/`, `:`, `;`, `=`, `?`, `@`, `[`, `]`
+## 🏗️ Architecture
 
-It's easiest to always run the URL parts of your DB connection URL (e.g. username, password, etc) through an URL encoder. See the example Python snippets below:
+### Tech Stack
+
+#### Backend
+- **Language**: Go 1.25
+- **Framework**: Gin Web Framework
+- **Database**: PostgreSQL 18
+- **ORM**: sqlx with pgxpool
+- **Authentication**: JWT with refresh tokens
+- **Message Queue**: RabbitMQ
+- **Cache**: Redis
+- **Vector Database**: Qdrant (for AI features)
+- **Object Storage**: MinIO
+- **Container**: Podman
+
+#### Frontend
+- **Framework**: React 18 with TypeScript
+- **Build Tool**: Vite 7
+- **UI Library**: Material-UI (MUI)
+- **Styling**: Tailwind CSS
+- **State Management**: React Context
+- **Routing**: React Router v6
+- **Form Handling**: Formik
+- **HTTP Client**: Axios
+
+### Project Structure
+
+```
+nusa/
+├── backend/                 # Go backend application
+│   ├── cmd/
+│   │   └── api/
+│   │       └── main.go     # Application entry point
+│   ├── internal/           # Private application code
+│   │   ├── auth/          # Authentication logic
+│   │   ├── config/        # Configuration management
+│   │   ├── db/            # Database connections
+│   │   ├── domain/        # Domain models
+│   │   ├── logger/        # Logging utilities
+│   │   ├── middleware/    # HTTP middleware
+│   │   ├── repository/    # Data access layer
+│   │   ├── router/        # Route definitions
+│   │   ├── server/        # Server setup
+│   │   └── service/       # Business logic
+│   ├── modules/           # Feature modules
+│   │   ├── auth/          # Authentication handlers
+│   │   ├── users/         # User management
+│   │   ├── curriculum/    # Curriculum features
+│   │   ├── assessment/    # Assessment features
+│   │   └── reporting/     # Reporting features
+│   ├── migrations/        # Database migrations
+│   └── services/          # External service integrations
+├── frontend/              # React frontend application
+│   ├── src/
+│   │   ├── api/           # API client
+│   │   ├── components/    # Reusable components
+│   │   ├── features/      # Feature modules
+│   │   ├── pages/         # Page components
+│   │   ├── theme/         # Theme configuration
+│   │   ├── types/         # TypeScript types
+│   │   ├── App.tsx        # Root component
+│   │   ├── config.ts      # App configuration
+│   │   ├── main.tsx       # Entry point
+│   │   ├── menu-items.tsx # Navigation menu
+│   │   └── routes.tsx     # Route definitions
+│   ├── package.json
+│   └── vite.config.ts
+├── podman-compose.yml     # Container orchestration
+└── README.md
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Podman** (or Docker) for container management
+- **Go** 1.25+ for backend development
+- **Node.js** 18+ and npm for frontend development
+- **PostgreSQL** client tools (for database management)
+
+### Installation
+
+1. **Clone the repository**
+```bash
+git clone <repository-url>
+cd nusa
+```
+
+2. **Start infrastructure services**
+```bash
+podman-compose -f podman-compose.yml up -d
+```
+
+This starts:
+- PostgreSQL (port 5432)
+- RabbitMQ (port 5672)
+- Redis (port 6379)
+- Qdrant (port 6333)
+- MinIO (port 9000)
+
+3. **Build and start backend**
+```bash
+cd backend
+podman build -t nusa-backend .
+podman run -d --name nusa-backend --network nusa_network \
+  -e APP_ENV=development \
+  -e SERVER_PORT=:8080 \
+  -e DB_HOST=10.89.0.2 \
+  -e DB_PORT=5432 \
+  -e DB_NAME=nusa_db \
+  -e DB_USER=nusa_user \
+  -e DB_PASSWORD=nusa_password \
+  -e DB_SSLMODE=disable \
+  -e JWT_SECRET=your-secret-key-change-in-production \
+  -e JWT_EXPIRATION=24h \
+  -e RABBITMQ_HOST=rabbitmq \
+  -e RABBITMQ_PORT=5672 \
+  -e RABBITMQ_USER=nusa_user \
+  -e RABBITMQ_PASSWORD=nusa_password \
+  -e RABBITMQ_QUEUE=ai_generation \
+  -e AI_PRIMARY_PROVIDER=openai \
+  -e AI_OPENAI_KEY=your-ai-api-key \
+  -e REDIS_HOST=redis \
+  -e REDIS_PORT=6379 \
+  -e REDIS_PASSWORD= \
+  -e MINIO_ENDPOINT=http://minio:9000 \
+  -e MINIO_ACCESS_KEY=admin \
+  -e MINIO_SECRET_KEY=admin123 \
+  -e MINIO_BUCKET=nusa-documents \
+  -e MINIO_REGION=us-east-1 \
+  -e MINIO_SECURE=false \
+  -p 8081:8080 \
+  nusa-backend
+```
+
+4. **Run database migrations**
+```bash
+# Copy migration files to PostgreSQL container
+podman cp backend/migrations/000001_init_schema.up.sql nusa-postgres:/tmp/migration.sql
+podman exec nusa-postgres psql -U nusa_user -d nusa_db -f /tmp/migration.sql
+
+# Run subsequent migrations in order
+podman cp backend/migrations/000002_add_education_domain_tables.up.sql nusa-postgres:/tmp/migration2.sql
+podman exec nusa-postgres psql -U nusa_user -d nusa_db -f /tmp/migration2.sql
+
+# Continue with remaining migrations...
+```
+
+5. **Install frontend dependencies**
+```bash
+cd frontend
+npm install
+```
+
+6. **Configure frontend environment**
+```bash
+# Create .env file
+echo "VITE_API_BASE_URL=http://localhost:8081" > .env
+```
+
+7. **Start frontend development server**
+```bash
+npm run dev
+```
+
+The frontend will be available at `http://localhost:3001`
+
+### Default Credentials
+
+After setup, create an admin user in the database:
+
+```sql
+-- First create admin role
+INSERT INTO roles (name, description) VALUES ('admin', 'Administrator role');
+
+-- Create admin user (password: admin123)
+INSERT INTO users (email, password_hash, name, role_id) 
+VALUES ('admin@nusa.id', '$2a$10$jjqseoG0NY6SzveYfGVQ4ejcQ7kkzJfEi63TtsT1eEEO13rpTBLwu', 'Admin Nusa', 
+  (SELECT id FROM roles WHERE name = 'admin'));
+```
+
+**Default Login:**
+- Email: `admin@nusa.id`
+- Password: `admin123`
+
+## 🔧 Configuration
+
+### Backend Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `APP_ENV` | Application environment | `development` |
+| `SERVER_PORT` | Server port | `:8080` |
+| `DB_HOST` | PostgreSQL host | `localhost` |
+| `DB_PORT` | PostgreSQL port | `5432` |
+| `DB_NAME` | Database name | `nusa_db` |
+| `DB_USER` | Database user | `nusa_user` |
+| `DB_PASSWORD` | Database password | `nusa_password` |
+| `DB_SSLMODE` | SSL mode | `disable` |
+| `JWT_SECRET` | JWT signing secret | - |
+| `JWT_EXPIRATION` | Token expiration | `24h` |
+| `RABBITMQ_HOST` | RabbitMQ host | `rabbitmq` |
+| `RABBITMQ_PORT` | RabbitMQ port | `5672` |
+| `RABBITMQ_USER` | RabbitMQ user | `nusa_user` |
+| `RABBITMQ_PASSWORD` | RabbitMQ password | `nusa_password` |
+| `REDIS_HOST` | Redis host | `redis` |
+| `REDIS_PORT` | Redis port | `6379` |
+| `MINIO_ENDPOINT` | MinIO endpoint | `http://minio:9000` |
+| `MINIO_ACCESS_KEY` | MinIO access key | `admin` |
+| `MINIO_SECRET_KEY` | MinIO secret key | `admin123` |
+
+### Frontend Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_API_BASE_URL` | Backend API URL | `http://localhost:8082` |
+
+## 📦 API Documentation
+
+The backend provides RESTful APIs for all features. After starting the backend, API documentation is typically available at:
+
+- Swagger UI: `http://localhost:8081/swagger/index.html` (if configured)
+- API endpoints: `http://localhost:8081/api/v1/`
+
+### Main API Endpoints
+
+- **Authentication**: `/api/v1/public/auth/*`
+- **Users**: `/api/v1/users/*`
+- **Curriculum**: `/api/v1/curriculum/*`
+- **Assessment**: `/api/v1/assessment/*`
+- **Reporting**: `/api/v1/reporting/*`
+
+## 🛠️ Development
+
+### Backend Development
 
 ```bash
-$ python3 -c 'import urllib.parse; print(urllib.parse.quote(input("String to encode: "), ""))'
-String to encode: FAKEpassword!#$%&'()*+,/:;=?@[]
-FAKEpassword%21%23%24%25%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D
-$ python2 -c 'import urllib; print urllib.quote(raw_input("String to encode: "), "")'
-String to encode: FAKEpassword!#$%&'()*+,/:;=?@[]
-FAKEpassword%21%23%24%25%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D
-$
+cd backend
+
+# Run tests
+go test ./...
+
+# Build locally
+go build -o bin/api cmd/api/main.go
+
+# Run locally
+./bin/api
 ```
 
-## Migration Sources
-
-Source drivers read migrations from local or remote sources. [Add a new source?](source/driver.go)
-
-* [Filesystem](source/file) - read from filesystem
-* [io/fs](source/iofs) - read from a Go [io/fs](https://pkg.go.dev/io/fs#FS)
-* [Go-Bindata](source/go_bindata) - read from embedded binary data ([jteeuwen/go-bindata](https://github.com/jteeuwen/go-bindata))
-* [pkger](source/pkger) - read from embedded binary data ([markbates/pkger](https://github.com/markbates/pkger))
-* [GitHub](source/github) - read from remote GitHub repositories
-* [GitHub Enterprise](source/github_ee) - read from remote GitHub Enterprise repositories
-* [Bitbucket](source/bitbucket) - read from remote Bitbucket repositories
-* [Gitlab](source/gitlab) - read from remote Gitlab repositories
-* [AWS S3](source/aws_s3) - read from Amazon Web Services S3
-* [Google Cloud Storage](source/google_cloud_storage) - read from Google Cloud Platform Storage
-
-## CLI usage
-
-* Simple wrapper around this library.
-* Handles ctrl+c (SIGINT) gracefully.
-* No config search paths, no config files, no magic ENV var injections.
-
-__[CLI Documentation](cmd/migrate)__
-
-### Basic usage
+### Frontend Development
 
 ```bash
-$ migrate -source file://path/to/migrations -database postgres://localhost:5432/database up 2
+cd frontend
+
+# Run development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
 ```
 
-### Docker usage
+### Database Migrations
 
 ```bash
-$ docker run -v {{ migration dir }}:/migrations --network host migrate/migrate
-    -path=/migrations/ -database postgres://localhost:5432/database up 2
+# Create new migration
+# (Manually create files in backend/migrations/)
+
+# Apply migration
+podman exec nusa-postgres psql -U nusa_user -d nusa_db -f /path/to/migration.up.sql
+
+# Rollback migration
+podman exec nusa-postgres psql -U nusa_user -d nusa_db -f /path/to/migration.down.sql
 ```
 
-## Use in your Go project
+## 🐳 Container Management
 
-* API is stable and frozen for this release (v3 & v4).
-* Uses [Go modules](https://golang.org/cmd/go/#hdr-Modules__module_versions__and_more) to manage dependencies.
-* To help prevent database corruptions, it supports graceful stops via `GracefulStop chan bool`.
-* Bring your own logger.
-* Uses `io.Reader` streams internally for low memory overhead.
-* Thread-safe and no goroutine leaks.
-
-__[Go Documentation](https://pkg.go.dev/github.com/golang-migrate/migrate/v4)__
-
-```go
-import (
-    "github.com/golang-migrate/migrate/v4"
-    _ "github.com/golang-migrate/migrate/v4/database/postgres"
-    _ "github.com/golang-migrate/migrate/v4/source/github"
-)
-
-func main() {
-    m, err := migrate.New(
-        "github://mattes:personal-access-token@mattes/migrate_test",
-        "postgres://localhost:5432/database?sslmode=enable")
-    m.Steps(2)
-}
+### Start all services
+```bash
+podman-compose -f podman-compose.yml up -d
 ```
 
-Want to use an existing database client?
-
-```go
-import (
-    "database/sql"
-    _ "github.com/lib/pq"
-    "github.com/golang-migrate/migrate/v4"
-    "github.com/golang-migrate/migrate/v4/database/postgres"
-    _ "github.com/golang-migrate/migrate/v4/source/file"
-)
-
-func main() {
-    db, err := sql.Open("postgres", "postgres://localhost:5432/database?sslmode=enable")
-    driver, err := postgres.WithInstance(db, &postgres.Config{})
-    m, err := migrate.NewWithDatabaseInstance(
-        "file:///migrations",
-        "postgres", driver)
-    m.Up() // or m.Step(2) if you want to explicitly set the number of migrations to run
-}
+### Stop all services
+```bash
+podman-compose -f podman-compose.yml down
 ```
 
-## Getting started
+### View logs
+```bash
+# Backend logs
+podman logs nusa-backend
 
-Go to [getting started](GETTING_STARTED.md)
+# Database logs
+podman logs nusa-postgres
 
-## Tutorials
+# Frontend logs (if containerized)
+podman logs nusa-frontend
+```
 
-* [CockroachDB](database/cockroachdb/TUTORIAL.md)
-* [PostgreSQL](database/postgres/TUTORIAL.md)
+### Restart services
+```bash
+podman restart nusa-backend
+```
 
-(more tutorials to come)
+## 🧪 Testing
 
-## Migration files
+### Backend Testing
+```bash
+cd backend
+go test ./... -v
+```
 
-Each migration has an up and down migration. [Why?](FAQ.md#why-two-separate-files-up-and-down-for-a-migration)
+### Frontend Testing
+```bash
+cd frontend
+npm test
+```
+
+## 🔒 Security
+
+- **Authentication**: JWT-based with refresh tokens
+- **Authorization**: Role-based access control (RBAC)
+- **Password Security**: bcrypt hashing
+- **CORS**: Configurable CORS policies
+- **SQL Injection**: Parameterized queries
+- **XSS Protection**: Input sanitization
+
+## 📝 Deployment
+
+### Production Considerations
+
+1. **Change default passwords and secrets**
+2. **Enable SSL/TLS for database connections**
+3. **Configure proper CORS origins**
+4. **Set up monitoring and logging**
+5. **Configure backup strategy**
+6. **Use environment-specific configurations**
+7. **Enable rate limiting**
+8. **Set up proper error handling**
+
+### Build for Production
 
 ```bash
-1481574547_create_users_table.up.sql
-1481574547_create_users_table.down.sql
+# Backend
+cd backend
+CGO_ENABLED=0 GOOS=linux go build -o bin/api cmd/api/main.go
+
+# Frontend
+cd frontend
+npm run build
 ```
 
-[Best practices: How to write migrations.](MIGRATIONS.md)
+## 🤝 Contributing
 
-## Versions
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-Version | Supported? | Import | Notes
---------|------------|--------|------
-**master** | :white_check_mark: | `import "github.com/golang-migrate/migrate/v4"` | New features and bug fixes arrive here first |
-**v4** | :white_check_mark: | `import "github.com/golang-migrate/migrate/v4"` | Used for stable releases |
-**v3** | :x: | `import "github.com/golang-migrate/migrate"` (with package manager) or `import "gopkg.in/golang-migrate/migrate.v3"` (not recommended) | **DO NOT USE** - No longer supported |
+## 📄 License
 
-## Development and Contributing
+This project is proprietary software. All rights reserved.
 
-Yes, please! [`Makefile`](Makefile) is your friend,
-read the [development guide](CONTRIBUTING.md).
+## 👥 Team
 
-Also have a look at the [FAQ](FAQ.md).
+- **Development Team**: NUSA Development Team
+- **Project Management**: Education Technology Team
+
+## 📞 Support
+
+For support, please contact:
+- Email: support@nusa.id
+- Documentation: [Internal Documentation Portal]
+
+## 🔗 Resources
+
+- [Kurikulum Merdeka Documentation](https://kurikulum.kemdikbud.go.id/)
+- [Gin Framework](https://gin-gonic.com/)
+- [React Documentation](https://react.dev/)
+- [Material-UI](https://mui.com/)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 
 ---
 
-Looking for alternatives? [https://awesome-go.com/#database](https://awesome-go.com/#database).
+**NUSA** - Empowering Education through Technology

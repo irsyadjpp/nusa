@@ -1,0 +1,2457 @@
+openapi: 3.0.3
+info:
+  title: NUSA Education Operating System API
+  description: |
+    RESTful API for the NUSA Education Operating System.
+    This API supports Kurikulum Merdeka (Indonesian National Curriculum 2024).
+  version: 1.0.0
+  contact:
+    name: NUSA Team
+    email: api@nusa.id
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+  - url: https://api.nusa.id/v1
+    description: Production server
+
+tags:
+  - name: TP (Teaching Plan)
+    description: Teaching Plan management endpoints
+  - name: ATP (Alur Tujuan Pembelajaran)
+    description: ATP management endpoints
+  - name: Modul Ajar
+    description: Modul Ajar management endpoints
+  - name: Assessment
+    description: Assessment management endpoints
+  - name: Rubric
+    description: Rubric management endpoints
+  - name: Evidence
+    description: Evidence management endpoints
+  - name: Evaluation
+    description: Evaluation management endpoints
+  - name: Report
+    description: Narrative Report management endpoints
+  - name: Achievement
+    description: Achievement calculation endpoints (runtime, no persistence)
+
+paths:
+  /tp-sets:
+    post:
+      tags:
+        - TP (Teaching Plan)
+      summary: Create a new TP Set
+      description: Create a new Teaching Plan Set from a CP
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTPSetRequest'
+      responses:
+        '201':
+          description: TP Set created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TPSetResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - TP (Teaching Plan)
+      summary: List TP Sets
+      description: Get a paginated list of TP Sets
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: cp_id
+          in: query
+          description: Filter by CP ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          description: Page size
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: TP Sets retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tp_sets:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TPSetResponse'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  page_size:
+                    type: integer
+
+  /tp-sets/{id}:
+    get:
+      tags:
+        - TP (Teaching Plan)
+      summary: Get TP Set by ID
+      description: Retrieve a specific TP Set
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: TP Set retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TPSetResponse'
+        '404':
+          description: TP Set not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /tp-sets/{id}/approve:
+    post:
+      tags:
+        - TP (Teaching Plan)
+      summary: Approve TP Set
+      description: Approve a TP Set
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApproveTPSetRequest'
+      responses:
+        '200':
+          description: TP Set approved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /tps:
+    post:
+      tags:
+        - TP (Teaching Plan)
+      summary: Create a new TP
+      description: Create a new Teaching Plan item
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTPRequest'
+      responses:
+        '201':
+          description: TP created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TPResponse'
+    get:
+      tags:
+        - TP (Teaching Plan)
+      summary: List TPs
+      description: Get a paginated list of Teaching Plans
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tp_set_id
+          in: query
+          description: Filter by TP Set ID
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by status
+          schema:
+            type: string
+            enum: [DRAFT, PENDING, APPROVED, REJECTED]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: TPs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tps:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TPResponse'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  page_size:
+                    type: integer
+
+  /tps/{id}:
+    get:
+      tags:
+        - TP (Teaching Plan)
+      summary: Get TP by ID
+      description: Retrieve a specific Teaching Plan
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: TP retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TPResponse'
+        '404':
+          description: TP not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - TP (Teaching Plan)
+      summary: Update TP
+      description: Update an existing Teaching Plan
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTPRequest'
+      responses:
+        '200':
+          description: TP updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TPResponse'
+    delete:
+      tags:
+        - TP (Teaching Plan)
+      summary: Delete TP
+      description: Delete a Teaching Plan
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: TP deleted successfully
+
+  /atp-sets:
+    post:
+      tags:
+        - ATP (Alur Tujuan Pembelajaran)
+      summary: Create ATP Set
+      description: Create a new ATP Set
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateATPSetRequest'
+      responses:
+        '201':
+          description: ATP Set created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ATPSetResponse'
+    get:
+      tags:
+        - ATP (Alur Tujuan Pembelajaran)
+      summary: List ATP Sets
+      description: Get a paginated list of ATP Sets
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tp_set_id
+          in: query
+          description: Filter by TP Set ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: ATP Sets retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  atp_sets:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ATPSetResponse'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  page_size:
+                    type: integer
+
+  /modul-ajar-sets:
+    post:
+      tags:
+        - Modul Ajar
+      summary: Create Modul Ajar Set
+      description: Create a new Modul Ajar Set
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateModulAjarSetRequest'
+      responses:
+        '201':
+          description: Modul Ajar Set created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModulAjarSetResponse'
+    get:
+      tags:
+        - Modul Ajar
+      summary: List Modul Ajar Sets
+      description: Get a paginated list of Modul Ajar Sets
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: atp_set_id
+          in: query
+          description: Filter by ATP Set ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Modul Ajar Sets retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  modul_ajar_sets:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ModulAjarSetResponse'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  page_size:
+                    type: integer
+
+  /assessments:
+    post:
+      tags:
+        - Assessment
+      summary: Create Assessment
+      description: Create a new assessment linked to a TP
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAssessmentRequest'
+      responses:
+        '201':
+          description: Assessment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentResponse'
+    get:
+      tags:
+        - Assessment
+      summary: List Assessments
+      description: Get a paginated list of assessments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tp_id
+          in: query
+          description: Filter by TP ID
+          schema:
+            type: string
+        - name: assessment_type
+          in: query
+          description: Filter by assessment type
+          schema:
+            type: string
+            enum: [FORMATIVE, SUMMATIVE]
+        - name: status
+          in: query
+          description: Filter by status
+          schema:
+            type: string
+            enum: [DRAFT, PENDING, APPROVED, REJECTED]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Assessments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assessments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AssessmentResponse'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  page_size:
+                    type: integer
+
+  /assessments/{id}:
+    get:
+      tags:
+        - Assessment
+      summary: Get Assessment by ID
+      description: Retrieve a specific assessment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Assessment retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentResponse'
+        '404':
+          description: Assessment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Assessment
+      summary: Update Assessment
+      description: Update an existing assessment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAssessmentRequest'
+      responses:
+        '200':
+          description: Assessment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessmentResponse'
+    delete:
+      tags:
+        - Assessment
+      summary: Delete Assessment
+      description: Delete an assessment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Assessment deleted successfully
+
+  /assessments/{id}/approve:
+    post:
+      tags:
+        - Assessment
+      summary: Approve Assessment
+      description: Approve an assessment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Assessment approved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /assessments/{id}/reject:
+    post:
+      tags:
+        - Assessment
+      summary: Reject Assessment
+      description: Reject an assessment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Assessment rejected successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /rubrics:
+    post:
+      tags:
+        - Rubric
+      summary: Create Rubric
+      description: Create a new rubric for an assessment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRubricRequest'
+      responses:
+        '201':
+          description: Rubric created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RubricResponse'
+    get:
+      tags:
+        - Rubric
+      summary: List Rubrics
+      description: Get a paginated list of rubrics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: assessment_id
+          in: query
+          description: Filter by assessment ID
+          schema:
+            type: string
+        - name: rubric_type
+          in: query
+          description: Filter by rubric type
+          schema:
+            type: string
+            enum: [ANALYTIC, HOLISTIC]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Rubrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rubrics:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RubricResponse'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  page_size:
+                    type: integer
+
+  /rubrics/{id}:
+    get:
+      tags:
+        - Rubric
+      summary: Get Rubric by ID
+      description: Retrieve a specific rubric
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rubric retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RubricResponse'
+        '404':
+          description: Rubric not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Rubric
+      summary: Update Rubric
+      description: Update an existing rubric
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRubricRequest'
+      responses:
+        '200':
+          description: Rubric updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RubricResponse'
+    delete:
+      tags:
+        - Rubric
+      summary: Delete Rubric
+      description: Delete a rubric
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Rubric deleted successfully
+
+  /evidences:
+    post:
+      tags:
+        - Evidence
+      summary: Create Evidence
+      description: Create new student learning evidence
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEvidenceRequest'
+      responses:
+        '201':
+          description: Evidence created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceResponse'
+    get:
+      tags:
+        - Evidence
+      summary: List Evidences
+      description: Get a paginated list of evidences
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: student_id
+          in: query
+          description: Filter by student ID
+          schema:
+            type: string
+        - name: assessment_id
+          in: query
+          description: Filter by assessment ID
+          schema:
+            type: string
+        - name: evidence_type
+          in: query
+          description: Filter by evidence type
+          schema:
+            type: string
+            enum: [STUDENT_WORK, ASSESSMENT_RESULT, OBSERVATION]
+        - name: status
+          in: query
+          description: Filter by status
+          schema:
+            type: string
+            enum: [COLLECTED, LINKED, EVALUATED]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Evidences retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  evidences:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EvidenceResponse'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  page_size:
+                    type: integer
+
+  /evidences/{id}:
+    get:
+      tags:
+        - Evidence
+      summary: Get Evidence by ID
+      description: Retrieve specific evidence
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Evidence retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceResponse'
+        '404':
+          description: Evidence not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Evidence
+      summary: Update Evidence
+      description: Update existing evidence
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEvidenceRequest'
+      responses:
+        '200':
+          description: Evidence updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceResponse'
+    delete:
+      tags:
+        - Evidence
+      summary: Delete Evidence
+      description: Delete evidence
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Evidence deleted successfully
+
+  /evaluations:
+    post:
+      tags:
+        - Evaluation
+      summary: Create Evaluation
+      description: Create a new evaluation for evidence
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEvaluationRequest'
+      responses:
+        '201':
+          description: Evaluation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationResponse'
+    get:
+      tags:
+        - Evaluation
+      summary: List Evaluations
+      description: Get a paginated list of evaluations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: student_id
+          in: query
+          description: Filter by student ID
+          schema:
+            type: string
+        - name: rubric_id
+          in: query
+          description: Filter by rubric ID
+          schema:
+            type: string
+        - name: evidence_id
+          in: query
+          description: Filter by evidence ID
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Evaluations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  evaluations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EvaluationResponse'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  page_size:
+                    type: integer
+
+  /evaluations/{id}:
+    get:
+      tags:
+        - Evaluation
+      summary: Get Evaluation by ID
+      description: Retrieve specific evaluation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Evaluation retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationResponse'
+        '404':
+          description: Evaluation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Evaluation
+      summary: Update Evaluation
+      description: Update existing evaluation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEvaluationRequest'
+      responses:
+        '200':
+          description: Evaluation updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluationResponse'
+    delete:
+      tags:
+        - Evaluation
+      summary: Delete Evaluation
+      description: Delete evaluation
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Evaluation deleted successfully
+
+  /evaluations/evidence/{evidence_id}:
+    get:
+      tags:
+        - Evaluation
+      summary: Get Evaluations by Evidence
+      description: Get all evaluations for a specific evidence
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: evidence_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Evaluations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EvaluationResponse'
+
+  /evaluations/student/{student_id}:
+    get:
+      tags:
+        - Evaluation
+      summary: Get Evaluations by Student
+      description: Get all evaluations for a specific student
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: student_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Evaluations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EvaluationResponse'
+
+  /evaluations/history/{evidence_id}:
+    get:
+      tags:
+        - Evaluation
+      summary: Get Evaluation History
+      description: Get revision history for evaluations of an evidence
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: evidence_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Evaluation history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/EvaluationResponse'
+
+  /reports:
+    post:
+      tags:
+        - Report
+      summary: Create Narrative Report
+      description: Create a new narrative report
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateNarrativeReportRequest'
+      responses:
+        '201':
+          description: Report created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NarrativeReportResponse'
+    get:
+      tags:
+        - Report
+      summary: List Narrative Reports
+      description: Get a paginated list of narrative reports
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: student_id
+          in: query
+          description: Filter by student ID
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by status
+          schema:
+            type: string
+            enum: [DRAFT, PENDING, PUBLISHED]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Reports retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reports:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NarrativeReportResponse'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  page_size:
+                    type: integer
+
+  /reports/{id}:
+    get:
+      tags:
+        - Report
+      summary: Get Narrative Report by ID
+      description: Retrieve a specific narrative report
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Report retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NarrativeReportResponse'
+        '404':
+          description: Report not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Report
+      summary: Update Narrative Report
+      description: Update an existing narrative report
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNarrativeReportRequest'
+      responses:
+        '200':
+          description: Report updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NarrativeReportResponse'
+    delete:
+      tags:
+        - Report
+      summary: Delete Narrative Report
+      description: Delete a narrative report
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Report deleted successfully
+
+  /reports/{id}/publish:
+    post:
+      tags:
+        - Report
+      summary: Publish Narrative Report
+      description: Publish a narrative report to parents/students
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishReportRequest'
+      responses:
+        '200':
+          description: Report published successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /students/{id}/achievement:
+    get:
+      tags:
+        - Achievement
+      summary: Get Student Achievement
+      description: Calculate and retrieve achievement for a specific student and TP (runtime calculation, no persistence)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Student ID
+          schema:
+            type: string
+        - name: tp_id
+          in: query
+          required: true
+          description: TP ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Achievement calculated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Achievement'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /students/{id}/progress:
+    get:
+      tags:
+        - Achievement
+      summary: Get Student Progress
+      description: Calculate competency progress for a specific student (runtime calculation, no persistence)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Student ID
+          schema:
+            type: string
+        - name: subject_id
+          in: query
+          required: true
+          description: Subject ID
+          schema:
+            type: string
+        - name: phase_id
+          in: query
+          description: Phase ID (optional)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Progress calculated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompetencyProgress'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /classes/{id}/achievement:
+    get:
+      tags:
+        - Achievement
+      summary: Get Class Achievement
+      description: Calculate achievement summary for an entire class (runtime calculation, no persistence)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Class ID
+          schema:
+            type: string
+        - name: subject_id
+          in: query
+          required: true
+          description: Subject ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Class achievement calculated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassAchievement'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /reports/{id}/achievement-summary:
+    get:
+      tags:
+        - Achievement
+      summary: Get Report Achievement Summary
+      description: Generate comprehensive achievement summary for a report (runtime calculation, no persistence)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Report ID
+          schema:
+            type: string
+        - name: student_id
+          in: query
+          required: true
+          description: Student ID
+          schema:
+            type: string
+        - name: class_id
+          in: query
+          required: true
+          description: Class ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Achievement summary generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AchievementSummary'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+    # TP Schemas
+    KKTPCriteria:
+      type: object
+      properties:
+        mastery_thresholds:
+          $ref: '#/components/schemas/MasteryThresholds'
+        performance_indicators:
+          $ref: '#/components/schemas/PerformanceIndicators'
+        minimum_requirements:
+          $ref: '#/components/schemas/MinimumRequirements'
+
+    MasteryThresholds:
+      type: object
+      properties:
+        excellent_threshold:
+          type: number
+          format: float
+        proficient_threshold:
+          type: number
+          format: float
+        developing_threshold:
+          type: number
+          format: float
+        beginning_threshold:
+          type: number
+          format: float
+
+    PerformanceIndicators:
+      type: object
+      properties:
+        cognitive:
+          type: array
+          items:
+            type: string
+        psychomotor:
+          type: array
+          items:
+            type: string
+        affective:
+          type: array
+          items:
+            type: string
+
+    MinimumRequirements:
+      type: object
+      properties:
+        core_competencies:
+          type: array
+          items:
+            type: string
+        essential_skills:
+          type: array
+          items:
+            type: string
+        required_evidence:
+          type: array
+          items:
+            type: string
+
+    WorkflowStatus:
+      type: string
+      enum: [DRAFT, PENDING, APPROVED, REJECTED]
+
+    GenerationSource:
+      type: string
+      enum: [AI_GENERATED, MANUAL]
+
+    TPSetResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        cp_id:
+          type: string
+        cp_code:
+          type: string
+        cp_text:
+          type: string
+        version_no:
+          type: integer
+        status:
+          $ref: '#/components/schemas/WorkflowStatus'
+        generation_source:
+          $ref: '#/components/schemas/GenerationSource'
+        generation_reason:
+          type: string
+        generated_by:
+          type: string
+        generated_by_name:
+          type: string
+        ai_generation_id:
+          type: string
+        approved_by:
+          type: string
+        approved_by_name:
+          type: string
+        approved_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateTPSetRequest:
+      type: object
+      required:
+        - cp_id
+        - version_no
+        - generation_source
+      properties:
+        cp_id:
+          type: string
+        version_no:
+          type: integer
+          minimum: 1
+        generation_source:
+          $ref: '#/components/schemas/GenerationSource'
+        generation_reason:
+          type: string
+
+    ApproveTPSetRequest:
+      type: object
+      required:
+        - reason
+      properties:
+        reason:
+          type: string
+          minLength: 5
+
+    TPResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        tp_set_id:
+          type: string
+        sequence_number:
+          type: integer
+        cp_id:
+          type: string
+        cp_code:
+          type: string
+        cp_text:
+          type: string
+        subject_id:
+          type: string
+        subject_code:
+          type: string
+        subject_name:
+          type: string
+        phase_id:
+          type: string
+        phase_code:
+          type: string
+        phase_name:
+          type: string
+        element_id:
+          type: string
+        element_code:
+          type: string
+        element_name:
+          type: string
+        subelement_id:
+          type: string
+        subelement_code:
+          type: string
+        subelement_name:
+          type: string
+        user_id:
+          type: string
+        user_name:
+          type: string
+        status:
+          $ref: '#/components/schemas/WorkflowStatus'
+        title:
+          type: string
+        learning_objectives:
+          type: object
+        time_allocation:
+          type: object
+        prerequisites:
+          type: object
+        estimated_weeks:
+          type: integer
+        success_criteria:
+          type: object
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateTPRequest:
+      type: object
+      required:
+        - tp_set_id
+        - sequence_number
+        - cp_id
+        - subject_id
+        - phase_id
+        - element_id
+        - subelement_id
+        - user_id
+        - learning_objectives
+        - time_allocation
+      properties:
+        tp_set_id:
+          type: string
+        sequence_number:
+          type: integer
+          minimum: 1
+        cp_id:
+          type: string
+        subject_id:
+          type: string
+        phase_id:
+          type: string
+        element_id:
+          type: string
+        subelement_id:
+          type: string
+        user_id:
+          type: string
+        title:
+          type: string
+        learning_objectives:
+          type: object
+        time_allocation:
+          type: object
+        prerequisites:
+          type: object
+        estimated_weeks:
+          type: integer
+        success_criteria:
+          type: object
+
+    UpdateTPRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        learning_objectives:
+          type: object
+        time_allocation:
+          type: object
+        prerequisites:
+          type: object
+        estimated_weeks:
+          type: integer
+        success_criteria:
+          type: object
+        status:
+          $ref: '#/components/schemas/WorkflowStatus'
+
+    # ATP Schemas
+    ATPSetResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        tp_set_id:
+          type: string
+        version_no:
+          type: integer
+        status:
+          $ref: '#/components/schemas/WorkflowStatus'
+        generated_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateATPSetRequest:
+      type: object
+      required:
+        - tp_set_id
+      properties:
+        tp_set_id:
+          type: string
+
+    # Modul Ajar Schemas
+    ModulAjarSetResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        atp_set_id:
+          type: string
+        version_no:
+          type: integer
+        status:
+          $ref: '#/components/schemas/WorkflowStatus'
+        generated_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateModulAjarSetRequest:
+      type: object
+      required:
+        - atp_set_id
+      properties:
+        atp_set_id:
+          type: string
+
+    # Assessment Schemas
+    AssessmentType:
+      type: string
+      enum: [FORMATIVE, SUMMATIVE]
+
+    AssessmentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        tp_id:
+          type: string
+        tp_title:
+          type: string
+        tp_version_no:
+          type: integer
+        success_criteria_snapshot:
+          type: object
+        user_id:
+          type: string
+        user_name:
+          type: string
+        assessment_type:
+          $ref: '#/components/schemas/AssessmentType'
+        status:
+          $ref: '#/components/schemas/WorkflowStatus'
+        assessment_items:
+          type: object
+        answer_key:
+          type: object
+        scoring_guidelines:
+          type: object
+        ai_confidence_score:
+          type: number
+          format: float
+        ai_generated_at:
+          type: string
+          format: date-time
+        ai_agent_version:
+          type: string
+        version_no:
+          type: integer
+        is_current_version:
+          type: boolean
+        parent_version_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        approved_at:
+          type: string
+          format: date-time
+        approved_by:
+          type: string
+        approved_by_name:
+          type: string
+
+    CreateAssessmentRequest:
+      type: object
+      required:
+        - tp_id
+        - tp_version_no
+        - success_criteria_snapshot
+        - assessment_type
+        - assessment_items
+        - answer_key
+        - scoring_guidelines
+      properties:
+        tp_id:
+          type: string
+        tp_version_no:
+          type: integer
+          minimum: 1
+        success_criteria_snapshot:
+          type: object
+        assessment_type:
+          $ref: '#/components/schemas/AssessmentType'
+        assessment_items:
+          type: object
+        answer_key:
+          type: object
+        scoring_guidelines:
+          type: object
+
+    UpdateAssessmentRequest:
+      type: object
+      properties:
+        assessment_items:
+          type: object
+        answer_key:
+          type: object
+        scoring_guidelines:
+          type: object
+        status:
+          $ref: '#/components/schemas/WorkflowStatus'
+
+    # Rubric Schemas
+    RubricType:
+      type: string
+      enum: [ANALYTIC, HOLISTIC]
+
+    RubricResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        assessment_id:
+          type: string
+        assessment_type:
+          type: string
+        user_id:
+          type: string
+        user_name:
+          type: string
+        rubric_type:
+          $ref: '#/components/schemas/RubricType'
+        status:
+          $ref: '#/components/schemas/WorkflowStatus'
+        performance_criteria:
+          type: object
+        performance_levels:
+          type: object
+        scoring_guidelines:
+          type: object
+        ai_confidence_score:
+          type: number
+          format: float
+        ai_generated_at:
+          type: string
+          format: date-time
+        ai_agent_version:
+          type: string
+        version_no:
+          type: integer
+        is_current_version:
+          type: boolean
+        parent_version_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        approved_at:
+          type: string
+          format: date-time
+        approved_by:
+          type: string
+        approved_by_name:
+          type: string
+
+    CreateRubricRequest:
+      type: object
+      required:
+        - assessment_id
+        - rubric_type
+        - performance_criteria
+        - performance_levels
+        - scoring_guidelines
+      properties:
+        assessment_id:
+          type: string
+        rubric_type:
+          $ref: '#/components/schemas/RubricType'
+        performance_criteria:
+          type: object
+        performance_levels:
+          type: object
+        scoring_guidelines:
+          type: object
+
+    UpdateRubricRequest:
+      type: object
+      properties:
+        performance_criteria:
+          type: object
+        performance_levels:
+          type: object
+        scoring_guidelines:
+          type: object
+        status:
+          $ref: '#/components/schemas/WorkflowStatus'
+
+    # Evidence Schemas
+    EvidenceType:
+      type: string
+      enum: [STUDENT_WORK, ASSESSMENT_RESULT, OBSERVATION]
+
+    EvidenceStatus:
+      type: string
+      enum: [COLLECTED, LINKED, EVALUATED]
+
+    EvidenceResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        student_id:
+          type: string
+        student_name:
+          type: string
+        assessment_id:
+          type: string
+        assessment_type:
+          type: string
+        user_id:
+          type: string
+        user_name:
+          type: string
+        evidence_type:
+          $ref: '#/components/schemas/EvidenceType'
+        status:
+          $ref: '#/components/schemas/EvidenceStatus'
+        evidence_data:
+          type: object
+        teacher_notes:
+          type: string
+        rubric_id:
+          type: string
+        linked_criteria:
+          type: object
+        evaluation_notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateEvidenceRequest:
+      type: object
+      required:
+        - student_id
+        - assessment_id
+        - evidence_type
+        - evidence_data
+      properties:
+        student_id:
+          type: string
+        assessment_id:
+          type: string
+        evidence_type:
+          $ref: '#/components/schemas/EvidenceType'
+        evidence_data:
+          type: object
+        teacher_notes:
+          type: string
+        rubric_id:
+          type: string
+        linked_criteria:
+          type: object
+
+    UpdateEvidenceRequest:
+      type: object
+      properties:
+        evidence_data:
+          type: object
+        teacher_notes:
+          type: string
+        rubric_id:
+          type: string
+        linked_criteria:
+          type: object
+        evaluation_notes:
+          type: string
+        status:
+          $ref: '#/components/schemas/EvidenceStatus'
+
+    # Evaluation Schemas
+    PerformanceLevel:
+      type: string
+      enum: [EXCELLENT, PROFICIENT, DEVELOPING, BEGINNING]
+
+    EvaluationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        student_id:
+          type: string
+        student_name:
+          type: string
+        rubric_id:
+          type: string
+        rubric_type:
+          type: string
+        evidence_id:
+          type: string
+        evidence_type:
+          type: string
+        user_id:
+          type: string
+        user_name:
+          type: string
+        performance_scores:
+          type: object
+        total_score:
+          type: integer
+        max_score:
+          type: integer
+        performance_level:
+          $ref: '#/components/schemas/PerformanceLevel'
+        teacher_feedback:
+          type: string
+        revision_no:
+          type: integer
+        evaluated_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateEvaluationRequest:
+      type: object
+      required:
+        - student_id
+        - rubric_id
+        - evidence_id
+        - performance_scores
+        - total_score
+        - max_score
+        - performance_level
+      properties:
+        student_id:
+          type: string
+        rubric_id:
+          type: string
+        evidence_id:
+          type: string
+        performance_scores:
+          type: object
+        total_score:
+          type: integer
+          minimum: 0
+        max_score:
+          type: integer
+          minimum: 1
+        performance_level:
+          $ref: '#/components/schemas/PerformanceLevel'
+        teacher_feedback:
+          type: string
+
+    UpdateEvaluationRequest:
+      type: object
+      properties:
+        performance_scores:
+          type: object
+        total_score:
+          type: integer
+        max_score:
+          type: integer
+        performance_level:
+          $ref: '#/components/schemas/PerformanceLevel'
+        teacher_feedback:
+          type: string
+
+    # Report Schemas
+    NarrativeReportResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        student_id:
+          type: string
+        student_name:
+          type: string
+        class_id:
+          type: string
+        class_name:
+          type: string
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+        narrative_content:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT, PENDING, PUBLISHED]
+        user_id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        published_at:
+          type: string
+          format: date-time
+
+    CreateNarrativeReportRequest:
+      type: object
+      required:
+        - student_id
+        - period_start
+        - period_end
+      properties:
+        student_id:
+          type: string
+        period_start:
+          type: string
+          format: date
+        period_end:
+          type: string
+          format: date
+        narrative_content:
+          type: string
+
+    UpdateNarrativeReportRequest:
+      type: object
+      properties:
+        narrative_content:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT, PENDING, PUBLISHED]
+
+    PublishReportRequest:
+      type: object
+      required:
+        - publish_to
+      properties:
+        publish_to:
+          type: string
+          enum: [PARENTS, STUDENT, BOTH]
+        message:
+          type: string
+
+    # Achievement Schemas (Runtime Calculation - No Persistence)
+    MasteryStatus:
+      type: string
+      enum: [NOT_STARTED, IN_PROGRESS, ACHIEVED, EXCEEDING]
+
+    Achievement:
+      type: object
+      properties:
+        student_id:
+          type: string
+        student_name:
+          type: string
+        tp_id:
+          type: string
+        tp_title:
+          type: string
+        competency_code:
+          type: string
+        overall_score:
+          type: number
+          format: float
+        performance_level:
+          $ref: '#/components/schemas/PerformanceLevel'
+        mastery_status:
+          $ref: '#/components/schemas/MasteryStatus'
+        competency_breakdown:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompetencyAchievement'
+        evidence_count:
+          type: integer
+        evaluation_count:
+          type: integer
+        calculated_at:
+          type: string
+          format: date-time
+
+    CompetencyAchievement:
+      type: object
+      properties:
+        competency_name:
+          type: string
+        score:
+          type: number
+          format: float
+        performance_level:
+          $ref: '#/components/schemas/PerformanceLevel'
+        mastery_status:
+          $ref: '#/components/schemas/MasteryStatus'
+        evidence_count:
+          type: integer
+
+    CompetencyProgress:
+      type: object
+      properties:
+        student_id:
+          type: string
+        student_name:
+          type: string
+        subject_id:
+          type: string
+        subject_name:
+          type: string
+        phase_id:
+          type: string
+        phase_name:
+          type: string
+        overall_progress:
+          type: number
+          format: float
+          description: 0-100
+        competency_progress:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompetencyProgressItem'
+        calculated_at:
+          type: string
+          format: date-time
+
+    CompetencyProgressItem:
+      type: object
+      properties:
+        cp_code:
+          type: string
+        cp_description:
+          type: string
+        progress:
+          type: number
+          format: float
+          description: 0-100
+        status:
+          $ref: '#/components/schemas/MasteryStatus'
+        tp_count:
+          type: integer
+        completed_tp_count:
+          type: integer
+
+    ClassAchievement:
+      type: object
+      properties:
+        class_id:
+          type: string
+        class_name:
+          type: string
+        subject_id:
+          type: string
+        subject_name:
+          type: string
+        total_students:
+          type: integer
+        class_average:
+          type: number
+          format: float
+        performance_distribution:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Map of PerformanceLevel to count
+        mastery_distribution:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Map of MasteryStatus to count
+        student_achievements:
+          type: array
+          items:
+            $ref: '#/components/schemas/StudentClassAchievement'
+        calculated_at:
+          type: string
+          format: date-time
+
+    StudentClassAchievement:
+      type: object
+      properties:
+        student_id:
+          type: string
+        student_name:
+          type: string
+        average_score:
+          type: number
+          format: float
+        performance_level:
+          $ref: '#/components/schemas/PerformanceLevel'
+        mastery_status:
+          $ref: '#/components/schemas/MasteryStatus'
+        rank:
+          type: integer
+
+    AchievementSummary:
+      type: object
+      properties:
+        report_id:
+          type: string
+        student_id:
+          type: string
+        student_name:
+          type: string
+        class_id:
+          type: string
+        class_name:
+          type: string
+        report_period:
+          type: object
+        overall_achievement:
+          type: number
+          format: float
+        subject_breakdown:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubjectAchievement'
+        strengths:
+          type: array
+          items:
+            type: string
+        areas_for_improvement:
+          type: array
+          items:
+            type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+        calculated_at:
+          type: string
+          format: date-time
+
+    SubjectAchievement:
+      type: object
+      properties:
+        subject_id:
+          type: string
+        subject_name:
+          type: string
+        average_score:
+          type: number
+          format: float
+        performance_level:
+          $ref: '#/components/schemas/PerformanceLevel'
+        competency_count:
+          type: integer
+        mastered_count:
+          type: integer

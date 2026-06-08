@@ -1,0 +1,215 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:18.4-alpine
+    container_name: nusa-postgres
+    restart: always
+    shm_size: 5gb
+    env_file:
+      - ./backend/.env
+    environment:
+      POSTGRES_DB: ${DB_NAME:-nusa_db}
+      POSTGRES_USER: ${DB_USER:-nusa_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-nusa_password}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "shared_buffers=4GB"
+      - "-c"
+      - "effective_cache_size=12GB"
+      - "-c"
+      - "work_mem=64MB"
+      - "-c"
+      - "maintenance_work_mem=1GB"
+      - "-c"
+      - "autovacuum_vacuum_scale_factor=0.1"
+      - "-c"
+      - "autovacuum_analyze_scale_factor=0.05"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "autovacuum_naptime=30s"
+      - "-c"
+      - "autovacuum_vacuum_threshold=50"
+      - "-c"
+      - "autovacuum_analyze_threshold=50"
+      - "-c"
+      - "pg_stat_statements.track=all"
+      - "-c"
+      - "pg_stat_statements.max=10000"
+      - "-c"
+      - "pg_stat_statements.save=on"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-nusa_user} -d ${DB_NAME:-nusa_db}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: nusa-rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  # Redis: Caching & Session Management
+  redis:
+    image: redis:7-alpine
+    container_name: nusa-redis
+    restart: always
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Qdrant: Vector Database for AI
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: nusa-qdrant
+    restart: always
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  # MinIO: High-Performance AI Storage
+  minio:
+    image: minio/minio:latest
+    container_name: nusa-minio
+    restart: always
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+      - "8333:8333"
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-admin}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-admin123}
+      - MINIO_BROWSER=on
+      - MINIO_SERVER_URL=http://localhost:9000
+      - MINIO_KMS_HTTP_ENDPOINT=
+      - MINIO_KMS_AUTO_ENCRYPTION=off
+      - MINIO_DOMAIN=nusa-minio
+      - MINIO_REGION_NAME=us-east-1
+      - MINIO_COMPRESSION=off
+      - MINIO_COMPRESSION_EXTENSIONS=.txt,.csv,.json,.xml,.log
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nusa-backend
+    restart: always
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8081:8080"
+    environment:
+      - APP_ENV=${APP_ENV:-development}
+      - SERVER_PORT=:8080
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-nusa_db}
+      - DB_USER=${DB_USER:-nusa_user}
+      - DB_PASSWORD=${DB_PASSWORD:-nusa_password}
+      - DB_SSLMODE=${DB_SSLMODE:-disable}
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
+      - JWT_EXPIRATION=${JWT_EXPIRATION:-24h}
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=${RABBITMQ_USER:-guest}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASS:-guest}
+      - RABBITMQ_QUEUE=${RABBITMQ_QUEUE:-ai_generation}
+      - AI_PRIMARY_PROVIDER=${AI_PRIMARY_PROVIDER:-openai}
+      - AI_OPENAI_KEY=${AI_OPENAI_KEY:-your-ai-api-key}
+      - REDIS_HOST=${REDIS_HOST:-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ACCESS_KEY=${MINIO_ROOT_USER:-admin}
+      - MINIO_SECRET_KEY=${MINIO_ROOT_PASSWORD:-admin123}
+      - MINIO_BUCKET=${MINIO_BUCKET:-nusa-documents}
+      - MINIO_REGION=us-east-1
+      - MINIO_SECURE=false
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nusa-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8081
+    depends_on:
+      - backend
+
+  # AI Runtime
+  ai-runtime:
+    build:
+      context: ./ai-runtime
+      dockerfile: Dockerfile
+    container_name: nusa-ai-runtime
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - LLM_PROVIDER=openai
+      - LLM_API_KEY=${LLM_API_KEY:-your_llm_api_key_here}
+      - LLM_MODEL=gpt-4
+      - BACKEND_API_URL=http://backend:8080
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  qdrant_data:
+  minio_data:
+
+networks:
+  default:
+    name: nusa_network
