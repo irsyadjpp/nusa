@@ -34,7 +34,8 @@
       "Exec(git commit)",
       "Exec(git push)",
       "Exec(find)",
-      "Exec(diff)"
+      "Exec(diff)",
+      "Exec(awk)"
     ]
   }
 }
