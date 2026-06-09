@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nusa/backend/internal/domain"
+	"github.com/nusa/backend/internal/handler"
 	"github.com/nusa/backend/internal/middleware"
 	achievementModule "github.com/nusa/backend/modules/achievement"
 	assessmentHandler "github.com/nusa/backend/modules/assessment"
@@ -32,6 +33,7 @@ func NewRouter(
 	assessmentHandler *assessmentHandler.Handler,
 	achievementHandler *achievementModule.Handler,
 	reportingHandler *reportingHandler.Handler,
+	tpSetHandler *handler.TPSetHandler,
 	jwtService *jwtService.Service,
 	userRepo interface{},
 	schoolRepo interface{},
@@ -41,7 +43,7 @@ func NewRouter(
 
 	r := &Router{engine: engine}
 
-	r.setupRoutes(authHandler, userHandler, schoolHandler, roleHandler, curriculumHandler, learningPlanningHandler, assessmentHandler, achievementHandler, reportingHandler, jwtService, userRepo, schoolRepo)
+	r.setupRoutes(authHandler, userHandler, schoolHandler, roleHandler, curriculumHandler, learningPlanningHandler, assessmentHandler, achievementHandler, reportingHandler, tpSetHandler, jwtService, userRepo, schoolRepo)
 
 	return r
 }
@@ -56,6 +58,7 @@ func (r *Router) setupRoutes(
 	assessmentHandler *assessmentHandler.Handler,
 	achievementHandler *achievementModule.Handler,
 	reportingHandler *reportingHandler.Handler,
+	tpSetHandler *handler.TPSetHandler,
 	jwtService *jwtService.Service,
 	userRepo interface{},
 	schoolRepo interface{},
@@ -189,6 +192,23 @@ func (r *Router) setupRoutes(
 		reports := protected.Group("/reports")
 		{
 			reports.GET("/:id/achievement-summary", achievementHandler.GetReportAchievementSummary)
+		}
+
+		// TP Set Routes (OpenAPI Contract)
+		tpSets := protected.Group("/tp-sets")
+		{
+			tpSets.POST("", tpSetHandler.CreateTPSet)
+			tpSets.GET("", tpSetHandler.ListTPSets)
+			tpSets.GET("/:id", tpSetHandler.GetTPSet)
+			tpSets.POST("/:id/approve", tpSetHandler.ApproveTPSet)
+		}
+
+		// TP Routes (OpenAPI Contract)
+		tps := protected.Group("/tps")
+		{
+			tps.POST("", tpSetHandler.CreateTP)
+			tps.GET("", tpSetHandler.ListTPs)
+			tps.GET("/:id", tpSetHandler.GetTP)
 		}
 	}
 }

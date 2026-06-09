@@ -74,7 +74,7 @@ func (s *AchievementService) CalculateCompetencyProgress(
 	phaseName string,
 ) (*domain.CompetencyProgress, error) {
 	// Get TPs for this subject and phase
-	tpsPtr, err := s.tpRepo.ListTPs(ctx, nil, &subjectID, nil, 0, 0)
+	tpsPtr, err := s.tpRepo.ListTPs(ctx, nil, &subjectID, nil, nil, 0, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get TPs: %w", err)
 	}

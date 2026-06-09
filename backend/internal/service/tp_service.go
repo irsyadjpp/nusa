@@ -48,7 +48,7 @@ func (s *TPService) ListTPSets(ctx context.Context, cpID *string, status *domain
 	limit := pageSize
 	offset := (page - 1) * pageSize
 
-	sets, err := s.tpRepo.ListTPSets(ctx, cpID, status, limit, offset)
+	sets, err := s.tpRepo.ListTPSets(ctx, cpID, status, nil, limit, offset)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -115,7 +115,7 @@ func (s *TPService) ListTPs(ctx context.Context, tpSetID, cpID *string, status *
 	limit := pageSize
 	offset := (page - 1) * pageSize
 
-	tps, err := s.tpRepo.ListTPs(ctx, tpSetID, cpID, status, limit, offset)
+	tps, err := s.tpRepo.ListTPs(ctx, tpSetID, cpID, status, nil, limit, offset)
 	if err != nil {
 		return nil, 0, err
 	}

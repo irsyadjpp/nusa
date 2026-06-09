@@ -31,7 +31,10 @@
       "Exec(git log)",
       "Exec(git add)",
       "Exec(git status)",
-      "Exec(git commit)"
+      "Exec(git commit)",
+      "Exec(git push)",
+      "Exec(find)",
+      "Exec(diff)"
     ]
   }
 }

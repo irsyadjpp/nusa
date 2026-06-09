@@ -10,8 +10,10 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/nusa/backend/internal/application"
 	"github.com/nusa/backend/internal/config"
 	"github.com/nusa/backend/internal/db"
+	"github.com/nusa/backend/internal/handler"
 	"github.com/nusa/backend/internal/logger"
 	"github.com/nusa/backend/internal/middleware"
 	"github.com/nusa/backend/internal/repository"
@@ -129,9 +131,13 @@ func New() (*App, error) {
 	achievementH := achievement.NewHandler(achievementService)
 	reportingH := reportingHandler.NewHandler(reportingService)
 
+	// TP Set application service and handler
+	tpSetApplicationService := application.NewTPSetApplicationService(tpRepo, userRepo, schoolRepo)
+	tpSetHandler := handler.NewTPSetHandler(tpSetApplicationService)
+
 	// Initialize router with all handlers
 	log.Info("Initializing router with routes")
-	r := router.NewRouter(authH, userH, schoolH, roleH, curriculumH, learningPlanningH, assessmentH, achievementH, reportingH, jwtSvc, userRepo, schoolRepo)
+	r := router.NewRouter(authH, userH, schoolH, roleH, curriculumH, learningPlanningH, assessmentH, achievementH, reportingH, tpSetHandler, jwtSvc, userRepo, schoolRepo)
 
 	// Create server with configured router
 	srv := server.NewWithRouter(cfg, log, r.GetEngine())

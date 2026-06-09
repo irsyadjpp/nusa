@@ -118,30 +118,38 @@ func (r *TPRepository) GetTPSetByCPAndVersion(ctx context.Context, cpID string, 
 }
 
 // ListTPSets retrieves TP Sets with optional filters
-func (r *TPRepository) ListTPSets(ctx context.Context, cpID *string, status *domain.WorkflowStatus, limit, offset int) ([]*domain.TPSet, error) {
+// Supports school scope filtering via JOIN with users table
+func (r *TPRepository) ListTPSets(ctx context.Context, cpID *string, status *domain.WorkflowStatus, schoolID *string, limit, offset int) ([]*domain.TPSet, error) {
 	query := `
-		SELECT id, cp_id, version_no, status, generation_source, generation_reason, 
-		       generated_by, ai_generation_id, approved_by, approved_at, created_at, updated_at
-		FROM tp_sets
+		SELECT ts.id, ts.cp_id, ts.version_no, ts.status, ts.generation_source, ts.generation_reason, 
+		       ts.generated_by, ts.ai_generation_id, ts.approved_by, ts.approved_at, ts.created_at, ts.updated_at
+		FROM tp_sets ts
 		WHERE 1=1
 	`
 
 	args := []interface{}{}
 	argIndex := 1
 
+	// School scope filter: JOIN with users table to filter by school_id
+	if schoolID != nil {
+		query += fmt.Sprintf(" AND EXISTS (SELECT 1 FROM users u WHERE u.id = ts.generated_by AND u.school_id = $%d)", argIndex)
+		args = append(args, *schoolID)
+		argIndex++
+	}
+
 	if cpID != nil {
-		query += fmt.Sprintf(" AND cp_id = $%d", argIndex)
+		query += fmt.Sprintf(" AND ts.cp_id = $%d", argIndex)
 		args = append(args, *cpID)
 		argIndex++
 	}
 
 	if status != nil {
-		query += fmt.Sprintf(" AND status = $%d", argIndex)
+		query += fmt.Sprintf(" AND ts.status = $%d", argIndex)
 		args = append(args, *status)
 		argIndex++
 	}
 
-	query += " ORDER BY created_at DESC"
+	query += " ORDER BY ts.created_at DESC"
 
 	if limit > 0 {
 		query += fmt.Sprintf(" LIMIT $%d", argIndex)
@@ -346,37 +354,45 @@ func (r *TPRepository) ListTPsBySet(ctx context.Context, tpSetID string) ([]*dom
 }
 
 // ListTPs retrieves TPs with optional filters
-func (r *TPRepository) ListTPs(ctx context.Context, tpSetID, cpID *string, status *domain.WorkflowStatus, limit, offset int) ([]*domain.TP, error) {
+// Supports school scope filtering via JOIN with users table
+func (r *TPRepository) ListTPs(ctx context.Context, tpSetID, cpID *string, status *domain.WorkflowStatus, schoolID *string, limit, offset int) ([]*domain.TP, error) {
 	query := `
-		SELECT id, tp_set_id, sequence_number, cp_id, subject_id, phase_id, element_id, 
-		       subelement_id, user_id, status, title, learning_objectives, time_allocation, 
-		       prerequisites, estimated_weeks, success_criteria, created_at, updated_at
-		FROM tp
+		SELECT t.id, t.tp_set_id, t.sequence_number, t.cp_id, t.subject_id, t.phase_id, t.element_id, 
+		       t.subelement_id, t.user_id, t.status, t.title, t.learning_objectives, t.time_allocation, 
+		       t.prerequisites, t.estimated_weeks, t.success_criteria, t.created_at, t.updated_at
+		FROM tp t
 		WHERE 1=1
 	`
 
 	args := []interface{}{}
 	argIndex := 1
 
+	// School scope filter: JOIN with users table to filter by school_id
+	if schoolID != nil {
+		query += fmt.Sprintf(" AND EXISTS (SELECT 1 FROM users u WHERE u.id = t.user_id AND u.school_id = $%d)", argIndex)
+		args = append(args, *schoolID)
+		argIndex++
+	}
+
 	if tpSetID != nil {
-		query += fmt.Sprintf(" AND tp_set_id = $%d", argIndex)
+		query += fmt.Sprintf(" AND t.tp_set_id = $%d", argIndex)
 		args = append(args, *tpSetID)
 		argIndex++
 	}
 
 	if cpID != nil {
-		query += fmt.Sprintf(" AND cp_id = $%d", argIndex)
+		query += fmt.Sprintf(" AND t.cp_id = $%d", argIndex)
 		args = append(args, *cpID)
 		argIndex++
 	}
 
 	if status != nil {
-		query += fmt.Sprintf(" AND status = $%d", argIndex)
+		query += fmt.Sprintf(" AND t.status = $%d", argIndex)
 		args = append(args, *status)
 		argIndex++
 	}
 
-	query += " ORDER BY created_at DESC"
+	query += " ORDER BY t.created_at DESC"
 
 	if limit > 0 {
 		query += fmt.Sprintf(" LIMIT $%d", argIndex)
@@ -467,54 +483,44 @@ func (r *TPRepository) HasDownstreamAssessments(ctx context.Context, tpID string
 	return count > 0, nil
 }
 
-// GetTPVersionHistory retrieves all versions of a TP for a given TP set and sequence
-func (r *TPRepository) GetTPVersionHistory(ctx context.Context, tpSetID string, sequenceNumber int) ([]*domain.TP, error) {
-	query := `
-		SELECT id, tp_set_id, sequence_number, cp_id, subject_id, phase_id, element_id,
-		       subelement_id, user_id, status, title, learning_objectives, time_allocation,
-		       prerequisites, estimated_weeks, success_criteria, version_no, is_current_version, parent_version_id, created_at, updated_at
-		FROM tp
-		WHERE tp_set_id = $1 AND sequence_number = $2
-		ORDER BY version_no ASC
-	`
+// DeleteTPSet soft deletes a TP Set
+// Note: Current schema does not support soft delete (no deleted_at column)
+// This method is provided for future soft delete support
+func (r *TPRepository) DeleteTPSet(ctx context.Context, id string) error {
+	// Current implementation: Hard delete
+	// Future implementation: UPDATE tp_sets SET deleted_at = NOW() WHERE id = $1
+	query := `DELETE FROM tp_sets WHERE id = $1`
 
-	var tps []*domain.TP
-	rows, err := r.db.QueryContext(ctx, query, tpSetID, sequenceNumber)
+	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get TP version history: %w", err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var tp domain.TP
-		var title, prerequisites, parentVersionID sql.NullString
-		var estimatedWeeks sql.NullInt32
-
-		err := rows.Scan(
-			&tp.ID, &tp.TPSetID, &tp.SequenceNumber, &tp.CPID, &tp.SubjectID, &tp.PhaseID, &tp.ElementID,
-			&tp.SubelementID, &tp.UserID, &tp.Status, &title, &tp.LearningObjectives, &tp.TimeAllocation,
-			&prerequisites, &estimatedWeeks, &tp.SuccessCriteria, &tp.VersionNo, &tp.IsCurrentVersion, &parentVersionID, &tp.CreatedAt, &tp.UpdatedAt,
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		if title.Valid {
-			tp.Title = &title.String
-		}
-		if prerequisites.Valid {
-			tp.Prerequisites = prerequisites.String
-		}
-		if estimatedWeeks.Valid {
-			weeks := int(estimatedWeeks.Int32)
-			tp.EstimatedWeeks = &weeks
-		}
-		if parentVersionID.Valid {
-			tp.ParentVersionID = &parentVersionID.String
-		}
-
-		tps = append(tps, &tp)
+		return err
 	}
 
-	return tps, nil
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("tp set not found")
+	}
+
+	return nil
+}
+
+// DeleteTP soft deletes a TP
+// Note: Current schema does not support soft delete (no deleted_at column)
+// This method is provided for future soft delete support
+func (r *TPRepository) DeleteTP(ctx context.Context, id string) error {
+	// Current implementation: Hard delete
+	// Future implementation: UPDATE tp SET deleted_at = NOW() WHERE id = $1
+	query := `DELETE FROM tp WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("tp not found")
+	}
+
+	return nil
 }
