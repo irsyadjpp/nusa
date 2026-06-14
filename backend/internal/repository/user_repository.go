@@ -274,6 +274,7 @@ func (r *UserRepository) Count(ctx context.Context, schoolID *string, roleID *st
 
 	var count int
 	err := r.db.GetContext(ctx, &count, query, args...)
+	_ = argIndex // Mark as used to satisfy linter
 	return count, err
 }
 
@@ -292,4 +293,76 @@ func (r *UserRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+// ==================== School Boundary Helper Methods ====================
+
+// GetUserSchoolID retrieves the school_id for a given user
+func (r *UserRepository) GetUserSchoolID(ctx context.Context, userID string) (*string, error) {
+	query := `SELECT school_id FROM users WHERE id = $1`
+
+	var schoolID sql.NullString
+	err := r.db.GetContext(ctx, &schoolID, query, userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("user not found")
+		}
+		return nil, err
+	}
+
+	if schoolID.Valid {
+		return &schoolID.String, nil
+	}
+
+	return nil, nil
+}
+
+// GetUsersBySchool retrieves all users belonging to a specific school
+func (r *UserRepository) GetUsersBySchool(ctx context.Context, schoolID string) ([]*domain.User, error) {
+	query := `
+		SELECT id, email, password_hash, name, role_id, school_id, is_active, 
+		       failed_login_attempts, locked_until, created_at, updated_at, created_by, updated_by
+		FROM users WHERE school_id = $1
+	`
+
+	rows, err := r.db.QueryContext(ctx, query, schoolID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*domain.User
+	for rows.Next() {
+		var user domain.User
+		var userSchoolID sql.NullString
+		var lockedUntil sql.NullTime
+		var createdBy sql.NullString
+		var updatedBy sql.NullString
+
+		err := rows.Scan(
+			&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.RoleID, &userSchoolID,
+			&user.IsActive, &user.FailedLoginAttempts, &lockedUntil,
+			&user.CreatedAt, &user.UpdatedAt, &createdBy, &updatedBy,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if userSchoolID.Valid {
+			user.SchoolID = &userSchoolID.String
+		}
+		if lockedUntil.Valid {
+			user.LockedUntil = &lockedUntil.Time
+		}
+		if createdBy.Valid {
+			user.CreatedBy = &createdBy.String
+		}
+		if updatedBy.Valid {
+			user.UpdatedBy = &updatedBy.String
+		}
+
+		users = append(users, &user)
+	}
+
+	return users, nil
 }

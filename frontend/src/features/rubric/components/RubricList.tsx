@@ -3,8 +3,9 @@
  * Displays a list of rubrics with filtering and pagination
  */
 
-import { Box, List, ListItem, ListItemText, ListItemButton, Chip, Typography } from '@mui/material';
-import { Rubric } from '@/api/rubric';
+import React from 'react';
+import { Box, List, ListItem, ListItemText, ListItemButton, Chip, Typography, Divider } from '@mui/material';
+import { Rubric } from '@/shared/types/domain';
 
 interface RubricListProps {
   rubrics: Rubric[];
@@ -32,26 +33,30 @@ export const RubricList = ({ rubrics, selectedId, onSelect, loading }: RubricLis
 
   return (
     <List>
-      {rubrics.map((rubric) => (
-        <ListItem
-          key={rubric.id}
-          disablePadding
-          selected={selectedId === rubric.id}
-          secondaryAction={
-            <Chip
-              label={rubric.status}
-              size="small"
-              color={rubric.status === 'approved' ? 'success' : rubric.status === 'draft' ? 'default' : 'warning'}
-            />
-          }
-        >
-          <ListItemButton onClick={() => onSelect?.(rubric)} selected={selectedId === rubric.id}>
-            <ListItemText
-              primary={rubric.title}
-              secondary={`Assessment: ${rubric.assessment_id}`}
-            />
-          </ListItemButton>
-        </ListItem>
+      {rubrics.map((rubric, index) => (
+        <React.Fragment key={rubric.id}>
+          <ListItem
+            disablePadding
+            sx={{
+              backgroundColor: selectedId === rubric.id ? 'action.selected' : 'transparent',
+            }}
+          >
+            <ListItemButton onClick={() => onSelect?.(rubric)}>
+              <ListItemText
+                primary={rubric.title}
+                secondary={`Assessment: ${rubric.assessment_id}`}
+              />
+            </ListItemButton>
+            <Box sx={{ display: 'flex', alignItems: 'center', pr: 2 }}>
+              <Chip
+                label={rubric.status}
+                size="small"
+                color={rubric.status === 'APPROVED' ? 'success' : rubric.status === 'DRAFT' ? 'default' : 'warning'}
+              />
+            </Box>
+          </ListItem>
+          {index < rubrics.length - 1 && <Divider />}
+        </React.Fragment>
       ))}
     </List>
   );

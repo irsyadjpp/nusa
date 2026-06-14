@@ -3,10 +3,10 @@
  * Form for creating and editing assessments
  */
 
-import { Box, TextField, Button, Stack, Typography } from '@mui/material';
+import { Box, TextField, Button, Typography, MenuItem } from '@mui/material';
 import { Formik, Form, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
-import { CreateAssessmentRequest, UpdateAssessmentRequest } from '@/api/assessment';
+import { CreateAssessmentRequest, UpdateAssessmentRequest } from '@/shared/types/domain';
 
 interface AssessmentFormProps {
   initialValues?: Partial<CreateAssessmentRequest>;
@@ -27,11 +27,27 @@ export const AssessmentForm = ({ initialValues, onSubmit, onCancel, isEdit = fal
   const defaultValues: CreateAssessmentRequest = {
     tp_id: '',
     tp_version_no: 1,
-    success_criteria_snapshot: {},
-    assessment_type: 'formative',
-    assessment_items: [],
-    answer_key: [],
-    scoring_guidelines: [],
+    success_criteria_snapshot: {
+      mastery_thresholds: [],
+      performance_indicators: [],
+      minimum_requirements: [],
+    },
+    assessment_type: 'FORMATIVE',
+    assessment_items: {
+      questions: [],
+      total_score: 0,
+      duration_minutes: 0,
+    },
+    answer_key: {
+      version: '1.0',
+      answers: {},
+      notes: {},
+    },
+    scoring_guidelines: {
+      version: '1.0',
+      rubric: [],
+      grading_scale: [],
+    },
   };
 
   return (
@@ -49,7 +65,7 @@ export const AssessmentForm = ({ initialValues, onSubmit, onCancel, isEdit = fal
       >
         {({ values, handleChange, touched, errors, isSubmitting }) => (
           <Form>
-            <Stack spacing={3}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <TextField
                 fullWidth
                 label="TP ID"
@@ -102,7 +118,7 @@ export const AssessmentForm = ({ initialValues, onSubmit, onCancel, isEdit = fal
                   }
                 }}
                 error={touched.assessment_items && Boolean(errors.assessment_items)}
-                helperText={touched.assessment_items && errors.assessment_items}
+                helperText={touched.assessment_items && typeof errors.assessment_items === 'string' ? errors.assessment_items : undefined}
               />
 
               <TextField
@@ -121,7 +137,7 @@ export const AssessmentForm = ({ initialValues, onSubmit, onCancel, isEdit = fal
                   }
                 }}
                 error={touched.answer_key && Boolean(errors.answer_key)}
-                helperText={touched.answer_key && errors.answer_key}
+                helperText={touched.answer_key && typeof errors.answer_key === 'string' ? errors.answer_key : undefined}
               />
 
               <TextField
@@ -141,7 +157,7 @@ export const AssessmentForm = ({ initialValues, onSubmit, onCancel, isEdit = fal
                 }}
               />
 
-              <Stack direction="row" spacing={2} justifyContent="flex-end">
+              <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, justifyContent: 'flex-end' }}>
                 {onCancel && (
                   <Button variant="outlined" onClick={onCancel} disabled={isSubmitting}>
                     Cancel
@@ -150,8 +166,8 @@ export const AssessmentForm = ({ initialValues, onSubmit, onCancel, isEdit = fal
                 <Button type="submit" variant="contained" disabled={isSubmitting}>
                   {isSubmitting ? 'Saving...' : isEdit ? 'Update Assessment' : 'Create Assessment'}
                 </Button>
-              </Stack>
-            </Stack>
+              </Box>
+            </Box>
           </Form>
         )}
       </Formik>

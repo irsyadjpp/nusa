@@ -6,11 +6,11 @@
 import { Box, TextField, Button, Stack, Typography } from '@mui/material';
 import { Formik, Form, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
-import { CreateATPRequest, UpdateATPRequest } from '@/api/atp';
+import { ATPCreateRequest, ATPUpdateRequest } from '@/api/atp';
 
 interface ATPFormProps {
-  initialValues?: Partial<CreateATPRequest>;
-  onSubmit: (values: CreateATPRequest | UpdateATPRequest) => void;
+  initialValues?: Partial<ATPCreateRequest>;
+  onSubmit: (values: ATPCreateRequest | ATPUpdateRequest) => void;
   onCancel?: () => void;
   isEdit?: boolean;
 }
@@ -24,12 +24,23 @@ const validationSchema = Yup.object({
 });
 
 export const ATPForm = ({ initialValues, onSubmit, onCancel, isEdit = false }: ATPFormProps) => {
-  const defaultValues: CreateATPRequest = {
+  const defaultValues: ATPCreateRequest = {
     atp_set_id: '',
     tp_id: '',
     sequence_number: 1,
-    week_number: 1,
-    estimated_hours: 2,
+    week: 1,
+    learning_activities: {
+      opening: [],
+      core_activities: [],
+      closing: [],
+    },
+    assessment_methods: [],
+    time_allocation: {
+      total_hours: 2,
+      per_week_hours: 2,
+      hours_per_week: 2,
+      breakdown: {},
+    },
   };
 
   return (
@@ -40,7 +51,7 @@ export const ATPForm = ({ initialValues, onSubmit, onCancel, isEdit = false }: A
       <Formik
         initialValues={{ ...defaultValues, ...initialValues }}
         validationSchema={validationSchema}
-        onSubmit={(values: CreateATPRequest, helpers: FormikHelpers<CreateATPRequest>) => {
+        onSubmit={(values: ATPCreateRequest, helpers: FormikHelpers<ATPCreateRequest>) => {
           onSubmit(values);
           helpers.resetForm();
         }}
@@ -83,22 +94,11 @@ export const ATPForm = ({ initialValues, onSubmit, onCancel, isEdit = false }: A
                 fullWidth
                 type="number"
                 label="Week Number"
-                name="week_number"
-                value={values.week_number}
+                name="week"
+                value={values.week}
                 onChange={handleChange}
-                error={touched.week_number && Boolean(errors.week_number)}
-                helperText={touched.week_number && errors.week_number}
-              />
-
-              <TextField
-                fullWidth
-                type="number"
-                label="Estimated Hours"
-                name="estimated_hours"
-                value={values.estimated_hours}
-                onChange={handleChange}
-                error={touched.estimated_hours && Boolean(errors.estimated_hours)}
-                helperText={touched.estimated_hours && errors.estimated_hours}
+                error={touched.week && Boolean(errors.week)}
+                helperText={touched.week && errors.week}
               />
 
               <Stack direction="row" spacing={2} justifyContent="flex-end">

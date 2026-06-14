@@ -3,8 +3,8 @@ import { Box, Grid, Paper, Divider, Button, Stack } from '@mui/material';
 import { EvidenceWorkspaceHeader } from '@/features/evidence';
 import { EvidenceList, EvidenceFilters, EvidenceUploadPanel, EvidenceReviewPanel } from '@/features/evidence';
 import { useEvidences } from '@/services/queries/EvidenceQueryService';
-import { useCreateEvidence, useUpdateEvidence, useDeleteEvidence } from '@/services/commands/EvidenceCommandService';
-import { Evidence } from '@/api/evidence';
+import { useCreateEvidence, useDeleteEvidence } from '@/services/commands/EvidenceCommandService';
+import { Evidence } from '@/shared/types/domain';
 import { enqueueSnackbar } from 'notistack';
 
 const EvidencePage: React.FC = () => {
@@ -26,17 +26,6 @@ const EvidencePage: React.FC = () => {
     },
     onError: (error: any) => {
       enqueueSnackbar(error.message || 'Failed to upload Evidence', { variant: 'error' });
-    },
-  });
-
-  const updateEvidenceMutation = useUpdateEvidence({
-    onSuccess: () => {
-      enqueueSnackbar('Evidence updated successfully', { variant: 'success' });
-      setIsReviewing(false);
-      refetch();
-    },
-    onError: (error: any) => {
-      enqueueSnackbar(error.message || 'Failed to update Evidence', { variant: 'error' });
     },
   });
 
@@ -76,12 +65,6 @@ const EvidencePage: React.FC = () => {
 
   const handleUploadEvidence = (values: any) => {
     createEvidenceMutation.mutate({ data: values, userId: currentUserId });
-  };
-
-  const handleUpdateEvidence = (values: any) => {
-    if (selectedEvidence) {
-      updateEvidenceMutation.mutate({ id: selectedEvidence.id, data: values });
-    }
   };
 
   const handleFilterChange = (newFilters: any) => {
@@ -129,7 +112,7 @@ const EvidencePage: React.FC = () => {
           <Paper sx={{ height: '100%', p: 2 }}>
             {isUploading && (
               <EvidenceUploadPanel
-                onSubmit={handleUploadEvidence}
+                onUpload={handleUploadEvidence}
                 onCancel={() => setIsUploading(false)}
               />
             )}
@@ -137,8 +120,8 @@ const EvidencePage: React.FC = () => {
             {isReviewing && selectedEvidence && (
               <EvidenceReviewPanel
                 evidence={selectedEvidence}
-                onSubmit={handleUpdateEvidence}
-                onCancel={() => setIsReviewing(false)}
+                onApprove={() => setIsReviewing(false)}
+                onReject={() => setIsReviewing(false)}
               />
             )}
 
@@ -146,8 +129,8 @@ const EvidencePage: React.FC = () => {
               <Box>
                 <EvidenceReviewPanel
                   evidence={selectedEvidence}
-                  onSubmit={handleUpdateEvidence}
-                  onCancel={() => setIsReviewing(false)}
+                  onApprove={() => setIsReviewing(false)}
+                  onReject={() => setIsReviewing(false)}
                 />
                 <Divider sx={{ my: 2 }} />
                 <Stack direction="row" spacing={2} justifyContent="flex-end">

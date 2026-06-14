@@ -54,14 +54,14 @@ func (s *AssessmentService) ListAssessments(ctx context.Context, tpID, userID *s
 	limit := pageSize
 	offset := (page - 1) * pageSize
 	assessments, err := s.assessmentRepo.ListAssessments(ctx, tpID, userID, assessmentType, status, limit, offset)
-	return assessments, len(assessments), err
+	return assessments, len(assessments), fmt.Errorf("failed to list assessments: %w", err)
 }
 
 // UpdateAssessment updates an assessment
 func (s *AssessmentService) UpdateAssessment(ctx context.Context, id string, req *domain.UpdateAssessmentRequest) (*domain.Assessment, error) {
 	assessment, err := s.assessmentRepo.GetAssessmentByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("assessment not found")
+		return nil, fmt.Errorf("assessment not found: %w", err)
 	}
 
 	if req.AssessmentItems != nil {
@@ -116,14 +116,14 @@ func (s *AssessmentService) ListRubrics(ctx context.Context, assessmentID, userI
 	limit := pageSize
 	offset := (page - 1) * pageSize
 	rubrics, err := s.assessmentRepo.ListRubrics(ctx, assessmentID, userID, rubricType, status, limit, offset)
-	return rubrics, len(rubrics), err
+	return rubrics, len(rubrics), fmt.Errorf("failed to list rubrics: %w", err)
 }
 
 // UpdateRubric updates a rubric
 func (s *AssessmentService) UpdateRubric(ctx context.Context, id string, req *domain.UpdateRubricRequest) (*domain.Rubric, error) {
 	rubric, err := s.assessmentRepo.GetRubricByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("rubric not found")
+		return nil, fmt.Errorf("rubric not found: %w", err)
 	}
 
 	if req.PerformanceCriteria != nil {
@@ -144,6 +144,11 @@ func (s *AssessmentService) UpdateRubric(ctx context.Context, id string, req *do
 	}
 
 	return rubric, nil
+}
+
+// DeleteRubric deletes a rubric
+func (s *AssessmentService) DeleteRubric(ctx context.Context, id string) error {
+	return s.assessmentRepo.DeleteRubric(ctx, id)
 }
 
 // CreateEvidence creates a new evidence
@@ -178,14 +183,14 @@ func (s *AssessmentService) ListEvidences(ctx context.Context, studentID, assess
 	limit := pageSize
 	offset := (page - 1) * pageSize
 	evidences, err := s.assessmentRepo.ListEvidences(ctx, studentID, assessmentID, evidenceType, status, limit, offset)
-	return evidences, len(evidences), err
+	return evidences, len(evidences), fmt.Errorf("failed to list evidences: %w", err)
 }
 
 // UpdateEvidence updates an evidence
 func (s *AssessmentService) UpdateEvidence(ctx context.Context, id string, req *domain.UpdateEvidenceRequest) (*domain.Evidence, error) {
 	evidence, err := s.assessmentRepo.GetEvidenceByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("evidence not found")
+		return nil, fmt.Errorf("evidence not found: %w", err)
 	}
 
 	if req.EvidenceData != nil {
@@ -212,6 +217,11 @@ func (s *AssessmentService) UpdateEvidence(ctx context.Context, id string, req *
 	}
 
 	return evidence, nil
+}
+
+// DeleteEvidence deletes an evidence
+func (s *AssessmentService) DeleteEvidence(ctx context.Context, id string) error {
+	return s.assessmentRepo.DeleteEvidence(ctx, id)
 }
 
 // CreateEvaluation creates a new evaluation
@@ -267,20 +277,24 @@ func (s *AssessmentService) ListEvaluations(ctx context.Context, studentID, rubr
 	limit := pageSize
 	offset := (page - 1) * pageSize
 	evaluations, err := s.assessmentRepo.ListEvaluations(ctx, studentID, rubricID, evidenceID, performanceLevel, limit, offset)
-	return evaluations, len(evaluations), err
+	return evaluations, len(evaluations), fmt.Errorf("failed to list evaluations: %w", err)
 }
 
 // UpdateEvaluation updates an evaluation (creates new revision instead of in-place update)
 func (s *AssessmentService) UpdateEvaluation(ctx context.Context, id string, req *domain.UpdateEvaluationRequest, userID string) (*domain.Evaluation, error) {
 	oldEval, err := s.assessmentRepo.GetEvaluationByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("evaluation not found")
+		return nil, fmt.Errorf("evaluation not found: %w", err)
 	}
 
-	// Mark old version as not current
-	oldEval.IsCurrentVersion = false
-	if err := s.assessmentRepo.UpdateEvaluation(ctx, oldEval); err != nil {
-		return nil, fmt.Errorf("failed to mark old version: %w", err)
+	// Validate evaluation can be revised
+	if !oldEval.CanBeRevised() {
+		return nil, fmt.Errorf("evaluation cannot be revised - not current version")
+	}
+
+	// Archive current revision using new repository method
+	if err := s.assessmentRepo.ArchiveCurrentRevision(ctx, oldEval.ID); err != nil {
+		return nil, fmt.Errorf("failed to archive current revision: %w", err)
 	}
 
 	// Prepare new revision values
@@ -288,7 +302,6 @@ func (s *AssessmentService) UpdateEvaluation(ctx context.Context, id string, req
 	totalScore := oldEval.TotalScore
 	maxScore := oldEval.MaxScore
 	performanceLevel := oldEval.PerformanceLevel
-	teacherFeedback := oldEval.TeacherFeedback
 
 	if req.PerformanceScores != nil {
 		performanceScores = req.PerformanceScores
@@ -302,40 +315,33 @@ func (s *AssessmentService) UpdateEvaluation(ctx context.Context, id string, req
 	if req.PerformanceLevel != nil {
 		performanceLevel = *req.PerformanceLevel
 	}
-	if req.TeacherFeedback != nil {
-		teacherFeedback = req.TeacherFeedback
+
+	// Use domain method to create new revision
+	newEval, err := oldEval.CreateRevision(performanceScores, totalScore, maxScore, performanceLevel, req.TeacherFeedback, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create revision: %w", err)
 	}
 
-	// Create new revision
-	newEval := &domain.Evaluation{
-		ID:                uuid.New().String(),
-		StudentID:         oldEval.StudentID,
-		RubricID:          oldEval.RubricID,
-		EvidenceID:        oldEval.EvidenceID,
-		UserID:            userID,
-		PerformanceScores: performanceScores,
-		TotalScore:        totalScore,
-		MaxScore:          maxScore,
-		PerformanceLevel:  performanceLevel,
-		TeacherFeedback:   teacherFeedback,
-		RevisionNo:        oldEval.RevisionNo + 1,
-		IsCurrentVersion:  true,
-		ParentRevisionID:  &oldEval.ID,
-		EvaluatedAt:       time.Now(),
-		CreatedAt:         oldEval.CreatedAt,
-		UpdatedAt:         time.Now(),
-	}
+	// Generate new ID for revision
+	newEval.ID = uuid.New().String()
 
 	if err := s.assessmentRepo.CreateEvaluation(ctx, newEval); err != nil {
 		return nil, fmt.Errorf("failed to create new revision: %w", err)
 	}
 
 	// Create feedback history entry if feedback changed
-	if req.TeacherFeedback != nil && oldEval.TeacherFeedback != nil && *req.TeacherFeedback != *oldEval.TeacherFeedback {
+	if oldEval.HasFeedbackChanged(oldEval.TeacherFeedback, req.TeacherFeedback) {
+		var feedbackValue string
+		if req.TeacherFeedback != nil {
+			feedbackValue = *req.TeacherFeedback
+		} else if oldEval.TeacherFeedback != nil {
+			feedbackValue = *oldEval.TeacherFeedback
+		}
+
 		feedbackHistory := &domain.EvaluationFeedbackHistory{
 			ID:              uuid.New().String(),
 			EvaluationID:    newEval.ID,
-			TeacherFeedback: *req.TeacherFeedback,
+			TeacherFeedback: feedbackValue,
 			ChangedBy:       userID,
 			ChangedAt:       time.Now(),
 		}
@@ -358,3 +364,46 @@ func (s *AssessmentService) GetEvaluationFeedbackHistory(ctx context.Context, ev
 	return s.assessmentRepo.GetFeedbackHistory(ctx, evaluationID)
 }
 
+// ApproveAssessment approves an assessment by changing its status to APPROVED
+func (s *AssessmentService) ApproveAssessment(ctx context.Context, assessmentID string, approverID string) error {
+	assessment, err := s.assessmentRepo.GetAssessmentByID(ctx, assessmentID)
+	if err != nil {
+		return fmt.Errorf("assessment not found: %w", err)
+	}
+
+	if assessment.Status == domain.WorkflowStatusApproved {
+		return fmt.Errorf("assessment is already approved")
+	}
+
+	if err := s.assessmentRepo.UpdateAssessmentStatus(ctx, assessmentID, domain.WorkflowStatusApproved, &approverID); err != nil {
+		return fmt.Errorf("failed to approve assessment: %w", err)
+	}
+
+	return nil
+}
+
+// UploadEvidence handles evidence file upload with metadata
+func (s *AssessmentService) UploadEvidence(ctx context.Context, req *domain.CreateEvidenceRequest, userID string) (*domain.Evidence, error) {
+	evidence := &domain.Evidence{
+		ID:             uuid.New().String(),
+		StudentID:      req.StudentID,
+		AssessmentID:   req.AssessmentID,
+		UserID:         userID,
+		EvidenceType:   req.EvidenceType,
+		EvidenceData:   req.EvidenceData,
+		TeacherNotes:   req.TeacherNotes,
+		RubricID:       req.RubricID,
+		LinkedCriteria: req.LinkedCriteria,
+	}
+
+	if err := s.assessmentRepo.CreateEvidence(ctx, evidence); err != nil {
+		return nil, fmt.Errorf("failed to create evidence: %w", err)
+	}
+
+	return evidence, nil
+}
+
+// GetEvidenceByID retrieves an evidence by ID
+func (s *AssessmentService) GetEvidenceByID(ctx context.Context, id string) (*domain.Evidence, error) {
+	return s.assessmentRepo.GetEvidenceByID(ctx, id)
+}

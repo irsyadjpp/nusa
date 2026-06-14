@@ -1,29 +1,30 @@
 /**
  * TP Query Service
- * Provides query operations for TP data using TanStack Query
+ * Provides query operations for TP data using TanStack Query with proper types
  */
 
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import * as tpApi from '@/api/tp';
+import { TP, TPSet, PaginationParams, FilterParams } from '@/shared/types/domain';
 
 // Query Keys
 export const tpKeys = {
   all: ['tp'] as const,
-  list: (params?: any) => ['tp', 'list', params] as const,
+  list: (params?: PaginationParams & FilterParams & { tp_set_id?: string }) => ['tp', 'list', params] as const,
   detail: (id: string) => ['tp', 'detail', id] as const,
   bySet: (setId: string) => ['tp', 'set', setId] as const,
-  sets: (params?: any) => ['tp', 'sets', params] as const,
+  sets: (params?: PaginationParams & FilterParams & { cp_id?: string }) => ['tp', 'sets', params] as const,
   setDetail: (id: string) => ['tp', 'set', 'detail', id] as const,
-};
+} as const;
 
 /**
  * Get TPs list
  */
 export const useTPs = (
-  params?: any,
-  options?: Omit<UseQueryOptions<any, Error, any>, 'queryKey' | 'queryFn'>
+  params?: PaginationParams & FilterParams & { tp_set_id?: string },
+  options?: Omit<UseQueryOptions<TP[], Error, TP[]>, 'queryKey' | 'queryFn'>
 ) => {
-  return useQuery({
+  return useQuery<TP[], Error, TP[]>({
     queryKey: tpKeys.list(params),
     queryFn: () => tpApi.getTPs(params),
     staleTime: 300000, // 5 minutes - TP data changes infrequently
@@ -36,9 +37,9 @@ export const useTPs = (
  */
 export const useTP = (
   id: string,
-  options?: Omit<UseQueryOptions<any, Error, any>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<TP, Error, TP>, 'queryKey' | 'queryFn'>
 ) => {
-  return useQuery({
+  return useQuery<TP, Error, TP>({
     queryKey: tpKeys.detail(id),
     queryFn: () => tpApi.getTPById(id),
     staleTime: 300000, // 5 minutes
@@ -51,9 +52,9 @@ export const useTP = (
  */
 export const useTPsBySet = (
   setId: string,
-  options?: Omit<UseQueryOptions<any, Error, any>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<TP[], Error, TP[]>, 'queryKey' | 'queryFn'>
 ) => {
-  return useQuery({
+  return useQuery<TP[], Error, TP[]>({
     queryKey: tpKeys.bySet(setId),
     queryFn: () => tpApi.getTPsBySet(setId),
     staleTime: 300000, // 5 minutes
@@ -65,10 +66,10 @@ export const useTPsBySet = (
  * Get TP Sets
  */
 export const useTPSets = (
-  params?: any,
-  options?: Omit<UseQueryOptions<any, Error, any>, 'queryKey' | 'queryFn'>
+  params?: PaginationParams & FilterParams & { cp_id?: string },
+  options?: Omit<UseQueryOptions<TPSet[], Error, TPSet[]>, 'queryKey' | 'queryFn'>
 ) => {
-  return useQuery({
+  return useQuery<TPSet[], Error, TPSet[]>({
     queryKey: tpKeys.sets(params),
     queryFn: () => tpApi.getTPSets(params),
     staleTime: 300000, // 5 minutes
@@ -81,9 +82,9 @@ export const useTPSets = (
  */
 export const useTPSet = (
   id: string,
-  options?: Omit<UseQueryOptions<any, Error, any>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<TPSet, Error, TPSet>, 'queryKey' | 'queryFn'>
 ) => {
-  return useQuery({
+  return useQuery<TPSet, Error, TPSet>({
     queryKey: tpKeys.setDetail(id),
     queryFn: () => tpApi.getTPSetById(id),
     staleTime: 300000, // 5 minutes
@@ -94,20 +95,20 @@ export const useTPSet = (
 /**
  * Invalidate TP queries
  */
-export const invalidateTPQueries = (queryClient: any) => {
+export const invalidateTPQueries = (queryClient: import('@tanstack/react-query').QueryClient) => {
   queryClient.invalidateQueries({ queryKey: tpKeys.all });
 };
 
 /**
  * Invalidate TP detail
  */
-export const invalidateTP = (queryClient: any, id: string) => {
+export const invalidateTP = (queryClient: import('@tanstack/react-query').QueryClient, id: string) => {
   queryClient.invalidateQueries({ queryKey: tpKeys.detail(id) });
 };
 
 /**
  * Invalidate TP Set
  */
-export const invalidateTPSet = (queryClient: any, id: string) => {
+export const invalidateTPSet = (queryClient: import('@tanstack/react-query').QueryClient, id: string) => {
   queryClient.invalidateQueries({ queryKey: tpKeys.setDetail(id) });
 };

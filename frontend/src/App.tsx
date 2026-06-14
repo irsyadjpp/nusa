@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { BrowserRouter } from "react-router-dom";
 
@@ -7,7 +6,6 @@ import { Box, StyledEngineProvider } from "@mui/material";
 import BackgroundWrapper from "@/components/layout/containers/background-wrapper";
 import SnackbarWrapper from "@/components/layout/containers/snackbar-wrapper";
 import LayoutContextProvider from "@/components/layout/layout-context";
-import Loading from "@/pages/loading";
 import AppRoutes from "@/routes";
 import AppRouteWrapper from "@/components/app-route-wrapper";
 import ThemeProvider from "@/theme/theme-provider";

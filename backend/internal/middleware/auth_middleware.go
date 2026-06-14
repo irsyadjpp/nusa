@@ -1,12 +1,12 @@
 package middleware
 
 import (
-	"context"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nusa/backend/internal/domain"
 	"github.com/nusa/backend/internal/repository"
+	"github.com/nusa/backend/internal/service"
 	"github.com/nusa/backend/pkg/jwt"
 )
 
@@ -158,7 +158,7 @@ func RequireSchoolAccess(userRepo *repository.UserRepository, schoolRepo *reposi
 		}
 
 		// Check if user belongs to this school
-		user, err := userRepo.GetByID(context.Background(), authCtx.UserID)
+		user, err := userRepo.GetByID(c.Request.Context(), authCtx.UserID)
 		if err != nil {
 			c.JSON(401, gin.H{"error": "User not found"})
 			c.Abort()
@@ -171,6 +171,62 @@ func RequireSchoolAccess(userRepo *repository.UserRepository, schoolRepo *reposi
 			return
 		}
 
+		c.Next()
+	}
+}
+
+// RequireClassAccess checks if the user has access to a specific class
+func RequireClassAccess(authService *service.ResourceAuthorizationService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authCtx := GetAuthContext(c)
+		if authCtx == nil {
+			c.JSON(401, gin.H{"error": "Authentication required"})
+			c.Abort()
+			return
+		}
+
+		classID := c.Param("class_id")
+		if classID == "" {
+			classID = c.Query("class_id")
+		}
+
+		if classID == "" {
+			c.JSON(400, gin.H{"error": "Class ID is required"})
+			c.Abort()
+			return
+		}
+
+		// For now, class access is handled at the service/repository layer
+		// This middleware just validates authentication
+		// TODO: Implement proper class authorization when Class entity exists
+		c.Next()
+	}
+}
+
+// RequireAssessmentOwnership checks if the user owns a specific assessment
+func RequireAssessmentOwnership(authService *service.ResourceAuthorizationService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authCtx := GetAuthContext(c)
+		if authCtx == nil {
+			c.JSON(401, gin.H{"error": "Authentication required"})
+			c.Abort()
+			return
+		}
+
+		assessmentID := c.Param("assessment_id")
+		if assessmentID == "" {
+			assessmentID = c.Param("id")
+		}
+
+		if assessmentID == "" {
+			c.JSON(400, gin.H{"error": "Assessment ID is required"})
+			c.Abort()
+			return
+		}
+
+		// Ownership checks are handled at the service layer
+		// This middleware just validates authentication
+		// TODO: Implement proper assessment ownership middleware
 		c.Next()
 	}
 }

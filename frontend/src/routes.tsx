@@ -11,28 +11,60 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 // Statically import all possible pages for build
 const modules = import.meta.glob("./pages/**/page.tsx");
+const newModules = import.meta.glob("./pages/**/new.tsx");
+const idModules = import.meta.glob("./pages/**/[id].tsx");
+const editModules = import.meta.glob("./pages/**/[id]/edit/page.tsx");
+
+// Merge all modules
+const allModules = { ...modules, ...newModules, ...idModules, ...editModules };
 
 // Lazy load page components
 const lazyLoad = (path: string) => {
   // Handle different paths based on the route
   let key: string;
+  
+  // Remove /dashboard prefix for file path mapping since files don't have it in their directory structure
+  const filePath = path.replace(/^\/dashboard/, "");
+  
   if (path === "/") {
     key = "./pages/auth/sign-in/page.tsx"; // Root is now sign-in page
   } else if (path === "/landing") {
     key = "./pages/page.tsx"; // Landing page moved to /landing
+  } else if (path === "/dashboard") {
+    key = "./pages/app/dashboard/page.tsx"; // Dashboard page
   } else if (path === "/sign-in" || path === "/sign-up" || path === "/password-reset" ||
     path === "/password-sent" || path === "/password-new" ||
     path === "/get-verification" || path === "/set-verification" ||
     path === "/terms-and-conditions" || path === "/privacy-policy") {
     key = `./pages/auth${path}/page.tsx`; // Auth pages at root level
+  } else if (filePath.includes("/new")) {
+    // Handle new/create pages - they are named new.tsx not page.tsx
+    key = `./pages/app${filePath}.tsx`;
+  } else if (filePath.includes("/:id")) {
+    // Handle dynamic routes - check both patterns
+    const dynamicPath = filePath.replace("/:id", "/[id]");
+    const nestedDynamicPath = filePath.replace("/:id", "/[id]/edit");
+    
+    // Try nested edit pattern first
+    if (allModules[`./pages/app${nestedDynamicPath}/page.tsx`]) {
+      key = `./pages/app${nestedDynamicPath}/page.tsx`;
+    } else if (allModules[`./pages/app${dynamicPath}/page.tsx`]) {
+      key = `./pages/app${dynamicPath}/page.tsx`;
+    } else if (allModules[`./pages/app${dynamicPath}.tsx`]) {
+      key = `./pages/app${dynamicPath}.tsx`;
+    } else {
+      key = `./pages/app${filePath}/page.tsx`; // Default fallback
+    }
   } else {
-    key = `./pages/app${path}/page.tsx`;
+    key = `./pages/app${filePath}/page.tsx`;
   }
 
-  const importer = modules[key];
+  const importer = allModules[key];
 
   // If file not found fallback to 404
-  if (!importer) return <Navigate to="/404" replace />;
+  if (!importer) {
+    return <Navigate to="/404" replace />;
+  }
 
   const Component = React.lazy(importer as () => Promise<{ default: React.ComponentType<any> }>);
 
@@ -91,6 +123,25 @@ const mainRoutes = generateRoutesFromMenuItems(leftMenuItems);
 const bottomRoutes = generateRoutesFromMenuItems(leftMenuBottomItems);
 const authRoutes = generateAuthRoutes();
 
+// Manual routes for dynamic forms (CRUD operations)
+const formRoutes = [
+  <Route key="subject-categories-new" path="/dashboard/academic-foundation/subject-categories/new" element={lazyLoad("/dashboard/academic-foundation/subject-categories/new")} />,
+  <Route key="subject-categories-edit" path="/dashboard/academic-foundation/subject-categories/:id" element={lazyLoad("/dashboard/academic-foundation/subject-categories/:id")} />,
+  <Route key="academic-years-new" path="/dashboard/academic-foundation/academic-years/new" element={lazyLoad("/dashboard/academic-foundation/academic-years/new")} />,
+  <Route key="academic-years-edit" path="/dashboard/academic-foundation/academic-years/:id" element={lazyLoad("/dashboard/academic-foundation/academic-years/:id")} />,
+  <Route key="semesters-new" path="/dashboard/academic-foundation/semesters/new" element={lazyLoad("/dashboard/academic-foundation/semesters/new")} />,
+  <Route key="semesters-edit" path="/dashboard/academic-foundation/semesters/:id" element={lazyLoad("/dashboard/academic-foundation/semesters/:id")} />,
+  <Route key="subjects-new" path="/dashboard/curriculum/subjects/new" element={lazyLoad("/dashboard/curriculum/subjects/new")} />,
+  <Route key="subjects-edit" path="/dashboard/curriculum/subjects/:id" element={lazyLoad("/dashboard/curriculum/subjects/:id")} />,
+  <Route key="phases-new" path="/dashboard/curriculum/phases/new" element={lazyLoad("/dashboard/curriculum/phases/new")} />,
+  <Route key="phases-edit" path="/dashboard/curriculum/phases/:id" element={lazyLoad("/dashboard/curriculum/phases/:id")} />,
+  <Route key="elements-new" path="/dashboard/curriculum/elements/new" element={lazyLoad("/dashboard/curriculum/elements/new")} />,
+  <Route key="elements-edit" path="/dashboard/curriculum/elements/:id" element={lazyLoad("/dashboard/curriculum/elements/:id")} />,
+  <Route key="subelements-new" path="/dashboard/curriculum/subelements/new" element={lazyLoad("/dashboard/curriculum/subelements/new")} />,
+  <Route key="subelements-edit" path="/dashboard/curriculum/subelements/:id" element={lazyLoad("/dashboard/curriculum/subelements/:id")} />,
+  <Route key="reports-publish" path="/dashboard/reports/:id/publish" element={lazyLoad("/dashboard/reports/:id/publish")} />,
+];
+
 // Main Routes component
 const AppRoutes = () => {
   return (
@@ -108,6 +159,8 @@ const AppRoutes = () => {
         {/* Routes generated from menu items */}
         {mainRoutes}
         {bottomRoutes}
+        {/* Manual form routes for CRUD operations */}
+        {formRoutes}
       </Route>
 
       {/* 404 route */}

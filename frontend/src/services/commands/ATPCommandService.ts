@@ -93,3 +93,38 @@ export const useApproveATPSet = (
     ...options,
   });
 };
+
+/**
+ * Update ATP Set mutation
+ */
+export const useUpdateATPSet = (
+  options?: Omit<UseMutationOptions<any, Error, { id: string; data: any }>, 'mutationFn'>
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }) => atpApi.updateATPSet(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: atpKeys.setDetail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: atpKeys.sets() });
+    },
+    ...options,
+  });
+};
+
+/**
+ * Delete ATP Set mutation
+ */
+export const useDeleteATPSet = (
+  options?: Omit<UseMutationOptions<void, Error, string>, 'mutationFn'>
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => atpApi.deleteATPSet(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: atpKeys.sets() });
+    },
+    ...options,
+  });
+};

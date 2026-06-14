@@ -524,3 +524,107 @@ func (r *TPRepository) DeleteTP(ctx context.Context, id string) error {
 
 	return nil
 }
+
+// ==================== TP Versioning Operations ====================
+
+// GetTPVersions retrieves all versions of a specific TP
+func (r *TPRepository) GetTPVersions(ctx context.Context, tpID string) ([]*domain.TP, error) {
+	query := `
+		SELECT id, tp_set_id, sequence_number, cp_id, subject_id, phase_id, element_id,
+		       subelement_id, user_id, status, title, learning_objectives, time_allocation,
+		       prerequisites, estimated_weeks, success_criteria, version_no, is_current_version,
+		       parent_version_id, created_at, updated_at
+		FROM tp
+		WHERE id = $1 OR parent_version_id = $1
+		ORDER BY version_no ASC
+	`
+
+	rows, err := r.db.QueryContext(ctx, query, tpID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tps []*domain.TP
+	for rows.Next() {
+		var tp domain.TP
+		var title, parentVersionID sql.NullString
+		var estimatedWeeks sql.NullInt64
+
+		err := rows.Scan(
+			&tp.ID, &tp.TPSetID, &tp.SequenceNumber, &tp.CPID, &tp.SubjectID, &tp.PhaseID, &tp.ElementID,
+			&tp.SubelementID, &tp.UserID, &tp.Status, &title, &tp.LearningObjectives, &tp.TimeAllocation,
+			&tp.Prerequisites, &estimatedWeeks, &tp.SuccessCriteria, &tp.VersionNo, &tp.IsCurrentVersion,
+			&parentVersionID, &tp.CreatedAt, &tp.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if title.Valid {
+			tp.Title = &title.String
+		}
+		if estimatedWeeks.Valid {
+			weeks := int(estimatedWeeks.Int64)
+			tp.EstimatedWeeks = &weeks
+		}
+		if parentVersionID.Valid {
+			tp.ParentVersionID = &parentVersionID.String
+		}
+
+		tps = append(tps, &tp)
+	}
+
+	return tps, nil
+}
+
+// GetTPVersionHistory retrieves the full version history for a TP Set
+func (r *TPRepository) GetTPVersionHistory(ctx context.Context, tpSetID string) ([]*domain.TP, error) {
+	query := `
+		SELECT id, tp_set_id, sequence_number, cp_id, subject_id, phase_id, element_id,
+		       subelement_id, user_id, status, title, learning_objectives, time_allocation,
+		       prerequisites, estimated_weeks, success_criteria, version_no, is_current_version,
+		       parent_version_id, created_at, updated_at
+		FROM tp
+		WHERE tp_set_id = $1
+		ORDER BY version_no ASC, sequence_number ASC
+	`
+
+	rows, err := r.db.QueryContext(ctx, query, tpSetID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tps []*domain.TP
+	for rows.Next() {
+		var tp domain.TP
+		var title, parentVersionID sql.NullString
+		var estimatedWeeks sql.NullInt64
+
+		err := rows.Scan(
+			&tp.ID, &tp.TPSetID, &tp.SequenceNumber, &tp.CPID, &tp.SubjectID, &tp.PhaseID, &tp.ElementID,
+			&tp.SubelementID, &tp.UserID, &tp.Status, &title, &tp.LearningObjectives, &tp.TimeAllocation,
+			&tp.Prerequisites, &estimatedWeeks, &tp.SuccessCriteria, &tp.VersionNo, &tp.IsCurrentVersion,
+			&parentVersionID, &tp.CreatedAt, &tp.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if title.Valid {
+			tp.Title = &title.String
+		}
+		if estimatedWeeks.Valid {
+			weeks := int(estimatedWeeks.Int64)
+			tp.EstimatedWeeks = &weeks
+		}
+		if parentVersionID.Valid {
+			tp.ParentVersionID = &parentVersionID.String
+		}
+
+		tps = append(tps, &tp)
+	}
+
+	return tps, nil
+}

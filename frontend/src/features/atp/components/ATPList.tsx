@@ -4,7 +4,7 @@
  */
 
 import { Box, List, ListItem, ListItemText, ListItemButton, Chip, Typography } from '@mui/material';
-import { ATP } from '@/api/atp';
+import { ATP } from '@/shared/types/domain';
 
 interface ATPListProps {
   atps: ATP[];
@@ -36,21 +36,23 @@ export const ATPList = ({ atps, selectedId, onSelect, loading }: ATPListProps) =
         <ListItem
           key={atp.id}
           disablePadding
-          selected={selectedId === atp.id}
-          secondaryAction={
-            <Chip
-              label={atp.status}
-              size="small"
-              color={atp.status === 'approved' ? 'success' : atp.status === 'draft' ? 'default' : 'warning'}
-            />
-          }
+          sx={{
+            backgroundColor: selectedId === atp.id ? 'action.selected' : 'transparent',
+          }}
         >
-          <ListItemButton onClick={() => onSelect?.(atp)} selected={selectedId === atp.id}>
+          <ListItemButton onClick={() => onSelect?.(atp)}>
             <ListItemText
               primary={`Week ${atp.week_number}`}
               secondary={`Sequence: ${atp.sequence_number} | Hours: ${atp.estimated_hours}`}
             />
           </ListItemButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', pr: 2 }}>
+            <Chip
+              label={atp.status}
+              size="small"
+              color={atp.status === 'APPROVED' ? 'success' : atp.status === 'DRAFT' ? 'default' : 'warning'}
+            />
+          </Box>
         </ListItem>
       ))}
     </List>

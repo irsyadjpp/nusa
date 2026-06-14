@@ -3,7 +3,7 @@
  * Form for creating and editing rubrics
  */
 
-import { Box, TextField, Button, Stack, Typography } from '@mui/material';
+import { Box, TextField, Button, Typography } from '@mui/material';
 import { Formik, Form, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
 
@@ -43,7 +43,7 @@ export const RubricForm = ({ initialValues, onSubmit, onCancel, isEdit = false }
       >
         {({ values, handleChange, touched, errors, isSubmitting }) => (
           <Form>
-            <Stack spacing={3}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <TextField
                 fullWidth
                 label="Title"
@@ -51,7 +51,7 @@ export const RubricForm = ({ initialValues, onSubmit, onCancel, isEdit = false }
                 value={values.title}
                 onChange={handleChange}
                 error={touched.title && Boolean(errors.title)}
-                helperText={touched.title && errors.title}
+                helperText={touched.title && typeof errors.title === 'string' ? errors.title : undefined}
               />
 
               <TextField
@@ -61,7 +61,7 @@ export const RubricForm = ({ initialValues, onSubmit, onCancel, isEdit = false }
                 value={values.assessment_id}
                 onChange={handleChange}
                 error={touched.assessment_id && Boolean(errors.assessment_id)}
-                helperText={touched.assessment_id && errors.assessment_id}
+                helperText={touched.assessment_id && typeof errors.assessment_id === 'string' ? errors.assessment_id : undefined}
               />
 
               <TextField
@@ -90,10 +90,10 @@ export const RubricForm = ({ initialValues, onSubmit, onCancel, isEdit = false }
                   }
                 }}
                 error={touched.criteria && Boolean(errors.criteria)}
-                helperText={touched.criteria && errors.criteria}
+                helperText={touched.criteria && typeof errors.criteria === 'string' ? errors.criteria : undefined}
               />
 
-              <Stack direction="row" spacing={2} justifyContent="flex-end">
+              <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, justifyContent: 'flex-end' }}>
                 {onCancel && (
                   <Button variant="outlined" onClick={onCancel} disabled={isSubmitting}>
                     Cancel
@@ -102,8 +102,8 @@ export const RubricForm = ({ initialValues, onSubmit, onCancel, isEdit = false }
                 <Button type="submit" variant="contained" disabled={isSubmitting}>
                   {isSubmitting ? 'Saving...' : isEdit ? 'Update Rubric' : 'Create Rubric'}
                 </Button>
-              </Stack>
-            </Stack>
+              </Box>
+            </Box>
           </Form>
         )}
       </Formik>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Timeline, TimelineItem, TimelineSeparator, TimelineConnector, TimelineContent, TimelineDot, Chip } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemText, ListItemIcon, Chip, Divider } from '@mui/material';
 import { History as HistoryIcon } from '@mui/icons-material';
 
 interface EvaluationRevision {
@@ -33,26 +33,39 @@ export const EvaluationHistory: React.FC<EvaluationHistoryProps> = ({ evidenceId
   return (
     <Box>
       <Typography variant="h6" gutterBottom>Evaluation History</Typography>
-      <Timeline>
-        {history.map((revision) => (
-          <TimelineItem key={revision.id}>
-            <TimelineSeparator>
-              <TimelineDot color={revision.is_current_version ? "primary" : "grey"} />
-              <TimelineConnector />
-            </TimelineSeparator>
-            <TimelineContent>
-              <Typography variant="body1">Revision {revision.revision_no}</Typography>
-              <Typography variant="body2" color="textSecondary">
-                Score: {revision.total_score} - {revision.performance_level}
-              </Typography>
-              <Typography variant="body2">{revision.teacher_feedback}</Typography>
-              {revision.is_current_version && (
-                <Chip label="Current" color="primary" size="small" />
-              )}
-            </TimelineContent>
-          </TimelineItem>
+      <List>
+        {history.map((revision, index) => (
+          <React.Fragment key={revision.id}>
+            <ListItem>
+              <ListItemIcon>
+                <HistoryIcon color={revision.is_current_version ? "primary" : "disabled"} />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Typography variant="body1">Revision {revision.revision_no}</Typography>
+                    {revision.is_current_version && (
+                      <Chip label="Current" color="primary" size="small" />
+                    )}
+                  </Box>
+                }
+                secondary={
+                  <>
+                    <Typography variant="body2" color="textSecondary">
+                      Score: {revision.total_score} - {revision.performance_level}
+                    </Typography>
+                    <Typography variant="body2">{revision.teacher_feedback}</Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      {new Date(revision.created_at).toLocaleString('id-ID')}
+                    </Typography>
+                  </>
+                }
+              />
+            </ListItem>
+            {index < history.length - 1 && <Divider />}
+          </React.Fragment>
         ))}
-      </Timeline>
+      </List>
     </Box>
   );
 };

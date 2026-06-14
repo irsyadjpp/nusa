@@ -35,7 +35,22 @@
       "Exec(git push)",
       "Exec(find)",
       "Exec(diff)",
-      "Exec(awk)"
+      "Exec(awk)",
+      "Exec(npm install)",
+      "Exec(sed)",
+      "Exec(go build)",
+      "Exec(go vet)",
+      "Exec(mv)",
+      "Exec(go test)",
+      "Exec(podman ps)",
+      "Exec(podman exec)",
+      "Exec(podman-compose up)",
+      "Exec(podman start)",
+      "Exec(podman logs)",
+      "Exec(npm run)",
+      "Exec(npx tsc)",
+      "Exec(ls)",
+      "Exec(cp)"
     ]
   }
 }

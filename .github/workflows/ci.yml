@@ -6,16 +6,16 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
-  workflow_dispatch:  # Allow manual trigger for debugging
+  workflow_dispatch: # Allow manual trigger for debugging
 
 jobs:
   # ========================================
   # JOB 1: DISCOVER
-  # Scan go.mod, docker-compose, Dockerfile untuk deteksi service
+  # Scan go.mod untuk deteksi versi stack
   # ========================================
   discover:
     name: Discover Services
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     outputs:
       go-version: ${{ steps.discover.outputs.go-version }}
       node-version: ${{ steps.discover.outputs.node-version }}
@@ -23,24 +23,24 @@ jobs:
       services: ${{ steps.discover.outputs.services }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4.2.2  # Pinned version
-      
+        uses: actions/checkout@v4.2.2
+
       - name: Discover stack versions
         id: discover
         run: |
           # Detect Go version from go.mod
           GO_VERSION=$(grep "^go " backend/go.mod | awk '{print $2}')
           echo "go-version=$GO_VERSION" >> $GITHUB_OUTPUT
-          
-          # Detect Node version from package.json (use 20 as baseline)
+
+          # Detect Node version (use 20 as baseline)
           NODE_VERSION="20"
           echo "node-version=$NODE_VERSION" >> $GITHUB_OUTPUT
-          
-          # Detect Python version from CI baseline (ai-runtime uses 3.11)
+
+          # Detect Python version (ai-runtime uses 3.11)
           PYTHON_VERSION="3.11"
           echo "python-version=$PYTHON_VERSION" >> $GITHUB_OUTPUT
-          
-          # Output service manifest (JSON format for parsing)
+
+          # Output service manifest
           cat << 'EOF' > services.json
           {
             "postgres": {
@@ -70,228 +70,185 @@ jobs:
             }
           }
           EOF
-          
-          # Convert JSON to string for output
+
           SERVICES_JSON=$(cat services.json | jq -c .)
           echo "services=$SERVICES_JSON" >> $GITHUB_OUTPUT
-          
+
           echo "✅ Discovery complete:"
           echo "   Go: $GO_VERSION"
           echo "   Node: $NODE_VERSION"
           echo "   Python: $PYTHON_VERSION"
-          echo "   Services: PostgreSQL, Redis, Qdrant, MinIO, RabbitMQ"
+          echo "   Services: PostgreSQL 18.4, Redis, Qdrant, MinIO, RabbitMQ"
 
   # ========================================
   # JOB 2: LINT
   # golangci-lint dan go vet untuk backend
+  # Paralel dengan test-unit dan test-integration
   # ========================================
   lint:
     name: Lint
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: discover
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
-      
-      - name: Setup Go
-        uses: actions/setup-go@v5.0.2  # Pinned version
-        with:
-          go-version: ${{ needs.discover.outputs.go-version }}
-          cache: true  # Automatic Go module caching
-      
-      - name: Run go vet
-        working-directory: ./backend
-        run: go vet ./...
-      
-      - name: Install golangci-lint
-        uses: golangci/golangci-lint-action@v6.1.0  # Pinned version
-        with:
-          version: latest
-          working-directory: ./backend
-      
-      - name: Run golangci-lint
-        working-directory: ./backend
-        run: golangci-lint run --timeout=5m
 
-  # ========================================
-  # JOB 3: TEST-UNIT
-  # Unit tests only, no external services, dengan race detection
-  # ========================================
-  test-unit:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    needs: discover
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4.2.2
-      
       - name: Setup Go
         uses: actions/setup-go@v5.0.2
         with:
           go-version: ${{ needs.discover.outputs.go-version }}
           cache: true
-      
+
+      - name: Run go vet
+        working-directory: ./backend
+        run: go vet ./...
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6.1.0
+        with:
+          version: latest
+          working-directory: ./backend
+          args: --timeout=5m
+
+  # ========================================
+  # JOB 3: TEST-UNIT
+  # Unit tests only, no external services, dengan race detection
+  # Paralel dengan lint dan test-integration
+  # ========================================
+  test-unit:
+    name: Unit Tests
+    runs-on: self-hosted
+    needs: discover
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Go
+        uses: actions/setup-go@v5.0.2
+        with:
+          go-version: ${{ needs.discover.outputs.go-version }}
+          cache: true
+
       - name: Run unit tests with race detection
         working-directory: ./backend
         run: |
-          # Unit tests only - exclude integration tests
-          # Using -race for race condition detection
-          # Using -cover for coverage
           go test -v -race -coverprofile=coverage.out -short ./...
-      
+
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v4.4.0  # Pinned version
+        uses: actions/upload-artifact@v4.4.0
         with:
           name: unit-coverage
           path: backend/coverage.out
 
   # ========================================
   # JOB 4: TEST-INTEGRATION
-  # Integration tests dengan semua service containers
+  # Integration tests — services dijalankan via Podman Compose
+  # Karena self-hosted, tidak pakai services: block
+  # Paralel dengan lint
   # ========================================
   test-integration:
     name: Integration Tests
-    runs-on: ubuntu-latest
-    needs: [discover, lint]
-    services:
-      # PostgreSQL 18.4 (sesuai discovery, bukan 16 dari baseline)
-      postgres:
-        image: postgres:18.4-alpine
-        env:
-          POSTGRES_DB: nusa_test
-          POSTGRES_USER: nusa
-          POSTGRES_PASSWORD: nusa_secret
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      
-      # Redis 7 (sesuai discovery)
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-      
-      # Qdrant (vector DB untuk AI)
-      qdrant:
-        image: qdrant/qdrant:latest
-        ports:
-          - 6333:6333
-        options: >-
-          --health-cmd "curl -f http://localhost:6333/health"
-          --health-interval 30s
-          --health-timeout 10s
-          --health-retries 3
-      
-      # MinIO (object storage)
-      minio:
-        image: minio/minio:latest
-        env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadmin
-        ports:
-          - 9000:9000
-          - 9001:9001
-        options: >-
-          --health-cmd "curl -f http://localhost:9000/minio/health/live"
-          --health-interval 30s
-          --health-timeout 20s
-          --health-retries 3
-        command: server /data --console-address ":9001"
-      
-      # RabbitMQ (message broker - DITEMUKAN DARI DISCOVERY)
-      rabbitmq:
-        image: rabbitmq:3-management-alpine
-        env:
-          RABBITMQ_DEFAULT_USER: guest
-          RABBITMQ_DEFAULT_PASS: guest
-        ports:
-          - 5672:5672
-          - 15672:15672
-        options: >-
-          --health-cmd "rabbitmq-diagnostics -q ping"
-          --health-interval 15s
-          --health-timeout 10s
-          --health-retries 5
-    
+    runs-on: self-hosted
+    needs: discover
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
-      
+
+      - name: Start services via Podman Compose
+        run: |
+          podman-compose -f docker-compose.dev.yml up -d
+          echo "⏳ Waiting for services to be ready..."
+          sleep 20
+
+      - name: Verify services health
+        run: |
+          # PostgreSQL
+          until podman exec $(podman ps -qf "name=postgres") pg_isready -U nusa; do
+            echo "Waiting for PostgreSQL..."; sleep 3
+          done
+          echo "✅ PostgreSQL ready"
+
+          # Redis
+          until podman exec $(podman ps -qf "name=redis") redis-cli ping | grep PONG; do
+            echo "Waiting for Redis..."; sleep 3
+          done
+          echo "✅ Redis ready"
+
+          # MinIO
+          until curl -sf http://localhost:9000/minio/health/live; do
+            echo "Waiting for MinIO..."; sleep 5
+          done
+          echo "✅ MinIO ready"
+
+          # Qdrant
+          until curl -sf http://localhost:6333/health; do
+            echo "Waiting for Qdrant..."; sleep 5
+          done
+          echo "✅ Qdrant ready"
+
+          # RabbitMQ
+          until curl -sf http://localhost:15672 > /dev/null; do
+            echo "Waiting for RabbitMQ..."; sleep 5
+          done
+          echo "✅ RabbitMQ ready"
+
       - name: Setup Go
         uses: actions/setup-go@v5.0.2
         with:
           go-version: ${{ needs.discover.outputs.go-version }}
           cache: true
-      
-      - name: Wait for services to be ready
-        run: |
-          echo "Waiting for services..."
-          sleep 10
-      
+
       - name: Run integration tests
         working-directory: ./backend
         env:
-          # PostgreSQL configuration
+          # PostgreSQL
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
           POSTGRES_DB: nusa_test
           POSTGRES_USER: nusa
           POSTGRES_PASSWORD: nusa_secret
           POSTGRES_SSLMODE: disable
-          
-          # Redis configuration
+
+          # Redis
           REDIS_HOST: localhost
           REDIS_PORT: 6379
           REDIS_PASSWORD: ""
           REDIS_DB: 0
-          
-          # Qdrant configuration
+
+          # Qdrant
           QDRANT_HOST: localhost
           QDRANT_PORT: 6333
-          
-          # MinIO configuration
+
+          # MinIO
           MINIO_ENDPOINT: localhost:9000
           MINIO_ACCESS_KEY: minioadmin
           MINIO_SECRET_KEY: minioadmin
           MINIO_BUCKET: nusa-test
           MINIO_REGION: us-east-1
           MINIO_SECURE: false
-          
-          # RabbitMQ configuration (DITEMUKAN DARI DISCOVERY)
+
+          # RabbitMQ
           RABBITMQ_HOST: localhost
           RABBITMQ_PORT: 5672
           RABBITMQ_USER: guest
           RABBITMQ_PASSWORD: guest
           RABBITMQ_QUEUE: ai_generation
-          
-          # JWT configuration
+
+          # JWT
           JWT_SECRET: test-secret-key-for-ci-only
           JWT_EXPIRATION: 24h
-          
-          # AI configuration
+
+          # AI
           AI_PRIMARY_PROVIDER: openai
           AI_OPENAI_KEY: test-key-for-ci-only
-          
-          # App environment
+
+          # App
           APP_ENV: test
           SERVER_PORT: :8080
         run: |
-          # Integration tests dengan semua service dependencies
-          # Exclude unit tests dengan tag atau package structure
           go test -v -coverprofile=integration-coverage.out ./...
-          
-          # Generate coverage report
           go tool cover -html=integration-coverage.out -o coverage.html
-      
+
       - name: Upload integration coverage
         uses: actions/upload-artifact@v4.4.0
         with:
@@ -300,39 +257,50 @@ jobs:
             backend/integration-coverage.out
             backend/coverage.html
 
+      - name: Stop services
+        if: always() # Tetap stop meski test gagal
+        run: podman-compose -f docker-compose.dev.yml down
+
   # ========================================
   # JOB 5: BUILD
-  # Go build dan verify binary
+  # Go build + frontend build
+  # Menunggu semua job selesai
   # ========================================
   build:
     name: Build
-    runs-on: ubuntu-latest
-    needs: [test-unit, test-integration]
+    runs-on: self-hosted
+    needs: [discover, lint, test-unit, test-integration]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
-      
+
       - name: Setup Go
         uses: actions/setup-go@v5.0.2
         with:
           go-version: ${{ needs.discover.outputs.go-version }}
           cache: true
-      
+
       - name: Build backend binary
         working-directory: ./backend
         run: |
           CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/api cmd/api/main.go
-          
-          # Verify binary
           file bin/api
           ./bin/api --version || echo "No version flag, binary exists"
-      
-      - name: Build frontend (verification only)
+
+      - name: Cache node modules
+        uses: actions/cache@v4.1.1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Build frontend
         working-directory: ./frontend
         run: |
           npm ci
           npm run build
-      
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4.4.0
         with:
@@ -343,104 +311,87 @@ jobs:
 
   # ========================================
   # JOB 6: DOCKER-BUILD
-  # Multi-stage Docker build, hanya pada push ke main/develop
+  # Multi-stage Podman build, hanya pada push ke main/develop
+  # Menggunakan Podman karena self-hosted di Fedora
   # ========================================
   docker-build:
     name: Docker Build
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.6.1  # Pinned version
-      
-      - name: Cache Docker layers
-        uses: actions/cache@v4.1.1  # Pinned version
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-      
+
       - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3.3.0  # Pinned version
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | podman login ghcr.io \
+            -u ${{ github.actor }} \
+            --password-stdin
+
       - name: Build and push backend image
-        uses: docker/build-push-action@v6.7.0  # Pinned version
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
-            ghcr.io/${{ github.repository }}/backend:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-      
-      - name: Move cache
         run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-      
+          podman build \
+            -t ghcr.io/${{ github.repository }}/backend:${{ github.sha }} \
+            -t ghcr.io/${{ github.repository }}/backend:latest \
+            -f ./backend/Dockerfile \
+            ./backend
+
+          podman push ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
+          podman push ghcr.io/${{ github.repository }}/backend:latest
+
       - name: Build and push frontend image
-        uses: docker/build-push-action@v6.7.0
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
-            ghcr.io/${{ github.repository }}/frontend:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-      
-      - name: Move cache (frontend)
         run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          podman build \
+            -t ghcr.io/${{ github.repository }}/frontend:${{ github.sha }} \
+            -t ghcr.io/${{ github.repository }}/frontend:latest \
+            -f ./frontend/Dockerfile \
+            ./frontend
+
+          podman push ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
+          podman push ghcr.io/${{ github.repository }}/frontend:latest
+
+      - name: Clean up local images
+        if: always()
+        run: |
+          podman image prune -f
 
   # ========================================
   # JOB 7: SECURITY-SCAN
-  # Dependency vulnerability scan dengan govulncheck
-  # Non-blocking untuk saat ini (continue-on-error: true)
+  # govulncheck + Trivy
+  # Non-blocking (continue-on-error: true)
   # ========================================
   security-scan:
     name: Security Scan
-    runs-on: ubuntu-latest
-    needs: build
-    continue-on-error: true  # Non-blocking sesuai spesifikasi
+    runs-on: self-hosted
+    needs: [discover, build]
+    continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
-      
+
       - name: Setup Go
         uses: actions/setup-go@v5.0.2
         with:
           go-version: ${{ needs.discover.outputs.go-version }}
           cache: true
-      
+
       - name: Run govulncheck
         working-directory: ./backend
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck ./...
-      
+
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.24.0  # Pinned version
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-      
+        run: |
+          # Install Trivy jika belum ada
+          which trivy || (
+            curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+              | sh -s -- -b /usr/local/bin
+          )
+          trivy fs --format sarif --output trivy-results.sarif .
+
       - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3.26.11  # Pinned version
+        uses: github/codeql-action/upload-sarif@v3.26.11
         with:
           sarif_file: 'trivy-results.sarif'

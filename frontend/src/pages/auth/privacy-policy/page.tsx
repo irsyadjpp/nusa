@@ -18,7 +18,7 @@ export default function Page() {
                   Privacy Policy
                 </Typography>
                 <Typography variant="body1" className="text-text-primary">
-                  At Gogo, we take your privacy seriously. This Privacy Policy outlines the types of personal
+                  At Nusa, we take your privacy seriously. This Privacy Policy outlines the types of personal
                   information we collect, how we use it, and the steps we take to safeguard it.
                 </Typography>
               </Box>
@@ -121,7 +121,7 @@ export default function Page() {
                 </Typography>
                 <Typography variant="body1">
                   If you have any questions about this Privacy Policy or how we handle your data, you can reach out to
-                  us at: info@gogo.dev
+                  us at: info@nusa.dev
                 </Typography>
               </Box>
             </Box>

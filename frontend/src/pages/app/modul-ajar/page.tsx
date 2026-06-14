@@ -4,10 +4,13 @@ import { ModulAjarWorkspaceHeader } from '@/features/modul-ajar';
 import { ModulAjarList, ModulAjarFilters, ModulAjarForm, ModulAjarPreviewPanel } from '@/features/modul-ajar';
 import { useModulAjars } from '@/services/queries/ModulAjarQueryService';
 import { useCreateModulAjar, useUpdateModulAjar, useDeleteModulAjar } from '@/services/commands/ModulAjarCommandService';
-import { ModulAjar } from '@/api/modul-ajar';
+import { ModulAjar } from '@/shared/types/domain';
 import { enqueueSnackbar } from 'notistack';
+import { useNavigate } from 'react-router-dom';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 const ModulAjarPage: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedModulAjar, setSelectedModulAjar] = useState<ModulAjar | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -99,6 +102,12 @@ const ModulAjarPage: React.FC = () => {
     setFilters({});
   };
 
+  const handleCreateAssessment = () => {
+    if (selectedModulAjar) {
+      navigate('/assessment/create', { state: { modulAjarId: selectedModulAjar.id } });
+    }
+  };
+
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <ModulAjarWorkspaceHeader
@@ -172,6 +181,13 @@ const ModulAjarPage: React.FC = () => {
                   </Button>
                   <Button variant="outlined" onClick={handlePreview}>
                     Preview
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<NavigateNextIcon />}
+                    onClick={handleCreateAssessment}
+                  >
+                    Create Assessment
                   </Button>
                   <Button variant="outlined" color="error" onClick={handleDeleteModulAjar}>
                     Delete

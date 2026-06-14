@@ -11,10 +11,8 @@ import {
   CardContent,
   LinearProgress,
   Chip,
-  Grid,
 } from '@mui/material';
 import {
-  TrendingUp,
   Assignment,
 } from '@mui/icons-material';
 
@@ -93,40 +91,40 @@ const CompetencyProgress: React.FC<CompetencyProgressProps> = ({
           />
         </Box>
 
-        <Grid container spacing={2} sx={{ mb: 2 }}>
-          <Grid item xs={6} sm={3}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 2, mb: 2 }}>
+          <Box sx={{ gridColumn: { xs: 'span 6', sm: 'span 3' } }}>
             <Typography variant="caption" color="text.secondary">
               Total Asesmen
             </Typography>
             <Typography variant="body1" fontWeight="bold">
               {progress.total_assessments}
             </Typography>
-          </Grid>
-          <Grid item xs={6} sm={3}>
+          </Box>
+          <Box sx={{ gridColumn: { xs: 'span 6', sm: 'span 3' } }}>
             <Typography variant="caption" color="text.secondary">
               Selesai
             </Typography>
             <Typography variant="body1" fontWeight="bold">
               {progress.completed_assessments}
             </Typography>
-          </Grid>
-          <Grid item xs={6} sm={3}>
+          </Box>
+          <Box sx={{ gridColumn: { xs: 'span 6', sm: 'span 3' } }}>
             <Typography variant="caption" color="text.secondary">
               Rata-rata Skor
             </Typography>
             <Typography variant="body1" fontWeight="bold">
               {progress.average_score}
             </Typography>
-          </Grid>
-          <Grid item xs={6} sm={3}>
+          </Box>
+          <Box sx={{ gridColumn: { xs: 'span 6', sm: 'span 3' } }}>
             <Typography variant="caption" color="text.secondary">
               Progress
             </Typography>
             <Typography variant="body1" fontWeight="bold">
               {progress.progress_percentage}%
             </Typography>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         <Box sx={{ mb: 2 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -150,9 +148,9 @@ const CompetencyProgress: React.FC<CompetencyProgressProps> = ({
             <Typography variant="subtitle2" gutterBottom>
               Progress Kriteria
             </Typography>
-            <Grid container spacing={1}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 1 }}>
               {progress.criteria_progress.map((criteria) => (
-                <Grid item xs={12} sm={6} key={criteria.criteria_id}>
+                <Box sx={{ gridColumn: { xs: 'span 12', sm: 'span 6' } }} key={criteria.criteria_id}>
                   <Box
                     sx={{
                       p: 1,
@@ -169,9 +167,9 @@ const CompetencyProgress: React.FC<CompetencyProgressProps> = ({
                       {criteria.evidence_count} bukti
                     </Typography>
                   </Box>
-                </Grid>
+                </Box>
               ))}
-            </Grid>
+            </Box>
           </Box>
         )}
       </CardContent>

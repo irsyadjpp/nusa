@@ -44,14 +44,14 @@ interface PublicInfoData {
 export default function SettingsPublicInfo() {
   const [publicInfo, setPublicInfo] = useState<PublicInfoData>({
     id: "4232-0594-3495",
-    name: "Laura Ellis",
-    username: "writerofrohan",
-    company: "Gogo",
-    location: "Berlin, Deutschland",
+    name: "Budi Santoso",
+    username: "budisantoso",
+    company: "Nusa",
+    location: "Jakarta, Indonesia",
     birthday: "10/20/1990",
-    gender: "Female",
+    gender: "Male",
     genderList: ["Female", "Male", "Other", "Not Specified"],
-    bio: "Hello there!",
+    bio: "Guru matematika dengan semangat Kurikulum Merdeka",
     file: {
       path: "/images/avatars/avatar-1.jpg",
       relativePath: "/images/avatars/avatar-1.jpg",

@@ -3,8 +3,8 @@
  * Panel for viewing and managing evaluation details
  */
 
-import { Box, Typography, Paper, Divider, Button, Stack } from '@mui/material';
-import { Evaluation } from '@/api/evaluation';
+import { Box, Typography, Paper, Divider, Button } from '@mui/material';
+import { Evaluation } from '@/shared/types/domain';
 
 interface EvaluationPanelProps {
   evaluation: Evaluation;
@@ -27,14 +27,7 @@ export const EvaluationPanel = ({
         Evaluation Details
       </Typography>
       <Divider sx={{ my: 2 }} />
-      <Stack spacing={2}>
-        <Box>
-          <Typography variant="subtitle2" color="text.secondary">
-            Status
-          </Typography>
-          <Typography variant="body1">{evaluation.status}</Typography>
-        </Box>
-
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box>
           <Typography variant="subtitle2" color="text.secondary">
             Evidence ID
@@ -46,14 +39,21 @@ export const EvaluationPanel = ({
           <Typography variant="subtitle2" color="text.secondary">
             Evaluator ID
           </Typography>
-          <Typography variant="body1">{evaluation.evaluator_id}</Typography>
+          <Typography variant="body1">{evaluation.teacher_id}</Typography>
         </Box>
 
         <Box>
           <Typography variant="subtitle2" color="text.secondary">
-            Score
+            Total Score
           </Typography>
-          <Typography variant="body1">{evaluation.score}</Typography>
+          <Typography variant="body1">{evaluation.performance_scores.total_score} / {evaluation.performance_scores.max_score}</Typography>
+        </Box>
+
+        <Box>
+          <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+            Performance Level
+          </Typography>
+          <Typography variant="body1">{evaluation.performance_level}</Typography>
         </Box>
 
         <Box>
@@ -61,13 +61,13 @@ export const EvaluationPanel = ({
             Feedback
           </Typography>
           <Typography variant="body1" whiteSpace="pre-wrap">
-            {evaluation.feedback || 'No feedback provided'}
+            {evaluation.teacher_feedback || 'No feedback provided'}
           </Typography>
         </Box>
 
         <Divider />
 
-        <Stack direction="row" spacing={2} justifyContent="flex-end">
+        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, justifyContent: 'flex-end' }}>
           {onEdit && canEdit && (
             <Button variant="outlined" onClick={onEdit}>
               Edit
@@ -78,8 +78,8 @@ export const EvaluationPanel = ({
               Delete
             </Button>
           )}
-        </Stack>
-      </Stack>
+        </Box>
+      </Box>
     </Paper>
   );
 };

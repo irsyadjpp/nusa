@@ -10,7 +10,7 @@ import {
   Card,
   CardContent,
 } from '@mui/material';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from '@mui/x-charts';
+import { LineChart } from '@mui/x-charts/LineChart';
 
 interface TrajectoryPoint {
   date: string;
@@ -19,13 +19,11 @@ interface TrajectoryPoint {
 }
 
 interface StudentTrajectoryProps {
-  student_id: string;
   student_name: string;
   trajectory_points: TrajectoryPoint[];
 }
 
 const StudentTrajectory: React.FC<StudentTrajectoryProps> = ({
-  student_id,
   student_name,
   trajectory_points,
 }) => {
@@ -44,11 +42,9 @@ const StudentTrajectory: React.FC<StudentTrajectoryProps> = ({
     }
   };
 
-  const chartData = trajectory_points.map((point) => ({
-    x: new Date(point.date).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' }),
-    y: point.score,
-    mastery: point.mastery_level,
-  }));
+  const xLabels = trajectory_points.map((point) => 
+    new Date(point.date).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' })
+  );
 
   return (
     <Card>
@@ -57,23 +53,19 @@ const StudentTrajectory: React.FC<StudentTrajectoryProps> = ({
           Trajektori Kemajuan - {student_name}
         </Typography>
 
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="x" />
-            <YAxis domain={[0, 100]} />
-            <Tooltip />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="y"
-              stroke="#2196f3"
-              strokeWidth={2}
-              dot={{ fill: '#2196f3', strokeWidth: 2, r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+        <Box sx={{ height: 300 }}>
+          <LineChart
+            xAxis={[{ scaleType: 'point', data: xLabels }]}
+            yAxis={[{ min: 0, max: 100 }]}
+            series={[
+              {
+                data: trajectory_points.map((point) => point.score),
+                color: '#2196f3',
+              },
+            ]}
+            height={300}
+          />
+        </Box>
 
         <Box sx={{ mt: 2 }}>
           <Typography variant="subtitle2" gutterBottom>

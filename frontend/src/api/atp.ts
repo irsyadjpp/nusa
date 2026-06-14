@@ -1,77 +1,62 @@
 /**
  * ATP (Alur Tujuan Pembelajaran) API Client
- * Handles all ATP-related API calls
+ * Handles all ATP-related API calls with proper types
  */
 
 import apiClient, { handleApiError } from './client';
+import {
+  ATP,
+  ATPSet,
+  LearningActivities,
+  TimeAllocation,
+  TPStatus,
+  PaginationParams,
+  FilterParams
+} from '@/shared/types/domain';
 
-// Types
-export interface ATP {
-  id: string;
+// Extended request types for API specific needs
+export interface ATPCreateRequest {
   atp_set_id: string;
   tp_id: string;
   sequence_number: number;
-  week_number: number;
-  estimated_hours: number;
-  status: string;
-  created_at: string;
-  updated_at: string;
+  week: number;
+  learning_activities: LearningActivities;
+  assessment_methods: string[];
+  time_allocation: TimeAllocation;
 }
 
-export interface ATPSet {
-  id: string;
-  tp_set_id: string;
-  subject_id: string;
-  phase_id: string;
-  grade: string;
-  semester: string;
-  status: string;
-  approved_by?: string;
-  approved_at?: string;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface CreateATPRequest {
-  atp_set_id: string;
-  tp_id: string;
-  sequence_number: number;
-  week_number: number;
-  estimated_hours: number;
-}
-
-export interface UpdateATPRequest {
+export interface ATPUpdateRequest {
   sequence_number?: number;
-  week_number?: number;
-  estimated_hours?: number;
-  status?: string;
+  week?: number;
+  learning_activities?: LearningActivities;
+  assessment_methods?: string[];
+  time_allocation?: TimeAllocation;
+  status?: TPStatus;
 }
 
-export interface CreateATPSetRequest {
+export interface ATPSetCreateRequest {
   tp_set_id: string;
   subject_id: string;
   phase_id: string;
   grade: string;
   semester: string;
+  generation_source?: 'MANUAL' | 'AI_GENERATED';
+  generation_reason?: string;
 }
 
-export interface UpdateATPSetRequest {
-  status?: string;
+export interface ATPSetUpdateRequest {
+  status?: TPStatus;
 }
 
 /**
  * Get all ATPs with optional filters
  */
-export const getATPs = async (params?: {
+export const getATPs = async (params?: PaginationParams & FilterParams & {
   atp_set_id?: string;
   tp_id?: string;
-  status?: string;
-  limit?: number;
-  offset?: number;
 }): Promise<ATP[]> => {
   try {
-    const response = await apiClient.get('/learning-planning/atps', { params });
+    const response = await apiClient.get('learning-planning/atps', { params });
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -83,7 +68,7 @@ export const getATPs = async (params?: {
  */
 export const getATPById = async (id: string): Promise<ATP> => {
   try {
-    const response = await apiClient.get(`/learning-planning/atps/${id}`);
+    const response = await apiClient.get(`learning-planning/atps/${id}`);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -95,7 +80,7 @@ export const getATPById = async (id: string): Promise<ATP> => {
  */
 export const getATPsBySet = async (atpSetId: string): Promise<ATP[]> => {
   try {
-    const response = await apiClient.get(`/learning-planning/atps/atp-set/${atpSetId}`);
+    const response = await apiClient.get(`learning-planning/atps/atp-set/${atpSetId}`);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -105,9 +90,9 @@ export const getATPsBySet = async (atpSetId: string): Promise<ATP[]> => {
 /**
  * Create new ATP
  */
-export const createATP = async (data: CreateATPRequest): Promise<ATP> => {
+export const createATP = async (data: ATPCreateRequest): Promise<ATP> => {
   try {
-    const response = await apiClient.post('/learning-planning/atps', data);
+    const response = await apiClient.post('learning-planning/atps', data);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -117,9 +102,9 @@ export const createATP = async (data: CreateATPRequest): Promise<ATP> => {
 /**
  * Update ATP
  */
-export const updateATP = async (id: string, data: UpdateATPRequest): Promise<ATP> => {
+export const updateATP = async (id: string, data: ATPUpdateRequest): Promise<ATP> => {
   try {
-    const response = await apiClient.put(`/learning-planning/atps/${id}`, data);
+    const response = await apiClient.put(`learning-planning/atps/${id}`, data);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -131,7 +116,7 @@ export const updateATP = async (id: string, data: UpdateATPRequest): Promise<ATP
  */
 export const deleteATP = async (id: string): Promise<void> => {
   try {
-    await apiClient.delete(`/learning-planning/atps/${id}`);
+    await apiClient.delete(`learning-planning/atps/${id}`);
   } catch (error) {
     throw handleApiError(error);
   }
@@ -140,29 +125,26 @@ export const deleteATP = async (id: string): Promise<void> => {
 /**
  * Get ATP Sets
  */
-export const getATPSets = async (params?: {
+export const getATPSets = async (params?: PaginationParams & FilterParams & {
   tp_set_id?: string;
   subject_id?: string;
   phase_id?: string;
-  status?: string;
-  limit?: number;
-  offset?: number;
 }): Promise<ATPSet[]> => {
   try {
-    const response = await apiClient.get('/learning-planning/atp-sets', { params });
-    return response.data.data || response.data;
+    const response = await apiClient.get('learning-planning/atp-sets', { params });
+    return response.data.atp_sets || response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
   }
 };
 
 /**
- * Get ATP Set by ID
+ * Get ATP Set by ID (Sprint 3.5 EP-07)
  */
 export const getATPSetById = async (id: string): Promise<ATPSet> => {
   try {
-    const response = await apiClient.get(`/learning-planning/atp-sets/${id}`);
-    return response.data.data || response.data;
+    const response = await apiClient.get(`learning-planning/atp-sets/${id}`);
+    return response.data || response.data.data;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -171,9 +153,9 @@ export const getATPSetById = async (id: string): Promise<ATPSet> => {
 /**
  * Create ATP Set
  */
-export const createATPSet = async (data: CreateATPSetRequest): Promise<ATPSet> => {
+export const createATPSet = async (data: ATPSetCreateRequest): Promise<ATPSet> => {
   try {
-    const response = await apiClient.post('/learning-planning/atp-sets', data);
+    const response = await apiClient.post('learning-planning/atp-sets', data);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -183,9 +165,9 @@ export const createATPSet = async (data: CreateATPSetRequest): Promise<ATPSet> =
 /**
  * Update ATP Set
  */
-export const updateATPSet = async (id: string, data: UpdateATPSetRequest): Promise<ATPSet> => {
+export const updateATPSet = async (id: string, data: ATPSetUpdateRequest): Promise<ATPSet> => {
   try {
-    const response = await apiClient.put(`/learning-planning/atp-sets/${id}`, data);
+    const response = await apiClient.put(`learning-planning/atp-sets/${id}`, data);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -197,8 +179,19 @@ export const updateATPSet = async (id: string, data: UpdateATPSetRequest): Promi
  */
 export const approveATPSet = async (id: string): Promise<ATPSet> => {
   try {
-    const response = await apiClient.post(`/learning-planning/atp-sets/${id}/approve`);
+    const response = await apiClient.post(`learning-planning/atp-sets/${id}/approve`);
     return response.data.data || response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};
+
+/**
+ * Delete ATP Set
+ */
+export const deleteATPSet = async (id: string): Promise<void> => {
+  try {
+    await apiClient.delete(`learning-planning/atp-sets/${id}`);
   } catch (error) {
     throw handleApiError(error);
   }
@@ -216,4 +209,5 @@ export default {
   createATPSet,
   updateATPSet,
   approveATPSet,
+  deleteATPSet,
 };

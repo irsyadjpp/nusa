@@ -4,7 +4,7 @@ import { RubricDesignerHeader } from '@/features/rubric';
 import { RubricList, RubricFilters, RubricForm, RubricPreviewPanel } from '@/features/rubric';
 import { useRubrics } from '@/services/queries/RubricQueryService';
 import { useCreateRubric, useUpdateRubric, useDeleteRubric } from '@/services/commands/RubricCommandService';
-import { Rubric } from '@/api/rubric';
+import { Rubric } from '@/shared/types/domain';
 import { enqueueSnackbar } from 'notistack';
 
 const RubricPage: React.FC = () => {

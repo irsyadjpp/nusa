@@ -93,6 +93,14 @@ func New() (*App, error) {
 	assessmentRepo := repository.NewAssessmentRepository(sqlxDB)
 	reportingRepo := repository.NewReportingRepository(sqlxDB)
 
+	// Sprint 4: Academic Foundation repositories
+	academicYearRepo := repository.NewAcademicYearRepository(sqlxDB)
+	semesterRepo := repository.NewSemesterRepository(sqlxDB)
+	subjectCategoryRepo := repository.NewSubjectCategoryRepository(sqlxDB)
+	graduateProfileRepo := repository.NewGraduateProfileDimensionRepository(sqlxDB)
+	cpAlignmentRepo := repository.NewCPAlignmentRepository(sqlxDB)
+	systemConfigRepo := repository.NewSystemConfigurationRepository(sqlxDB)
+
 	// Initialize services
 	log.Info("Initializing services")
 	userService := service.NewUserService(userRepo, roleRepo)
@@ -107,6 +115,15 @@ func New() (*App, error) {
 	assessmentService := service.NewAssessmentService(assessmentRepo)
 	achievementService := service.NewAchievementService(assessmentRepo, tpRepo)
 	reportingService := service.NewReportingService(reportingRepo, achievementService)
+
+	// Resource authorization service
+	authService := service.NewResourceAuthorizationService(
+		userRepo,
+		tpRepo,
+		learningPlanningRepo,
+		assessmentRepo,
+		reportingRepo,
+	)
 
 	// Initialize JWT service
 	log.Info("Initializing JWT service")
@@ -126,8 +143,8 @@ func New() (*App, error) {
 
 	// Education domain handlers
 	curriculumH := curriculumHandler.NewHandler(curriculumService)
-	learningPlanningH := learningPlanningHandler.NewHandler(tpService, atpService, modulAjarService)
-	assessmentH := assessmentHandler.NewHandler(assessmentService)
+	learningPlanningH := learningPlanningHandler.NewHandler(tpService, atpService, modulAjarService, authService)
+	assessmentH := assessmentHandler.NewHandler(assessmentService, authService)
 	achievementH := achievement.NewHandler(achievementService)
 	reportingH := reportingHandler.NewHandler(reportingService)
 
@@ -135,9 +152,32 @@ func New() (*App, error) {
 	tpSetApplicationService := application.NewTPSetApplicationService(tpRepo, userRepo, schoolRepo)
 	tpSetHandler := handler.NewTPSetHandler(tpSetApplicationService)
 
+	// Sprint 4: Academic Foundation application services
+	academicYearApplicationService := application.NewAcademicYearApplicationService(academicYearRepo, userRepo, semesterRepo)
+	semesterApplicationService := application.NewSemesterApplicationService(semesterRepo, academicYearRepo, userRepo)
+	curriculumGovernanceApplicationService := application.NewCurriculumGovernanceApplicationService(
+		subjectCategoryRepo,
+		graduateProfileRepo,
+		cpAlignmentRepo,
+		curriculumRepo,
+		systemConfigRepo,
+		userRepo,
+	)
+	systemConfigurationApplicationService := application.NewSystemConfigurationApplicationService(systemConfigRepo, userRepo)
+
+	// Sprint 4: Academic Foundation handlers
+	academicYearHandler := handler.NewAcademicYearHandler(academicYearApplicationService)
+	semesterHandler := handler.NewSemesterHandler(semesterApplicationService)
+	curriculumGovernanceHandler := handler.NewCurriculumGovernanceHandler(curriculumGovernanceApplicationService)
+	systemConfigurationHandler := handler.NewSystemConfigurationHandler(systemConfigurationApplicationService)
+
 	// Initialize router with all handlers
 	log.Info("Initializing router with routes")
-	r := router.NewRouter(authH, userH, schoolH, roleH, curriculumH, learningPlanningH, assessmentH, achievementH, reportingH, tpSetHandler, jwtSvc, userRepo, schoolRepo)
+	r := router.NewRouter(
+		authH, userH, schoolH, roleH, curriculumH, learningPlanningH, assessmentH, achievementH, reportingH, tpSetHandler,
+		academicYearHandler, semesterHandler, curriculumGovernanceHandler, systemConfigurationHandler,
+		jwtSvc, userRepo, schoolRepo,
+	)
 
 	// Create server with configured router
 	srv := server.NewWithRouter(cfg, log, r.GetEngine())

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, List, ListItem, ListItemText, Divider, Chip } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemText, Divider } from '@mui/material';
 
 interface FeedbackEntry {
   id: string;

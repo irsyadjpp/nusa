@@ -3,7 +3,8 @@
  * Displays a list of Teaching Plans with filtering and pagination
  */
 
-import { Box, List, ListItem, ListItemText, ListItemButton, Chip, Typography } from '@mui/material';
+import React from 'react';
+import { Box, List, ListItem, ListItemText, ListItemButton, Chip, Typography, Divider } from '@mui/material';
 import { TP } from '@/api/tp';
 
 interface TPListProps {
@@ -32,26 +33,30 @@ export const TPList = ({ tps, selectedId, onSelect, loading }: TPListProps) => {
 
   return (
     <List>
-      {tps.map((tp) => (
-        <ListItem
-          key={tp.id}
-          disablePadding
-          selected={selectedId === tp.id}
-          secondaryAction={
-            <Chip
-              label={tp.status}
-              size="small"
-              color={tp.status === 'approved' ? 'success' : tp.status === 'draft' ? 'default' : 'warning'}
-            />
-          }
-        >
-          <ListItemButton onClick={() => onSelect?.(tp)} selected={selectedId === tp.id}>
-            <ListItemText
-              primary={tp.title}
-              secondary={`Sequence: ${tp.sequence_number} | Phase: ${tp.phase_id}`}
-            />
-          </ListItemButton>
-        </ListItem>
+      {tps.map((tp, index) => (
+        <React.Fragment key={tp.id}>
+          <ListItem
+            disablePadding
+            sx={{
+              backgroundColor: selectedId === tp.id ? 'action.selected' : 'transparent',
+            }}
+          >
+            <ListItemButton onClick={() => onSelect?.(tp)}>
+              <ListItemText
+                primary={tp.title}
+                secondary={`Sequence: ${tp.sequence_number} | Phase: ${tp.phase_id}`}
+              />
+            </ListItemButton>
+            <Box sx={{ display: 'flex', alignItems: 'center', pr: 2 }}>
+              <Chip
+                label={tp.status}
+                size="small"
+                color={tp.status === 'APPROVED' ? 'success' : tp.status === 'DRAFT' ? 'default' : 'warning'}
+              />
+            </Box>
+          </ListItem>
+          {index < tps.length - 1 && <Divider />}
+        </React.Fragment>
       ))}
     </List>
   );

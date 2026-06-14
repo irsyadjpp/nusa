@@ -1,145 +1,258 @@
-/**
- * Student Progress Page
- * Individual student progress view
- */
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useParams } from 'react-router-dom';
 import {
   Box,
   Typography,
   Button,
   Grid,
-  Card,
-  CardContent,
   CircularProgress,
   Alert,
-  TextField,
+  Card,
+  CardContent,
+  Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  LinearProgress,
+  Container,
+  Breadcrumbs,
+  Link,
 } from '@mui/material';
-import {
-  ArrowBack,
-  TrendingUp,
-} from '@mui/icons-material';
-import { useNavigate, useParams } from 'react-router-dom';
-import { getStudentAchievement, getStudentProgress } from '@/api/achievement';
-import AchievementCard from '@/components/achievement/AchievementCard';
-import CompetencyProgress from '@/components/achievement/CompetencyProgress';
-import StudentTrajectory from '@/components/achievement/StudentTrajectory';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useNavigate } from 'react-router-dom';
+import { useStudentAchievement, useStudentProgress } from '@/services/queries/AchievementQueryService';
 
-const StudentProgressPage: React.FC = () => {
+const StudentDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  const [studentData, setStudentData] = useState<any>(null);
-  const [progressData, setProgressData] = useState<any[]>([]);
-  const [trajectoryData, setTrajectoryData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedPeriod, setSelectedPeriod] = useState<string>('current');
+  const { id: studentId } = useParams<{ id: string }>();
 
-  useEffect(() => {
-    if (id) {
-      loadStudentData(id);
-    }
-  }, [id, selectedPeriod]);
+  const {
+    data: studentAchievements,
+    isLoading: isLoadingAchievement,
+    error: achievementError,
+  } = useStudentAchievement(studentId || '');
 
-  const loadStudentData = async (studentId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [achievementData, progressResult, trajectoryResult] = await Promise.all([
-        getStudentAchievement(studentId, selectedPeriod),
-        getStudentProgress(studentId),
-        fetch(`/api/achievements/${studentId}/trajectory`).then(res => res.json()),
-      ]);
-      setStudentData(achievementData);
-      setProgressData(progressResult);
-      setTrajectoryData(trajectoryResult);
-    } catch (err: any) {
-      setError(err.message || 'Gagal memuat data siswa');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    data: studentProgress,
+    isLoading: isLoadingProgress,
+    error: progressError,
+  } = useStudentProgress(studentId || '');
 
-  if (loading) {
+  if (isLoadingAchievement || isLoadingProgress) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress />
-      </Box>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
+        </Box>
+      </Container>
     );
   }
 
-  if (error) {
+  if (achievementError || progressError) {
     return (
-      <Alert severity="error">
-        {error}
-      </Alert>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Alert severity="error">{achievementError?.message || progressError?.message || 'Failed to load student data'}</Alert>
+      </Container>
     );
   }
 
   return (
-    <Box>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+        <Link underline="hover" onClick={() => navigate('/achievement')}>
+          Achievement
+        </Link>
+        <Typography color="text.primary">Student Dashboard</Typography>
+      </Breadcrumbs>
+
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Button
-            variant="outlined"
-            startIcon={<ArrowBack />}
-            onClick={() => navigate('/dashboard')}
-          >
-            Kembali
-          </Button>
-          <Typography variant="h4">Progress Siswa</Typography>
-        </Box>
-        <TextField
-          select
-          label="Periode"
-          value={selectedPeriod}
-          onChange={(e) => setSelectedPeriod(e.target.value)}
-          sx={{ minWidth: 150 }}
+        <Typography variant="h4" component="h1">
+          Student Dashboard - {studentId}
+        </Typography>
+        <Button
+          variant="outlined"
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate('/achievement')}
         >
-          <MenuItem value="current">Semester Ini</MenuItem>
-          <MenuItem value="last">Semester Lalu</MenuItem>
-          <MenuItem value="all">Semua</MenuItem>
-        </TextField>
+          Back to Achievement
+        </Button>
       </Box>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={4}>
-          {studentData && (
-            <AchievementCard
-              achievement={studentData}
-              onClick={() => {}}
-            />
-          )}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Student Achievement
+              </Typography>
+              {studentAchievements && studentAchievements.length > 0 ? (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Competency</TableCell>
+                        <TableCell>Mastery Level</TableCell>
+                        <TableCell>Score</TableCell>
+                        <TableCell>Percentage</TableCell>
+                        <TableCell>Achieved Criteria</TableCell>
+                        <TableCell>Pending Criteria</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {studentAchievements.map((achievement: any) => (
+                        <TableRow key={achievement.competency_id}>
+                          <TableCell>{achievement.competency_name}</TableCell>
+                          <TableCell>
+                            <Chip
+                              label={achievement.mastery_level}
+                              color={
+                                achievement.mastery_level === 'EXEMPLARY'
+                                  ? 'success'
+                                  : achievement.mastery_level === 'PROFICIENT'
+                                  ? 'primary'
+                                  : achievement.mastery_level === 'DEVELOPING'
+                                  ? 'warning'
+                                  : 'error'
+                              }
+                              size="small"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            {achievement.score} / {achievement.max_score}
+                          </TableCell>
+                          <TableCell>
+                            <LinearProgress
+                              variant="determinate"
+                              value={achievement.percentage}
+                              sx={{ minWidth: 100 }}
+                            />
+                            <Typography variant="caption">{achievement.percentage}%</Typography>
+                          </TableCell>
+                          <TableCell>
+                            {achievement.achieved_criteria.length > 0 ? (
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                {achievement.achieved_criteria.map((criteria: any) => (
+                                  <Chip key={criteria} label={criteria} size="small" color="success" />
+                                ))}
+                              </Box>
+                            ) : (
+                              <Typography color="text.secondary">None</Typography>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {achievement.pending_criteria.length > 0 ? (
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                {achievement.pending_criteria.map((criteria: any) => (
+                                  <Chip key={criteria} label={criteria} size="small" color="warning" />
+                                ))}
+                              </Box>
+                            ) : (
+                              <Typography color="text.secondary">None</Typography>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Typography color="text.secondary">No achievement data available</Typography>
+              )}
+            </CardContent>
+          </Card>
         </Grid>
 
-        <Grid item xs={12} md={8}>
-          {trajectoryData && (
-            <StudentTrajectory
-              student_id={id || ''}
-              student_name={studentData?.student_name || 'Siswa'}
-              trajectory_points={trajectoryData.trajectory_points || []}
-            />
-          )}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Competency Progress
+              </Typography>
+              {studentProgress && studentProgress.length > 0 ? (
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Competency</TableCell>
+                        <TableCell>Progress</TableCell>
+                        <TableCell>Average Score</TableCell>
+                        <TableCell>Completed Assessments</TableCell>
+                        <TableCell>Total Assessments</TableCell>
+                        <TableCell>Mastery Level</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {studentProgress.map((progress: any) => (
+                        <TableRow key={progress.competency_id}>
+                          <TableCell>{progress.competency_name}</TableCell>
+                          <TableCell>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <LinearProgress
+                                variant="determinate"
+                                value={progress.progress_percentage}
+                                sx={{ flex: 1, minWidth: 100 }}
+                              />
+                              <Typography variant="body2">{progress.progress_percentage}%</Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>{progress.average_score}</TableCell>
+                          <TableCell>
+                            {progress.completed_assessments} / {progress.total_assessments}
+                          </TableCell>
+                          <TableCell>{progress.total_assessments}</TableCell>
+                          <TableCell>
+                            <Chip
+                              label={progress.mastery_level}
+                              color={
+                                progress.mastery_level === 'EXEMPLARY'
+                                  ? 'success'
+                                  : progress.mastery_level === 'PROFICIENT'
+                                  ? 'primary'
+                                  : progress.mastery_level === 'DEVELOPING'
+                                  ? 'warning'
+                                  : 'error'
+                              }
+                              size="small"
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Typography color="text.secondary">No progress data available</Typography>
+              )}
+            </CardContent>
+          </Card>
         </Grid>
 
-        <Grid item xs={12}>
-          <Typography variant="h6" gutterBottom>
-            Progress Kompetensi
-          </Typography>
-          <Grid container spacing={3}>
-            {progressData.map((progress, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <CompetencyProgress
-                  progress={progress}
-                  showDetails
-                />
-              </Grid>
-            ))}
-          </Grid>
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Actions
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Button
+                  variant="contained"
+                  onClick={() => navigate('/reports/generate', { state: { studentId, classId: null } })}
+                >
+                  Generate Narrative Report
+                </Button>
+                <Button variant="outlined" onClick={() => navigate('/achievement')}>
+                  Back to Achievement Dashboard
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
-    </Box>
+    </Container>
   );
 };
 
-export default StudentProgressPage;
+export default StudentDashboard;

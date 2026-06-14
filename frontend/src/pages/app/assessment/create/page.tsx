@@ -1,5 +1,5 @@
 /**
- * Assessment Create Page
+ * Assessment Create Page - MIGRATED TO TANSTACK QUERY
  * Create new Assessment
  */
 
@@ -8,32 +8,35 @@ import {
   Box,
   Typography,
   Button,
-  CircularProgress,
   Alert,
 } from '@mui/material';
 import {
   ArrowBack,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { createAssessment } from '@/api/assessment';
+import { useCreateAssessment } from '@/services/commands/AssessmentCommandService';
+import { useAuth } from '@/features/auth';
 import AssessmentForm from '@/components/assessment/AssessmentForm';
 
 const AssessmentCreatePage: React.FC = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (values: any) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const newAssessment = await createAssessment(values);
+  // ✅ Using TanStack Query mutation instead of manual API call
+  const createMutation = useCreateAssessment({
+    onSuccess: (newAssessment) => {
       navigate(`/assessment/${newAssessment.id}`);
-    } catch (err: any) {
+    },
+    onError: (err) => {
       setError(err.message || 'Gagal membuat asesmen');
-    } finally {
-      setLoading(false);
-    }
+    },
+  });
+
+  const handleSubmit = async (values: any) => {
+    if (!user?.id) return;
+    setError(null);
+    createMutation.mutate({ data: values, userId: user.id });
   };
 
   return (
@@ -60,7 +63,7 @@ const AssessmentCreatePage: React.FC = () => {
       <AssessmentForm
         onSubmit={handleSubmit}
         onCancel={() => navigate('/assessment')}
-        loading={loading}
+        loading={createMutation.isPending}
       />
     </Box>
   );

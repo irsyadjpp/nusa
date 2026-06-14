@@ -19,6 +19,9 @@ type ITPSetApplicationService interface {
 	ListTPSets(ctx context.Context, query *application.ListTPSetsQuery) (*application.ListTPSetsResponse, error)
 	GetTPSet(ctx context.Context, query *application.GetTPSetQuery) (*application.GetTPSetResponse, error)
 	ApproveTPSet(ctx context.Context, cmd *application.ApproveTPSetCommand) (*application.ApproveTPSetResponse, error)
+	CreateTP(ctx context.Context, cmd *application.CreateTPCommand) (*application.CreateTPResponse, error)
+	ListTPs(ctx context.Context, query *application.ListTPsQuery) (*application.ListTPsResponse, error)
+	GetTP(ctx context.Context, query *application.GetTPQuery) (*application.GetTPResponse, error)
 }
 
 // TPSetHandler handles HTTP requests for TP Set endpoints
@@ -337,14 +340,80 @@ func (h *TPSetHandler) CreateTP(c *gin.Context) {
 		return
 	}
 
-	// Note: This would need to be implemented in the application service
-	// For now, return not implemented
-	c.JSON(http.StatusNotImplemented, dto.ErrorResponse{
-		Error: dto.ErrorDetail{
-			Code:    "NOT_IMPLEMENTED",
-			Message: "TP creation not yet implemented",
-		},
+	// Convert DTO types to application service types
+	var elementID *string
+	if req.ElementID != "" {
+		elementID = &req.ElementID
+	}
+	var subelementID *string
+	if req.SubelementID != "" {
+		subelementID = &req.SubelementID
+	}
+
+	learningObjectives, _ := req.LearningObjectives.(map[string]interface{})
+	timeAllocation, _ := req.TimeAllocation.(map[string]interface{})
+
+	var prerequisites string
+	if req.Prerequisites != nil {
+		if s, ok := req.Prerequisites.(string); ok {
+			prerequisites = s
+		}
+	}
+
+	var successCriteria map[string]interface{}
+	if req.SuccessCriteria != nil {
+		if m, ok := req.SuccessCriteria.(map[string]interface{}); ok {
+			successCriteria = m
+		}
+	} else {
+		successCriteria = make(map[string]interface{})
+	}
+
+	cmd := &application.CreateTPCommand{
+		TPSetID:            req.TPSetID,
+		SequenceNumber:     req.SequenceNumber,
+		CPID:               req.CPID,
+		SubjectID:          req.SubjectID,
+		PhaseID:            req.PhaseID,
+		ElementID:          elementID,
+		SubelementID:       subelementID,
+		Title:              req.Title,
+		LearningObjectives: learningObjectives,
+		TimeAllocation:     timeAllocation,
+		Prerequisites:      prerequisites,
+		EstimatedWeeks:     req.EstimatedWeeks,
+		SuccessCriteria:    successCriteria,
+		UserID:             authCtx.UserID,
+	}
+
+	resp, err := h.tpSetApplicationService.CreateTP(c.Request.Context(), cmd)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Error: dto.ErrorDetail{
+				Code:    "INTERNAL_ERROR",
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+
+	// Fetch the created TP to return full response
+	tp, err := h.tpSetApplicationService.GetTP(c.Request.Context(), &application.GetTPQuery{
+		UserID: authCtx.UserID,
+		TPID:   resp.TPID,
 	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Error: dto.ErrorDetail{
+				Code:    "INTERNAL_ERROR",
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+
+	tpResp := h.mapToTPResponse(tp.TP)
+	c.JSON(http.StatusCreated, tpResp)
 }
 
 // ListTPs lists TPs
@@ -377,13 +446,49 @@ func (h *TPSetHandler) ListTPs(c *gin.Context) {
 		return
 	}
 
-	// Note: This would need to be implemented in the application service
-	// For now, return not implemented
-	c.JSON(http.StatusNotImplemented, dto.ErrorResponse{
-		Error: dto.ErrorDetail{
-			Code:    "NOT_IMPLEMENTED",
-			Message: "TP listing not yet implemented",
-		},
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
+
+	var tpSetID *string
+	if tpSetIDStr := c.Query("tp_set_id"); tpSetIDStr != "" {
+		tpSetID = &tpSetIDStr
+	}
+
+	var status *domain.WorkflowStatus
+	if statusStr := c.Query("status"); statusStr != "" {
+		s := domain.WorkflowStatus(statusStr)
+		status = &s
+	}
+
+	query := &application.ListTPsQuery{
+		TPSetID:  tpSetID,
+		Status:   status,
+		UserID:   authCtx.UserID,
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	resp, err := h.tpSetApplicationService.ListTPs(c.Request.Context(), query)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{
+			Error: dto.ErrorDetail{
+				Code:    "INTERNAL_ERROR",
+				Message: err.Error(),
+			},
+		})
+		return
+	}
+
+	tpResponses := make([]dto.TPResponse, 0, len(resp.TPs))
+	for _, tp := range resp.TPs {
+		tpResponses = append(tpResponses, h.mapToTPResponse(tp))
+	}
+
+	c.JSON(http.StatusOK, dto.ListTPsResponse{
+		TPs:      tpResponses,
+		Total:    resp.Total,
+		Page:     resp.Page,
+		PageSize: resp.PageSize,
 	})
 }
 
@@ -414,14 +519,24 @@ func (h *TPSetHandler) GetTP(c *gin.Context) {
 		return
 	}
 
-	// Note: This would need to be implemented in the application service
-	// For now, return not implemented
-	c.JSON(http.StatusNotImplemented, dto.ErrorResponse{
-		Error: dto.ErrorDetail{
-			Code:    "NOT_IMPLEMENTED",
-			Message: "TP retrieval not yet implemented",
-		},
-	})
+	id := c.Param("id")
+	query := &application.GetTPQuery{
+		UserID: authCtx.UserID,
+		TPID:   id,
+	}
+
+	resp, err := h.tpSetApplicationService.GetTP(c.Request.Context(), query)
+	if err != nil {
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{
+			Error: dto.ErrorDetail{
+				Code:    "NOT_FOUND",
+				Message: "TP not found",
+			},
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, h.mapToTPResponse(resp.TP))
 }
 
 // Helper functions
@@ -448,6 +563,42 @@ func (h *TPSetHandler) mapToTPSetResponse(tpSet *domain.TPSet) dto.TPSetResponse
 	if tpSet.ApprovedAt != nil {
 		approvedAt := tpSet.ApprovedAt.Format(time.RFC3339)
 		resp.ApprovedAt = &approvedAt
+	}
+
+	return resp
+}
+
+func (h *TPSetHandler) mapToTPResponse(tp *domain.TP) dto.TPResponse {
+	resp := dto.TPResponse{
+		ID:                 tp.ID,
+		TPSetID:            tp.TPSetID,
+		SequenceNumber:     tp.SequenceNumber,
+		CPID:               tp.CPID,
+		CPCode:             "", // Would need to fetch from CP repository
+		CPText:             "", // Would need to fetch from CP repository
+		SubjectID:          tp.SubjectID,
+		SubjectCode:        "", // Would need to fetch from subject repository
+		SubjectName:        "", // Would need to fetch from subject repository
+		PhaseID:            tp.PhaseID,
+		PhaseCode:          "", // Would need to fetch from phase repository
+		PhaseName:          "", // Would need to fetch from phase repository
+		ElementID:          tp.ElementID,
+		ElementCode:        "", // Would need to fetch from element repository
+		ElementName:        "", // Would need to fetch from element repository
+		SubelementID:       tp.SubelementID,
+		SubelementCode:     "", // Would need to fetch from subelement repository
+		SubelementName:     "", // Would need to fetch from subelement repository
+		UserID:             tp.UserID,
+		UserName:           "", // Would need to fetch from user repository
+		Status:             string(tp.Status),
+		Title:              tp.Title,
+		LearningObjectives: tp.LearningObjectives,
+		TimeAllocation:     tp.TimeAllocation,
+		Prerequisites:      tp.Prerequisites,
+		EstimatedWeeks:     tp.EstimatedWeeks,
+		SuccessCriteria:    tp.SuccessCriteria,
+		CreatedAt:          tp.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:          tp.UpdatedAt.Format(time.RFC3339),
 	}
 
 	return resp

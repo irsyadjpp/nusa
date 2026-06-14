@@ -163,7 +163,7 @@ export default function Search() {
                     <ListItem className="p-0">
                       <ListItemButton classes={{ root: "group items-start" }}>
                         <ListItemAvatar>
-                          <Avatar alt="Olivia Bennett" src="/images/products/product-1.jpg" className="me-3" />
+                          <Avatar alt="Siti Rahayu" src="/images/products/product-1.jpg" className="me-3" />
                         </ListItemAvatar>
                         <ListItemText
                           primary={
@@ -187,7 +187,7 @@ export default function Search() {
                     <ListItem className="p-0">
                       <ListItemButton classes={{ root: "group items-start" }}>
                         <ListItemAvatar>
-                          <Avatar alt="Olivia Bennett" src="/images/products/product-2.jpg" className="me-3" />
+                          <Avatar alt="Siti Rahayu" src="/images/products/product-2.jpg" className="me-3" />
                         </ListItemAvatar>
                         <ListItemText
                           primary={
@@ -211,7 +211,7 @@ export default function Search() {
                     <ListItem className="p-0">
                       <ListItemButton classes={{ root: "group items-start" }}>
                         <ListItemAvatar>
-                          <Avatar alt="Olivia Bennett" src="/images/products/product-3.jpg" className="me-3" />
+                          <Avatar alt="Siti Rahayu" src="/images/products/product-3.jpg" className="me-3" />
                         </ListItemAvatar>
                         <ListItemText
                           primary={
@@ -356,7 +356,7 @@ export default function Search() {
                               Zoila Vittorino
                             </Typography>
                           }
-                          secondary="zoila.vittorino@gogo.dev"
+                          secondary="zoila.vittorino@nusa.dev"
                         />
                         <Button
                           className="icon-only hover:text-text-primary hover:bg-grey-100 mt-1 flex-none opacity-0 group-hover:opacity-100"
@@ -370,15 +370,15 @@ export default function Search() {
                     <ListItem className="p-0">
                       <ListItemButton classes={{ root: "group items-start" }}>
                         <ListItemAvatar>
-                          <Avatar alt="Travis Howard" src="/images/avatars/avatar-2.jpg" className="me-3" />
+                          <Avatar alt="Budi Santoso" src="/images/avatars/avatar-2.jpg" className="me-3" />
                         </ListItemAvatar>
                         <ListItemText
                           primary={
                             <Typography component="span" className="leading-4" variant="body1">
-                              Travis Howard
+                              Budi Santoso
                             </Typography>
                           }
-                          secondary="travis.howard@gogo.dev"
+                          secondary="budi.santoso@nusa.dev"
                         />
                         <Button
                           className="icon-only hover:text-text-primary hover:bg-grey-100 mt-1 flex-none opacity-0 group-hover:opacity-100"
@@ -392,15 +392,15 @@ export default function Search() {
                     <ListItem className="p-0">
                       <ListItemButton classes={{ root: "group items-start" }}>
                         <ListItemAvatar>
-                          <Avatar alt="Olivia Bennett" src="/images/avatars/avatar-3.jpg" className="me-3" />
+                          <Avatar alt="Siti Rahayu" src="/images/avatars/avatar-3.jpg" className="me-3" />
                         </ListItemAvatar>
                         <ListItemText
                           primary={
                             <Typography component="span" className="leading-4" variant="body1">
-                              Olivia Bennett
+                              Siti Rahayu
                             </Typography>
                           }
-                          secondary="olivia.bennett@gogo.dev"
+                          secondary="siti.rahayu@nusa.dev"
                         />
                         <Button
                           className="icon-only hover:text-text-primary hover:bg-grey-100 mt-1 flex-none opacity-0 group-hover:opacity-100"

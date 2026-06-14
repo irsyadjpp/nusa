@@ -38,6 +38,7 @@ export const queryClient = new QueryClient({
  * Wrap your app with this provider to enable TanStack Query
  */
 
+import React from 'react';
 import { QueryClientProvider as TanStackQueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ReactNode } from 'react';
@@ -47,10 +48,10 @@ interface QueryClientProviderProps {
 }
 
 export const QueryClientProvider = ({ children }: QueryClientProviderProps) => {
-  return (
-    <TanStackQueryClientProvider client={queryClient}>
-      {children}
-      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-    </TanStackQueryClientProvider>
+  return React.createElement(
+    TanStackQueryClientProvider,
+    { client: queryClient },
+    children,
+    import.meta.env.DEV && React.createElement(ReactQueryDevtools, { initialIsOpen: false })
   );
 };

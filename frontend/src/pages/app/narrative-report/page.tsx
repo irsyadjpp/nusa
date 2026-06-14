@@ -3,7 +3,7 @@ import { Box, Grid, Paper, Divider, Button, Typography } from '@mui/material';
 import { NarrativeReportBuilderHeader, ReportList, ReportFilters, ReportBuilderPanel, ReportPreview, ReportActions } from '@/features/narrative-report';
 import { useNarrativeReports } from '@/services/queries/NarrativeReportQueryService';
 import { useDeleteNarrativeReport, usePublishNarrativeReport } from '@/services/commands/NarrativeReportCommandService';
-import { NarrativeReport } from '@/api/narrative-report';
+import { NarrativeReport } from '@/shared/types/domain';
 import { enqueueSnackbar } from 'notistack';
 
 const NarrativeReportPage: React.FC = () => {

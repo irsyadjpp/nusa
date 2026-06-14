@@ -4,7 +4,7 @@ import { ATPWorkspaceHeader } from '@/features/atp';
 import { ATPList, ATPFilters, ATPForm, ATPDetailPanel } from '@/features/atp';
 import { useATPs } from '@/services/queries/ATPQueryService';
 import { useCreateATP, useUpdateATP, useDeleteATP } from '@/services/commands/ATPCommandService';
-import { ATP } from '@/api/atp';
+import { ATP } from '@/shared/types/domain';
 import { enqueueSnackbar } from 'notistack';
 
 const AnnualTeachingPlanPage: React.FC = () => {

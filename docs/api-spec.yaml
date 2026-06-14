@@ -16,6 +16,16 @@ servers:
     description: Production server
 
 tags:
+  - name: Authentication
+    description: Authentication endpoints
+  - name: Users
+    description: User management endpoints
+  - name: Schools
+    description: School management endpoints
+  - name: Roles
+    description: Role and permission management endpoints
+  - name: Curriculum
+    description: Curriculum management endpoints (subjects, phases, elements, subelements, CP)
   - name: TP (Teaching Plan)
     description: Teaching Plan management endpoints
   - name: ATP (Alur Tujuan Pembelajaran)
@@ -34,9 +44,1634 @@ tags:
     description: Narrative Report management endpoints
   - name: Achievement
     description: Achievement calculation endpoints (runtime, no persistence)
+  - name: Academic Foundation
+    description: Academic year, semester, subject category, graduate profile dimension, and CP alignment management endpoints
 
 paths:
-  /tp-sets:
+  # Authentication Endpoints
+  /public/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login
+      description: Authenticate user with credentials and receive access token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /public/auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh Token
+      description: Refresh access token using refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout
+      description: Logout user and invalidate tokens
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get Current User
+      description: Get information about the authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User information retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # User Management Endpoints
+  /users:
+    post:
+      tags:
+        - Users
+      summary: Create User
+      description: Create a new user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Users
+      summary: List Users
+      description: Get a paginated list of users
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: school_id
+          in: query
+          description: Filter by school ID
+          schema:
+            type: string
+        - name: role_id
+          in: query
+          description: Filter by role ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserResponse'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  page_size:
+                    type: integer
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Get User
+      description: Get a specific user by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Users
+      summary: Update User
+      description: Update an existing user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/{id}/status:
+    patch:
+      tags:
+        - Users
+      summary: Update User Status
+      description: Update a user's status (active/inactive)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserStatusRequest'
+      responses:
+        '200':
+          description: User status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # School Management Endpoints
+  /schools:
+    post:
+      tags:
+        - Schools
+      summary: Create School
+      description: Create a new school
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSchoolRequest'
+      responses:
+        '201':
+          description: School created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchoolResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Schools
+      summary: List Schools
+      description: Get a paginated list of schools
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Schools retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  schools:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SchoolResponse'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  page_size:
+                    type: integer
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /schools/{id}:
+    get:
+      tags:
+        - Schools
+      summary: Get School
+      description: Get a specific school by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: School retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchoolResponse'
+        '404':
+          description: School not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Schools
+      summary: Update School
+      description: Update an existing school
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSchoolRequest'
+      responses:
+        '200':
+          description: School updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchoolResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: School not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /schools/{id}/status:
+    patch:
+      tags:
+        - Schools
+      summary: Update School Status
+      description: Update a school's status (active/inactive)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSchoolStatusRequest'
+      responses:
+        '200':
+          description: School status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchoolResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: School not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Role Management Endpoints
+  /roles:
+    get:
+      tags:
+        - Roles
+      summary: List Roles
+      description: Get a list of all roles
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Roles retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoleResponse'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Roles
+      summary: Create Role
+      description: Create a new role (requires system admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoleRequest'
+      responses:
+        '201':
+          description: Role created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - requires system admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /roles/{id}:
+    get:
+      tags:
+        - Roles
+      summary: Get Role
+      description: Get a specific role by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Role retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleResponse'
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Roles
+      summary: Update Role
+      description: Update an existing role (requires system admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoleRequest'
+      responses:
+        '200':
+          description: Role updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - requires system admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Roles
+      summary: Delete Role
+      description: Delete a role (requires system admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Role deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - requires system admin
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /roles/{id}/permissions:
+    get:
+      tags:
+        - Roles
+      summary: Get Role Permissions
+      description: Get all permissions for a specific role
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Permissions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PermissionResponse'
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+        - Roles
+      summary: Add Permission to Role
+      description: Add a permission to a role
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddPermissionRequest'
+      responses:
+        '200':
+          description: Permission added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Roles
+      summary: Remove Permission from Role
+      description: Remove a permission from a role
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemovePermissionRequest'
+      responses:
+        '200':
+          description: Permission removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Curriculum Management Endpoints
+  /curriculum/subjects:
+    post:
+      tags:
+        - Curriculum
+      summary: Create Curriculum Subject
+      description: Create a new curriculum subject
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCurriculumSubjectRequest'
+      responses:
+        '201':
+          description: Subject created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurriculumSubjectResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Curriculum
+      summary: List Curriculum Subjects
+      description: Get a list of curriculum subjects
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: phase_id
+          in: query
+          description: Filter by phase ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subjects retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CurriculumSubjectResponse'
+
+  /curriculum/subjects/{id}:
+    get:
+      tags:
+        - Curriculum
+      summary: Get Curriculum Subject
+      description: Get a specific curriculum subject
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subject retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurriculumSubjectResponse'
+        '404':
+          description: Subject not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Curriculum
+      summary: Update Curriculum Subject
+      description: Update a curriculum subject
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCurriculumSubjectRequest'
+      responses:
+        '200':
+          description: Subject updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurriculumSubjectResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Subject not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Curriculum
+      summary: Delete Curriculum Subject
+      description: Delete a curriculum subject
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subject deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Subject not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /curriculum/phases:
+    post:
+      tags:
+        - Curriculum
+      summary: Create Curriculum Phase
+      description: Create a new curriculum phase
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCurriculumPhaseRequest'
+      responses:
+        '201':
+          description: Phase created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurriculumPhaseResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Curriculum
+      summary: List Curriculum Phases
+      description: Get a list of curriculum phases
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Phases retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CurriculumPhaseResponse'
+
+  /curriculum/phases/{id}:
+    get:
+      tags:
+        - Curriculum
+      summary: Get Curriculum Phase
+      description: Get a specific curriculum phase
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Phase retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurriculumPhaseResponse'
+        '404':
+          description: Phase not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Curriculum
+      summary: Update Curriculum Phase
+      description: Update a curriculum phase
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCurriculumPhaseRequest'
+      responses:
+        '200':
+          description: Phase updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurriculumPhaseResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Phase not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Curriculum
+      summary: Delete Curriculum Phase
+      description: Delete a curriculum phase
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Phase deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Phase not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /curriculum/elements:
+    post:
+      tags:
+        - Curriculum
+      summary: Create Curriculum Element
+      description: Create a new curriculum element
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCurriculumElementRequest'
+      responses:
+        '201':
+          description: Element created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurriculumElementResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Curriculum
+      summary: List Curriculum Elements
+      description: Get a list of curriculum elements
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: subject_id
+          in: query
+          description: Filter by subject ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Elements retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CurriculumElementResponse'
+
+  /curriculum/elements/{id}:
+    get:
+      tags:
+        - Curriculum
+      summary: Get Curriculum Element
+      description: Get a specific curriculum element
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Element retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurriculumElementResponse'
+        '404':
+          description: Element not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Curriculum
+      summary: Update Curriculum Element
+      description: Update a curriculum element
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCurriculumElementRequest'
+      responses:
+        '200':
+          description: Element updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurriculumElementResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Element not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Curriculum
+      summary: Delete Curriculum Element
+      description: Delete a curriculum element
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Element deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Element not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /curriculum/subelements:
+    post:
+      tags:
+        - Curriculum
+      summary: Create Curriculum Subelement
+      description: Create a new curriculum subelement
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCurriculumSubelementRequest'
+      responses:
+        '201':
+          description: Subelement created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurriculumSubelementResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Curriculum
+      summary: List Curriculum Subelements
+      description: Get a list of curriculum subelements
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: element_id
+          in: query
+          description: Filter by element ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subelements retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CurriculumSubelementResponse'
+
+  /curriculum/subelements/{id}:
+    get:
+      tags:
+        - Curriculum
+      summary: Get Curriculum Subelement
+      description: Get a specific curriculum subelement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subelement retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurriculumSubelementResponse'
+        '404':
+          description: Subelement not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Curriculum
+      summary: Update Curriculum Subelement
+      description: Update a curriculum subelement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCurriculumSubelementRequest'
+      responses:
+        '200':
+          description: Subelement updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurriculumSubelementResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Subelement not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Curriculum
+      summary: Delete Curriculum Subelement
+      description: Delete a curriculum subelement
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subelement deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Subelement not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /curriculum/cp:
+    post:
+      tags:
+        - Curriculum
+      summary: Create CP
+      description: Create a new Capaian Pembelajaran (Learning Outcome)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCPRequest'
+      responses:
+        '201':
+          description: CP created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CPResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Curriculum
+      summary: List CPs
+      description: Get a list of Capaian Pembelajaran
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: subject_id
+          in: query
+          description: Filter by subject ID
+          schema:
+            type: string
+        - name: phase_id
+          in: query
+          description: Filter by phase ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: CPs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CPResponse'
+
+  /curriculum/cp/export:
+    get:
+      tags:
+        - Curriculum
+      summary: Export CPs
+      description: Export all Capaian Pembelajaran
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: CPs exported successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CPResponse'
+
+  /curriculum/cp/import:
+    post:
+      tags:
+        - Curriculum
+      summary: Import CPs
+      description: Import Capaian Pembelajaran from file
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: CPs imported successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  count:
+                    type: integer
+        '400':
+          description: Invalid file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /curriculum/cp/{id}:
+    get:
+      tags:
+        - Curriculum
+      summary: Get CP
+      description: Get a specific Capaian Pembelajaran
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: CP retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CPResponse'
+        '404':
+          description: CP not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Curriculum
+      summary: Update CP
+      description: Update a Capaian Pembelajaran
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCPRequest'
+      responses:
+        '200':
+          description: CP updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CPResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: CP not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Curriculum
+      summary: Delete CP
+      description: Delete a Capaian Pembelajaran
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: CP deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: CP not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # TP (Teaching Plan) Endpoints
+  /learning-planning/tp-sets:
     post:
       tags:
         - TP (Teaching Plan)
@@ -1481,6 +3116,932 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /curriculum/academic-years:
+    post:
+      tags:
+        - Academic Foundation
+      summary: Create a new Academic Year
+      description: Create a new academic year for a school
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAcademicYearRequest'
+      responses:
+        '201':
+          description: Academic year created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicYearResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Academic Foundation
+      summary: List Academic Years
+      description: Get a list of academic years with optional filters
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: school_id
+          in: query
+          description: Filter by school ID
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by status (DRAFT, ACTIVE, ARCHIVED)
+          schema:
+            type: string
+            enum: [DRAFT, ACTIVE, ARCHIVED]
+        - name: limit
+          in: query
+          description: Limit number of results
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: Offset for pagination
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Academic years retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AcademicYearResponse'
+
+  /curriculum/academic-years/{id}:
+    get:
+      tags:
+        - Academic Foundation
+      summary: Get Academic Year by ID
+      description: Retrieve a specific academic year
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Academic year retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicYearResponse'
+        '404':
+          description: Academic year not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Academic Foundation
+      summary: Update Academic Year
+      description: Update an existing academic year
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAcademicYearRequest'
+      responses:
+        '200':
+          description: Academic year updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicYearResponse'
+        '404':
+          description: Academic year not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /curriculum/academic-years/{id}/activate:
+    post:
+      tags:
+        - Academic Foundation
+      summary: Activate Academic Year
+      description: Activate an academic year
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Academic year activated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicYearResponse'
+        '404':
+          description: Academic year not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /curriculum/academic-years/{id}/archive:
+    post:
+      tags:
+        - Academic Foundation
+      summary: Archive Academic Year
+      description: Archive an academic year
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Academic year archived successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicYearResponse'
+        '404':
+          description: Academic year not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /curriculum/semesters:
+    post:
+      tags:
+        - Academic Foundation
+      summary: Create a new Semester
+      description: Create a new semester for an academic year
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSemesterRequest'
+      responses:
+        '201':
+          description: Semester created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SemesterResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Academic Foundation
+      summary: List Semesters
+      description: Get a list of semesters with optional filters
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: academic_year_id
+          in: query
+          description: Filter by academic year ID
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by status (ACTIVE, INACTIVE)
+          schema:
+            type: string
+            enum: [ACTIVE, INACTIVE]
+        - name: type
+          in: query
+          description: Filter by semester type (GANJIL, GENAP)
+          schema:
+            type: string
+            enum: [GANJIL, GENAP]
+        - name: limit
+          in: query
+          description: Limit number of results
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: Offset for pagination
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Semesters retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SemesterResponse'
+
+  /curriculum/semesters/{id}:
+    get:
+      tags:
+        - Academic Foundation
+      summary: Get Semester by ID
+      description: Retrieve a specific semester
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Semester retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SemesterResponse'
+        '404':
+          description: Semester not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Academic Foundation
+      summary: Update Semester
+      description: Update an existing semester
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSemesterRequest'
+      responses:
+        '200':
+          description: Semester updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SemesterResponse'
+        '404':
+          description: Semester not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Academic Foundation
+      summary: Delete Semester
+      description: Delete a semester
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Semester deleted successfully
+        '404':
+          description: Semester not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /curriculum/subject-categories:
+    post:
+      tags:
+        - Academic Foundation
+      summary: Create a new Subject Category
+      description: Create a new subject category
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubjectCategoryRequest'
+      responses:
+        '201':
+          description: Subject category created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectCategoryResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Academic Foundation
+      summary: List Subject Categories
+      description: Get a list of subject categories with optional filters
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: parent_id
+          in: query
+          description: Filter by parent category ID
+          schema:
+            type: string
+        - name: level
+          in: query
+          description: Filter by hierarchy level
+          schema:
+            type: integer
+        - name: is_active
+          in: query
+          description: Filter by active status
+          schema:
+            type: boolean
+        - name: kurikulum_version
+          in: query
+          description: Filter by curriculum version
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Limit number of results
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: Offset for pagination
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Subject categories retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubjectCategoryResponse'
+
+  /curriculum/subject-categories/{id}:
+    get:
+      tags:
+        - Academic Foundation
+      summary: Get Subject Category by ID
+      description: Retrieve a specific subject category
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subject category retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectCategoryResponse'
+        '404':
+          description: Subject category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Academic Foundation
+      summary: Update Subject Category
+      description: Update an existing subject category
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSubjectCategoryRequest'
+      responses:
+        '200':
+          description: Subject category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectCategoryResponse'
+        '404':
+          description: Subject category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Academic Foundation
+      summary: Delete Subject Category
+      description: Delete a subject category
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Subject category deleted successfully
+        '404':
+          description: Subject category not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /curriculum/graduate-profile-dimensions:
+    post:
+      tags:
+        - Academic Foundation
+      summary: Create a new Graduate Profile Dimension
+      description: Create a new graduate profile dimension
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGraduateProfileDimensionRequest'
+      responses:
+        '201':
+          description: Graduate profile dimension created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraduateProfileDimensionResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Academic Foundation
+      summary: List Graduate Profile Dimensions
+      description: Get a list of graduate profile dimensions with optional filters
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: phase_level
+          in: query
+          description: Filter by phase level
+          schema:
+            type: string
+        - name: is_active
+          in: query
+          description: Filter by active status
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          description: Limit number of results
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: Offset for pagination
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Graduate profile dimensions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GraduateProfileDimensionResponse'
+
+  /curriculum/graduate-profile-dimensions/{id}:
+    get:
+      tags:
+        - Academic Foundation
+      summary: Get Graduate Profile Dimension by ID
+      description: Retrieve a specific graduate profile dimension
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Graduate profile dimension retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraduateProfileDimensionResponse'
+        '404':
+          description: Graduate profile dimension not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Academic Foundation
+      summary: Update Graduate Profile Dimension
+      description: Update an existing graduate profile dimension
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGraduateProfileDimensionRequest'
+      responses:
+        '200':
+          description: Graduate profile dimension updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GraduateProfileDimensionResponse'
+        '404':
+          description: Graduate profile dimension not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Academic Foundation
+      summary: Delete Graduate Profile Dimension
+      description: Delete a graduate profile dimension
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Graduate profile dimension deleted successfully
+        '404':
+          description: Graduate profile dimension not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /curriculum/cp-alignments:
+    post:
+      tags:
+        - Academic Foundation
+      summary: Create a new CP Alignment
+      description: Create a new CP alignment between subject category and graduate profile dimension
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCPAlignmentRequest'
+      responses:
+        '201':
+          description: CP alignment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CPAlignmentResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    get:
+      tags:
+        - Academic Foundation
+      summary: List CP Alignments
+      description: Get a list of CP alignments with optional filters
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: subject_category_id
+          in: query
+          description: Filter by subject category ID
+          schema:
+            type: string
+        - name: graduate_profile_dimension_id
+          in: query
+          description: Filter by graduate profile dimension ID
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Limit number of results
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: Offset for pagination
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: CP alignments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CPAlignmentResponse'
+
+  /curriculum/cp-alignments/{id}:
+    get:
+      tags:
+        - Academic Foundation
+      summary: Get CP Alignment by ID
+      description: Retrieve a specific CP alignment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: CP alignment retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CPAlignmentResponse'
+        '404':
+          description: CP alignment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Academic Foundation
+      summary: Update CP Alignment
+      description: Update an existing CP alignment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCPAlignmentRequest'
+      responses:
+        '200':
+          description: CP alignment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CPAlignmentResponse'
+        '404':
+          description: CP alignment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - Academic Foundation
+      summary: Delete CP Alignment
+      description: Delete a CP alignment
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: CP alignment deleted successfully
+        '404':
+          description: CP alignment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /curriculum/system-configurations:
+    get:
+      tags:
+        - Academic Foundation
+      summary: List System Configurations
+      description: Get a list of system configurations with optional filters
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: category
+          in: query
+          description: Filter by category
+          schema:
+            type: string
+        - name: key
+          in: query
+          description: Filter by configuration key
+          schema:
+            type: string
+        - name: is_public
+          in: query
+          description: Filter by public status
+          schema:
+            type: boolean
+        - name: school_id
+          in: query
+          description: Filter by school ID
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Limit number of results
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          description: Offset for pagination
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: System configurations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SystemConfigurationResponse'
+
+  /curriculum/system-configurations/key/{key}:
+    get:
+      tags:
+        - Academic Foundation
+      summary: Get System Configuration by Key
+      description: Retrieve a specific system configuration by key
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: System configuration retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemConfigurationResponse'
+        '404':
+          description: System configuration not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - Academic Foundation
+      summary: Update System Configuration
+      description: Update an existing system configuration
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSystemConfigurationRequest'
+      responses:
+        '200':
+          description: System configuration updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SystemConfigurationResponse'
+        '404':
+          description: System configuration not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -2455,3 +5016,387 @@ components:
           type: integer
         mastered_count:
           type: integer
+
+    AcademicYearResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        school_id:
+          type: string
+        name:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [DRAFT, ACTIVE, ARCHIVED]
+        current_semester_id:
+          type: string
+        created_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateAcademicYearRequest:
+      type: object
+      required:
+        - school_id
+        - name
+        - start_date
+        - end_date
+      properties:
+        school_id:
+          type: string
+        name:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+
+    UpdateAcademicYearRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+
+    SemesterResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        academic_year_id:
+          type: string
+        type:
+          type: string
+          enum: [GANJIL, GENAP]
+        name:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+        sequence_number:
+          type: integer
+        created_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateSemesterRequest:
+      type: object
+      required:
+        - academic_year_id
+        - type
+        - name
+        - start_date
+        - end_date
+        - sequence_number
+      properties:
+        academic_year_id:
+          type: string
+        type:
+          type: string
+          enum: [GANJIL, GENAP]
+        name:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        sequence_number:
+          type: integer
+          minimum: 1
+          maximum: 2
+
+    UpdateSemesterRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE]
+
+    SubjectCategoryResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        name_indonesian:
+          type: string
+        description:
+          type: string
+        parent_id:
+          type: string
+        level:
+          type: integer
+        sort_order:
+          type: integer
+        is_active:
+          type: boolean
+        kurikulum_version:
+          type: string
+        created_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateSubjectCategoryRequest:
+      type: object
+      required:
+        - code
+        - name
+        - name_indonesian
+        - level
+        - sort_order
+        - kurikulum_version
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        name_indonesian:
+          type: string
+        description:
+          type: string
+        parent_id:
+          type: string
+        level:
+          type: integer
+        sort_order:
+          type: integer
+        kurikulum_version:
+          type: string
+
+    UpdateSubjectCategoryRequest:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        name_indonesian:
+          type: string
+        description:
+          type: string
+        parent_id:
+          type: string
+        level:
+          type: integer
+        sort_order:
+          type: integer
+        is_active:
+          type: boolean
+
+    GraduateProfileDimensionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        name_indonesian:
+          type: string
+        description:
+          type: string
+        element_name:
+          type: string
+        element_name_indonesian:
+          type: string
+        phase_level:
+          type: string
+        phase_level_indonesian:
+          type: string
+        sort_order:
+          type: integer
+        is_active:
+          type: boolean
+        created_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateGraduateProfileDimensionRequest:
+      type: object
+      required:
+        - code
+        - name
+        - name_indonesian
+        - sort_order
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        name_indonesian:
+          type: string
+        description:
+          type: string
+        element_name:
+          type: string
+        element_name_indonesian:
+          type: string
+        phase_level:
+          type: string
+        phase_level_indonesian:
+          type: string
+        sort_order:
+          type: integer
+
+    UpdateGraduateProfileDimensionRequest:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        name_indonesian:
+          type: string
+        description:
+          type: string
+        element_name:
+          type: string
+        element_name_indonesian:
+          type: string
+        phase_level:
+          type: string
+        phase_level_indonesian:
+          type: string
+        sort_order:
+          type: integer
+        is_active:
+          type: boolean
+
+    CPAlignmentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        subject_category_id:
+          type: string
+        graduate_profile_dimension_id:
+          type: string
+        alignment_strength:
+          type: string
+          enum: [STRONG, MODERATE, WEAK]
+        justification:
+          type: string
+        created_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateCPAlignmentRequest:
+      type: object
+      required:
+        - subject_category_id
+        - graduate_profile_dimension_id
+        - alignment_strength
+      properties:
+        subject_category_id:
+          type: string
+        graduate_profile_dimension_id:
+          type: string
+        alignment_strength:
+          type: string
+          enum: [STRONG, MODERATE, WEAK]
+        justification:
+          type: string
+
+    UpdateCPAlignmentRequest:
+      type: object
+      properties:
+        alignment_strength:
+          type: string
+          enum: [STRONG, MODERATE, WEAK]
+        justification:
+          type: string
+
+    SystemConfigurationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        key:
+          type: string
+        value:
+          type: string
+        type:
+          type: string
+        category:
+          type: string
+        description:
+          type: string
+        is_public:
+          type: boolean
+        school_id:
+          type: string
+        created_by:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    UpdateSystemConfigurationRequest:
+      type: object
+      required:
+        - value
+      properties:
+        value:
+          type: string

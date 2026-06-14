@@ -3,7 +3,9 @@
  * Displays the learning trajectory of a student over time
  */
 
-import { Box, Typography, Paper, Divider, Timeline, TimelineItem, TimelineSeparator, TimelineConnector, TimelineContent, TimelineDot } from '@mui/material';
+import React from 'react';
+import { Typography, Paper, Divider, List, ListItem, ListItemText, ListItemIcon } from '@mui/material';
+import { CheckCircle, Warning, Error } from '@mui/icons-material';
 
 interface TrajectoryPoint {
   date: string;
@@ -34,25 +36,37 @@ export const StudentTrajectory = ({ trajectory }: StudentTrajectoryProps) => {
         Learning Trajectory
       </Typography>
       <Divider sx={{ my: 2 }} />
-      <Timeline>
+      <List>
         {trajectory.map((point, index) => (
-          <TimelineItem key={index}>
-            <TimelineSeparator>
-              <TimelineDot color={point.score >= 70 ? 'success' : point.score >= 50 ? 'warning' : 'error'} />
-              {index < trajectory.length - 1 && <TimelineConnector />}
-            </TimelineSeparator>
-            <TimelineContent>
-              <Typography variant="body1">{point.milestone}</Typography>
-              <Typography variant="body2" color="textSecondary">
-                Score: {point.score}%
-              </Typography>
-              <Typography variant="caption" color="textSecondary">
-                {new Date(point.date).toLocaleString()}
-              </Typography>
-            </TimelineContent>
-          </TimelineItem>
+          <React.Fragment key={index}>
+            <ListItem>
+              <ListItemIcon>
+                {point.score >= 70 ? (
+                  <CheckCircle color="success" />
+                ) : point.score >= 50 ? (
+                  <Warning color="warning" />
+                ) : (
+                  <Error color="error" />
+                )}
+              </ListItemIcon>
+              <ListItemText
+                primary={point.milestone}
+                secondary={
+                  <>
+                    <Typography variant="body2" color="textSecondary">
+                      Score: {point.score}%
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      {new Date(point.date).toLocaleString()}
+                    </Typography>
+                  </>
+                }
+              />
+            </ListItem>
+            {index < trajectory.length - 1 && <Divider />}
+          </React.Fragment>
         ))}
-      </Timeline>
+      </List>
     </Paper>
   );
 };

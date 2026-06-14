@@ -9,7 +9,6 @@ import {
   Typography,
   Card,
   CardContent,
-  Grid,
   Chip,
   Divider,
   List,
@@ -109,9 +108,9 @@ const AchievementSummary: React.FC<AchievementSummaryProps> = ({ data }) => {
         <Typography variant="subtitle2" gutterBottom>
           Ringkasan Kompetensi
         </Typography>
-        <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
           {data.competency_summary.map((competency) => (
-            <Grid item xs={12} sm={6} key={competency.competency_id}>
+            <Box sx={{ width: { xs: '100%', sm: '50%' } }} key={competency.competency_id}>
               <Box
                 sx={{
                   p: 2,
@@ -134,14 +133,14 @@ const AchievementSummary: React.FC<AchievementSummaryProps> = ({ data }) => {
                   />
                 </Box>
               </Box>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
 
         <Divider sx={{ my: 2 }} />
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={4}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+          <Box sx={{ width: { xs: '100%', sm: '33.33%' } }}>
             <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Star color="primary" fontSize="small" />
               Pencapaian
@@ -156,9 +155,9 @@ const AchievementSummary: React.FC<AchievementSummaryProps> = ({ data }) => {
                 </ListItem>
               ))}
             </List>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} sm={4}>
+          <Box sx={{ width: { xs: '100%', sm: '33.33%' } }}>
             <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Warning color="warning" fontSize="small" />
               Area Perlu Perbaikan
@@ -173,9 +172,9 @@ const AchievementSummary: React.FC<AchievementSummaryProps> = ({ data }) => {
                 </ListItem>
               ))}
             </List>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} sm={4}>
+          <Box sx={{ width: { xs: '100%', sm: '33.33%' } }}>
             <Typography variant="subtitle2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <TrendingUp color="info" fontSize="small" />
               Rekomendasi
@@ -190,8 +189,8 @@ const AchievementSummary: React.FC<AchievementSummaryProps> = ({ data }) => {
                 </ListItem>
               ))}
             </List>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </CardContent>
     </Card>
   );

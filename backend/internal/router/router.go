@@ -23,6 +23,10 @@ type Router struct {
 	engine *gin.Engine
 }
 
+func (r *Router) GetEngine() *gin.Engine {
+	return r.engine
+}
+
 func NewRouter(
 	authHandler *authHandler.Handler,
 	userHandler *userHandler.Handler,
@@ -34,6 +38,10 @@ func NewRouter(
 	achievementHandler *achievementModule.Handler,
 	reportingHandler *reportingHandler.Handler,
 	tpSetHandler *handler.TPSetHandler,
+	academicYearHandler *handler.AcademicYearHandler,
+	semesterHandler *handler.SemesterHandler,
+	curriculumGovernanceHandler *handler.CurriculumGovernanceHandler,
+	systemConfigurationHandler *handler.SystemConfigurationHandler,
 	jwtService *jwtService.Service,
 	userRepo interface{},
 	schoolRepo interface{},
@@ -43,7 +51,7 @@ func NewRouter(
 
 	r := &Router{engine: engine}
 
-	r.setupRoutes(authHandler, userHandler, schoolHandler, roleHandler, curriculumHandler, learningPlanningHandler, assessmentHandler, achievementHandler, reportingHandler, tpSetHandler, jwtService, userRepo, schoolRepo)
+	r.setupRoutes(authHandler, userHandler, schoolHandler, roleHandler, curriculumHandler, learningPlanningHandler, assessmentHandler, achievementHandler, reportingHandler, tpSetHandler, academicYearHandler, semesterHandler, curriculumGovernanceHandler, systemConfigurationHandler, jwtService, userRepo, schoolRepo)
 
 	return r
 }
@@ -59,6 +67,10 @@ func (r *Router) setupRoutes(
 	achievementHandler *achievementModule.Handler,
 	reportingHandler *reportingHandler.Handler,
 	tpSetHandler *handler.TPSetHandler,
+	academicYearHandler *handler.AcademicYearHandler,
+	semesterHandler *handler.SemesterHandler,
+	curriculumGovernanceHandler *handler.CurriculumGovernanceHandler,
+	systemConfigurationHandler *handler.SystemConfigurationHandler,
 	jwtService *jwtService.Service,
 	userRepo interface{},
 	schoolRepo interface{},
@@ -75,6 +87,17 @@ func (r *Router) setupRoutes(
 	})
 	r.engine.GET("/version", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"version": "1.0.0", "name": "NUSA Backend API"})
+	})
+
+	// Scalar API Documentation
+	scalarHandler := handler.NewScalarHandler()
+	r.engine.GET("/scalar", scalarHandler.ServeScalar)
+	r.engine.GET("/swagger", scalarHandler.ServeSwaggerUI)
+	r.engine.GET("/openapi.json", scalarHandler.ServeOpenAPISpec)
+
+	// Handle favicon request - return 204 (no content) to avoid 404 logs
+	r.engine.GET("/favicon.ico", func(c *gin.Context) {
+		c.Status(http.StatusNoContent)
 	})
 
 	public := r.engine.Group("/api/v1/public")
@@ -127,10 +150,32 @@ func (r *Router) setupRoutes(
 
 		// Education Domain Routes
 		curriculum := protected.Group("/curriculum")
+		curriculum.Use(middleware.ReadOnlyMiddleware(middleware.RoleSystemAdmin, middleware.RoleSchoolAdmin, middleware.RoleTeacher))
 		{
 			curriculum.POST("/subjects", curriculumHandler.CreateCurriculumSubject)
 			curriculum.GET("/subjects", curriculumHandler.ListCurriculumSubjects)
 			curriculum.GET("/subjects/:id", curriculumHandler.GetCurriculumSubject)
+			curriculum.PUT("/subjects/:id", curriculumHandler.UpdateCurriculumSubject)
+			curriculum.DELETE("/subjects/:id", curriculumHandler.DeleteCurriculumSubject)
+			curriculum.POST("/phases", curriculumHandler.CreateCurriculumPhase)
+			curriculum.GET("/phases", curriculumHandler.ListCurriculumPhases)
+			curriculum.GET("/phases/:id", curriculumHandler.GetCurriculumPhase)
+			curriculum.PUT("/phases/:id", curriculumHandler.UpdateCurriculumPhase)
+			curriculum.DELETE("/phases/:id", curriculumHandler.DeleteCurriculumPhase)
+			curriculum.POST("/elements", curriculumHandler.CreateCurriculumElement)
+			curriculum.GET("/elements", curriculumHandler.ListCurriculumElements)
+			curriculum.GET("/elements/:id", curriculumHandler.GetCurriculumElement)
+			curriculum.PUT("/elements/:id", curriculumHandler.UpdateCurriculumElement)
+			curriculum.DELETE("/elements/:id", curriculumHandler.DeleteCurriculumElement)
+			curriculum.POST("/subelements", curriculumHandler.CreateCurriculumSubelement)
+			curriculum.GET("/subelements", curriculumHandler.ListCurriculumSubelements)
+			curriculum.GET("/subelements/:id", curriculumHandler.GetCurriculumSubelement)
+			curriculum.PUT("/subelements/:id", curriculumHandler.UpdateCurriculumSubelement)
+			curriculum.DELETE("/subelements/:id", curriculumHandler.DeleteCurriculumSubelement)
+			curriculum.POST("/cp", curriculumHandler.CreateCP)
+			curriculum.PUT("/cp/:id", curriculumHandler.UpdateCP)
+			curriculum.DELETE("/cp/:id", curriculumHandler.DeleteCP)
+			curriculum.GET("/cp/export", curriculumHandler.ExportCPs)
 
 			curriculum.POST("/cp/import", curriculumHandler.ImportCP)
 			curriculum.GET("/cp", curriculumHandler.ListCPs)
@@ -138,81 +183,167 @@ func (r *Router) setupRoutes(
 		}
 
 		learningPlanning := protected.Group("/learning-planning")
+		learningPlanning.Use(middleware.RequirePermission("tp:READ"))
 		{
-			learningPlanning.POST("/tp-sets", learningPlanningHandler.CreateTPSet)
+			// TP Set routes
+			learningPlanning.POST("/tp-sets", middleware.RequirePermission("tp:CREATE"), learningPlanningHandler.CreateTPSet)
 			learningPlanning.GET("/tp-sets", learningPlanningHandler.ListTPSets)
 			learningPlanning.GET("/tp-sets/:id", learningPlanningHandler.GetTPSet)
-			learningPlanning.POST("/tp-sets/:id/approve", learningPlanningHandler.ApproveTPSet)
+			learningPlanning.POST("/tp-sets/:id/approve", middleware.RequirePermission("tp:APPROVE"), learningPlanningHandler.ApproveTPSet)
+			learningPlanning.PUT("/tp-sets/:id", middleware.RequirePermission("tp:UPDATE"), learningPlanningHandler.UpdateTPSet)
+			learningPlanning.GET("/tp-sets/:id/versions", learningPlanningHandler.GetTPSetVersions)
 
-			learningPlanning.POST("/atp-sets", learningPlanningHandler.CreateATPSet)
+			// Individual TP routes
+			learningPlanning.POST("/tps", middleware.RequirePermission("tp:CREATE"), learningPlanningHandler.CreateTP)
+			learningPlanning.GET("/tps", learningPlanningHandler.ListTPs)
+			learningPlanning.GET("/tps/:id", learningPlanningHandler.GetTP)
+
+			// ATP Set routes
+			learningPlanning.POST("/atp-sets", middleware.RequirePermission("tp:CREATE"), learningPlanningHandler.CreateATPSet)
 			learningPlanning.GET("/atp-sets", learningPlanningHandler.ListATPSets)
+			learningPlanning.GET("/atp-sets/:id", learningPlanningHandler.GetATPSet)
+			learningPlanning.PUT("/atp-sets/:id", middleware.RequirePermission("tp:UPDATE"), learningPlanningHandler.UpdateATPSet)
+			learningPlanning.DELETE("/atp-sets/:id", middleware.RequirePermission("tp:DELETE"), learningPlanningHandler.DeleteATPSet)
+			learningPlanning.POST("/atp-sets/:id/approve", middleware.RequirePermission("tp:APPROVE"), learningPlanningHandler.ApproveATPSet)
 
-			learningPlanning.POST("/modul-ajar-sets", learningPlanningHandler.CreateModulAjarSet)
+			// Individual ATP routes
+			learningPlanning.POST("/atps", middleware.RequirePermission("tp:CREATE"), learningPlanningHandler.CreateATP)
+			learningPlanning.GET("/atps", learningPlanningHandler.ListATPs)
+			learningPlanning.GET("/atps/:id", learningPlanningHandler.GetATP)
+			learningPlanning.PUT("/atps/:id", middleware.RequirePermission("tp:UPDATE"), learningPlanningHandler.UpdateATP)
+			learningPlanning.DELETE("/atps/:id", middleware.RequirePermission("tp:DELETE"), learningPlanningHandler.DeleteATP)
+
+			// Modul Ajar Set routes
+			learningPlanning.POST("/modul-ajar-sets", middleware.RequirePermission("tp:CREATE"), learningPlanningHandler.CreateModulAjarSet)
 			learningPlanning.GET("/modul-ajar-sets", learningPlanningHandler.ListModulAjarSets)
+			learningPlanning.GET("/modul-ajar-sets/:id", learningPlanningHandler.GetModulAjarSet)
+			learningPlanning.PUT("/modul-ajar-sets/:id", middleware.RequirePermission("tp:UPDATE"), learningPlanningHandler.UpdateModulAjarSet)
+			learningPlanning.DELETE("/modul-ajar-sets/:id", middleware.RequirePermission("tp:DELETE"), learningPlanningHandler.DeleteModulAjarSet)
+			learningPlanning.POST("/modul-ajar-sets/:id/approve", middleware.RequirePermission("tp:APPROVE"), learningPlanningHandler.ApproveModulAjarSet)
+
+			// Individual Modul Ajar routes
+			learningPlanning.POST("/modul-ajar", middleware.RequirePermission("tp:CREATE"), learningPlanningHandler.CreateModulAjar)
+			learningPlanning.GET("/modul-ajar", learningPlanningHandler.ListModulAjars)
+			learningPlanning.GET("/modul-ajar/:id", learningPlanningHandler.GetModulAjar)
+			learningPlanning.PUT("/modul-ajar/:id", middleware.RequirePermission("tp:UPDATE"), learningPlanningHandler.UpdateModulAjar)
+			learningPlanning.DELETE("/modul-ajar/:id", middleware.RequirePermission("tp:DELETE"), learningPlanningHandler.DeleteModulAjar)
 		}
 
 		assessment := protected.Group("/assessment")
+		assessment.Use(middleware.RequirePermission("assessment:READ"))
 		{
-			assessment.POST("", assessmentHandler.CreateAssessment)
+			assessment.POST("", middleware.RequirePermission("assessment:CREATE"), assessmentHandler.CreateAssessment)
 			assessment.GET("", assessmentHandler.ListAssessments)
 			assessment.GET("/:id", assessmentHandler.GetAssessment)
+			assessment.PUT("/:id", middleware.RequirePermission("assessment:UPDATE"), assessmentHandler.UpdateAssessment)
+			assessment.POST("/:id/approve", middleware.RequirePermission("assessment:APPROVE"), assessmentHandler.ApproveAssessment)
 
-			assessment.POST("/rubrics", assessmentHandler.CreateRubric)
+			assessment.POST("/rubrics", middleware.RequirePermission("assessment:CREATE"), assessmentHandler.CreateRubric)
 			assessment.GET("/rubrics", assessmentHandler.ListRubrics)
+			assessment.GET("/rubrics/:id", assessmentHandler.GetRubric)
+			assessment.PUT("/rubrics/:id", middleware.RequirePermission("assessment:UPDATE"), assessmentHandler.UpdateRubric)
+			assessment.DELETE("/rubrics/:id", middleware.RequirePermission("assessment:DELETE"), assessmentHandler.DeleteRubric)
 
-			assessment.POST("/evidences", assessmentHandler.CreateEvidence)
+			assessment.POST("/evidences/upload", middleware.RequirePermission("assessment:CREATE"), assessmentHandler.UploadEvidence)
+			assessment.GET("/evidences/:id", assessmentHandler.GetEvidence)
+			assessment.POST("/evidences", middleware.RequirePermission("assessment:CREATE"), assessmentHandler.CreateEvidence)
 			assessment.GET("/evidences", assessmentHandler.ListEvidences)
+			assessment.PUT("/evidences/:id", middleware.RequirePermission("assessment:UPDATE"), assessmentHandler.UpdateEvidence)
+			assessment.DELETE("/evidences/:id", middleware.RequirePermission("assessment:DELETE"), assessmentHandler.DeleteEvidence)
 
-			assessment.POST("/evaluations", assessmentHandler.CreateEvaluation)
+			assessment.POST("/evaluations", middleware.RequirePermission("assessment:CREATE"), assessmentHandler.CreateEvaluation)
 			assessment.GET("/evaluations", assessmentHandler.ListEvaluations)
+			assessment.GET("/evaluations/:id", assessmentHandler.GetEvaluation)
+			assessment.PUT("/evaluations/:id", middleware.RequirePermission("assessment:UPDATE"), assessmentHandler.UpdateEvaluation)
 			assessment.GET("/evaluations/history/:evidence_id", assessmentHandler.GetEvaluationHistory)
-			assessment.GET("/evaluations/:evaluation_id/feedback-history", assessmentHandler.GetEvaluationFeedbackHistory)
+			assessment.GET("/evaluations/:id/feedback-history", assessmentHandler.GetEvaluationFeedbackHistory)
 		}
 
 		reporting := protected.Group("/reporting")
+		reporting.Use(middleware.RequirePermission("reporting:READ"))
 		{
-			reporting.POST("/narrative-reports", reportingHandler.CreateNarrativeReport)
+			reporting.POST("/narrative-reports", middleware.RequirePermission("reporting:CREATE"), reportingHandler.CreateNarrativeReport)
 			reporting.GET("/narrative-reports", reportingHandler.ListNarrativeReports)
 			reporting.GET("/narrative-reports/:id", reportingHandler.GetNarrativeReport)
-			reporting.POST("/narrative-reports/:id/refresh-achievement", reportingHandler.RefreshReportAchievement)
+			reporting.PUT("/narrative-reports/:id", middleware.RequirePermission("reporting:UPDATE"), reportingHandler.UpdateNarrativeReport)
+			reporting.DELETE("/narrative-reports/:id", middleware.RequirePermission("reporting:DELETE"), reportingHandler.DeleteNarrativeReport)
+			reporting.POST("/narrative-reports/:id/refresh-achievement", middleware.RequirePermission("reporting:UPDATE"), reportingHandler.RefreshReportAchievement)
 		}
 
 		// Achievement Routes
 		students := protected.Group("/students")
+		students.Use(middleware.RequirePermission("reporting:READ"))
 		{
 			students.GET("/:id/achievement", achievementHandler.GetStudentAchievement)
 			students.GET("/:id/progress", achievementHandler.GetStudentProgress)
 		}
 
 		classes := protected.Group("/classes")
+		classes.Use(middleware.RequirePermission("reporting:READ"))
 		{
 			classes.GET("/:id/achievement", achievementHandler.GetClassAchievement)
 		}
 
-		reports := protected.Group("/reports")
+		// Sprint 4: Academic Foundation Routes
+		academicYears := protected.Group("/academic-years")
+		academicYears.Use(middleware.RequirePermission("academic_year:READ"))
 		{
-			reports.GET("/:id/achievement-summary", achievementHandler.GetReportAchievementSummary)
+			academicYears.POST("", middleware.RequirePermission("academic_year:CREATE"), academicYearHandler.CreateAcademicYear)
+			academicYears.GET("", academicYearHandler.ListAcademicYears)
+			academicYears.GET("/:id", academicYearHandler.GetAcademicYear)
+			academicYears.PUT("/:id", middleware.RequirePermission("academic_year:UPDATE"), academicYearHandler.UpdateAcademicYear)
+			academicYears.POST("/:id/activate", middleware.RequirePermission("academic_year:ACTIVATE"), academicYearHandler.ActivateAcademicYear)
+			academicYears.POST("/:id/archive", middleware.RequirePermission("academic_year:ARCHIVE"), academicYearHandler.ArchiveAcademicYear)
 		}
 
-		// TP Set Routes (OpenAPI Contract)
-		tpSets := protected.Group("/tp-sets")
+		semesters := protected.Group("/semesters")
+		semesters.Use(middleware.RequirePermission("semester:READ"))
 		{
-			tpSets.POST("", tpSetHandler.CreateTPSet)
-			tpSets.GET("", tpSetHandler.ListTPSets)
-			tpSets.GET("/:id", tpSetHandler.GetTPSet)
-			tpSets.POST("/:id/approve", tpSetHandler.ApproveTPSet)
+			semesters.POST("", middleware.RequirePermission("semester:CREATE"), semesterHandler.CreateSemester)
+			semesters.GET("", semesterHandler.ListSemesters)
+			semesters.GET("/:id", semesterHandler.GetSemester)
+			semesters.PUT("/:id", middleware.RequirePermission("semester:UPDATE"), semesterHandler.UpdateSemester)
+			semesters.DELETE("/:id", middleware.RequirePermission("semester:DELETE"), semesterHandler.DeleteSemester)
 		}
 
-		// TP Routes (OpenAPI Contract)
-		tps := protected.Group("/tps")
+		subjectCategories := protected.Group("/subject-categories")
+		subjectCategories.Use(middleware.RequirePermission("subject_category:READ"))
 		{
-			tps.POST("", tpSetHandler.CreateTP)
-			tps.GET("", tpSetHandler.ListTPs)
-			tps.GET("/:id", tpSetHandler.GetTP)
+			subjectCategories.POST("", middleware.RequirePermission("subject_category:CREATE"), curriculumGovernanceHandler.CreateSubjectCategory)
+			subjectCategories.GET("", curriculumGovernanceHandler.ListSubjectCategories)
+			subjectCategories.PUT("/:id", middleware.RequirePermission("subject_category:UPDATE"), curriculumGovernanceHandler.UpdateSubjectCategory)
+			subjectCategories.DELETE("/:id", middleware.RequirePermission("subject_category:DELETE"), curriculumGovernanceHandler.DeleteSubjectCategory)
+		}
+
+		graduateProfileDimensions := protected.Group("/graduate-profile-dimensions")
+		graduateProfileDimensions.Use(middleware.RequirePermission("graduate_profile:READ"))
+		{
+			graduateProfileDimensions.POST("", middleware.RequirePermission("graduate_profile:CREATE"), curriculumGovernanceHandler.CreateGraduateProfileDimension)
+			graduateProfileDimensions.GET("", curriculumGovernanceHandler.ListGraduateProfileDimensions)
+			graduateProfileDimensions.PUT("/:id", middleware.RequirePermission("graduate_profile:UPDATE"), curriculumGovernanceHandler.UpdateGraduateProfileDimension)
+			graduateProfileDimensions.DELETE("/:id", middleware.RequirePermission("graduate_profile:DELETE"), curriculumGovernanceHandler.DeleteGraduateProfileDimension)
+		}
+
+		cpAlignments := protected.Group("/cp-alignments")
+		cpAlignments.Use(middleware.RequirePermission("cp_alignment:READ"))
+		{
+			cpAlignments.POST("", middleware.RequirePermission("cp_alignment:CREATE"), curriculumGovernanceHandler.CreateCPAlignment)
+			cpAlignments.POST("/bulk", middleware.RequirePermission("cp_alignment:CREATE"), curriculumGovernanceHandler.CreateCPAlignmentBulk)
+			cpAlignments.GET("", curriculumGovernanceHandler.ListCPAlignments)
+			cpAlignments.GET("/report", curriculumGovernanceHandler.GenerateCPAlignmentReport)
+			cpAlignments.PUT("/:id", middleware.RequirePermission("cp_alignment:UPDATE"), curriculumGovernanceHandler.UpdateCPAlignment)
+			cpAlignments.DELETE("/:id", middleware.RequirePermission("cp_alignment:DELETE"), curriculumGovernanceHandler.DeleteCPAlignment)
+		}
+
+		systemConfigurations := protected.Group("/system-configurations")
+		systemConfigurations.Use(middleware.RequirePermission("system_config:READ"))
+		{
+			systemConfigurations.POST("", middleware.RequirePermission("system_config:CREATE"), systemConfigurationHandler.CreateSystemConfiguration)
+			systemConfigurations.GET("", systemConfigurationHandler.ListSystemConfigurations)
+			systemConfigurations.GET("/:id", systemConfigurationHandler.GetSystemConfiguration)
+			systemConfigurations.GET("/by-key/:key", systemConfigurationHandler.GetSystemConfigurationByKey)
+			systemConfigurations.PUT("/:id", middleware.RequirePermission("system_config:UPDATE"), systemConfigurationHandler.UpdateSystemConfiguration)
+			systemConfigurations.DELETE("/:id", middleware.RequirePermission("system_config:DELETE"), systemConfigurationHandler.DeleteSystemConfiguration)
 		}
 	}
-}
-
-func (r *Router) GetEngine() *gin.Engine {
-	return r.engine
 }

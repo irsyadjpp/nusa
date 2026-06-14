@@ -13,10 +13,14 @@ export interface StoredUser {
   id: string;
   email: string;
   name: string;
+  role_id: string;
   role_name: string;
   school_name?: string;
   school_id?: string;
   is_active: boolean;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export class AuthStorage {

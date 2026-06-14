@@ -1,14 +1,13 @@
 /**
- * Assessment List Page
+ * Assessment List Page - MIGRATED TO TANSTACK QUERY
  * List view for Assessments
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
   Button,
-  Grid,
   Card,
   CardContent,
   Chip,
@@ -17,7 +16,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  CircularProgress,
   Alert,
 } from '@mui/material';
 import {
@@ -26,67 +24,65 @@ import {
   FilterList,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { getAssessments } from '@/api/assessment';
-import { Assessment } from '@/api/assessment';
+import { useAssessments } from '@/services/queries/AssessmentQueryService';
+import { AssessmentType, AssessmentStatus } from '@/shared/types/domain';
 
 const AssessmentListPage: React.FC = () => {
   const navigate = useNavigate();
-  const [assessments, setAssessments] = useState<Assessment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTP, setSelectedTP] = useState<string>('');
-  const [selectedType, setSelectedType] = useState<string>('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedType, setSelectedType] = useState<AssessmentType | ''>('');
+  const [selectedStatus, setSelectedStatus] = useState<AssessmentStatus | ''>('');
 
-  useEffect(() => {
-    loadAssessments();
-  }, [selectedTP, selectedType, selectedStatus]);
-
-  const loadAssessments = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getAssessments({
-        tp_id: selectedTP || undefined,
-        assessment_type: selectedType || undefined,
-        status: selectedStatus || undefined,
-      });
-      setAssessments(data);
-    } catch (err: any) {
-      setError(err.message || 'Gagal memuat data Asesmen');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // ✅ Using TanStack Query hook instead of manual state management
+  const {
+    data: assessments = [],
+    error
+  } = useAssessments({
+    tp_id: selectedTP || undefined,
+    assessment_type: selectedType || undefined,
+    status: selectedStatus || undefined,
+  });
 
   const filteredAssessments = assessments.filter((assessment) =>
-    assessment.assessment_items?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    assessment.assessment_items?.questions?.some(q => 
+      q.question_text.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || false
   );
 
-  const getStatusColor = (status: string): 'success' | 'warning' | 'error' | 'info' | 'default' => {
+  const getStatusColor = (status: AssessmentStatus): 'success' | 'warning' | 'error' | 'info' | 'default' => {
     switch (status) {
       case 'APPROVED':
         return 'success';
-      case 'PENDING':
+      case 'UNDER_REVIEW':
         return 'warning';
       case 'REJECTED':
         return 'error';
       case 'DRAFT':
         return 'info';
+      case 'ARCHIVED':
+        return 'default';
       default:
         return 'default';
     }
   };
 
-  const getTypeLabel = (type: string): string => {
+  const getStatusLabel = (status: AssessmentStatus): string => {
+    switch (status) {
+      case 'APPROVED': return 'Disetujui';
+      case 'UNDER_REVIEW': return 'Dalam Review';
+      case 'REJECTED': return 'Ditolak';
+      case 'DRAFT': return 'Draft';
+      case 'ARCHIVED': return 'Diarsipkan';
+      default: return status;
+    }
+  };
+
+  const getTypeLabel = (type: AssessmentType): string => {
     switch (type) {
-      case 'FORMATIVE':
-        return 'Formatif';
-      case 'SUMMATIVE':
-        return 'Sumatif';
-      default:
-        return type;
+      case 'FORMATIVE': return 'Formatif';
+      case 'SUMMATIVE': return 'Sumatif';
+      default: return type;
     }
   };
 
@@ -105,8 +101,8 @@ const AssessmentListPage: React.FC = () => {
 
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            <Box sx={{ width: { xs: '100%', sm: '33.33%' } }}>
               <TextField
                 fullWidth
                 label="Cari Asesmen"
@@ -116,8 +112,8 @@ const AssessmentListPage: React.FC = () => {
                   startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />,
                 }}
               />
-            </Grid>
-            <Grid item xs={12} sm={3}>
+            </Box>
+            <Box sx={{ width: { xs: '100%', sm: '25%' } }}>
               <FormControl fullWidth>
                 <InputLabel>TP</InputLabel>
                 <Select
@@ -129,38 +125,39 @@ const AssessmentListPage: React.FC = () => {
                   {/* TP options would be loaded dynamically */}
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={2}>
+            </Box>
+            <Box sx={{ width: { xs: '100%', sm: '16.67%' } }}>
               <FormControl fullWidth>
                 <InputLabel>Tipe</InputLabel>
                 <Select
                   value={selectedType}
                   label="Tipe"
-                  onChange={(e) => setSelectedType(e.target.value)}
+                  onChange={(e) => setSelectedType(e.target.value as AssessmentType | '')}
                 >
                   <MenuItem value="">Semua</MenuItem>
                   <MenuItem value="FORMATIVE">Formatif</MenuItem>
                   <MenuItem value="SUMMATIVE">Sumatif</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={2}>
+            </Box>
+            <Box sx={{ width: { xs: '100%', sm: '16.67%' } }}>
               <FormControl fullWidth>
                 <InputLabel>Status</InputLabel>
                 <Select
                   value={selectedStatus}
                   label="Status"
-                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  onChange={(e) => setSelectedStatus(e.target.value as AssessmentStatus | '')}
                 >
                   <MenuItem value="">Semua</MenuItem>
                   <MenuItem value="DRAFT">Draft</MenuItem>
-                  <MenuItem value="PENDING">Pending</MenuItem>
+                  <MenuItem value="UNDER_REVIEW">Dalam Review</MenuItem>
                   <MenuItem value="APPROVED">Disetujui</MenuItem>
                   <MenuItem value="REJECTED">Ditolak</MenuItem>
+                  <MenuItem value="ARCHIVED">Diarsipkan</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={1}>
+            </Box>
+            <Box sx={{ width: { xs: '100%', sm: '8.33%' } }}>
               <Button
                 fullWidth
                 variant="outlined"
@@ -174,25 +171,20 @@ const AssessmentListPage: React.FC = () => {
               >
                 Reset
               </Button>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
+          {typeof error === 'string' ? error : 'Error loading assessments'}
         </Alert>
       )}
 
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <Grid container spacing={3}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
           {filteredAssessments.map((assessment) => (
-            <Grid item xs={12} sm={6} md={4} key={assessment.id}>
+            <Box sx={{ width: { xs: '100%', sm: '50%', md: '33.33%' } }} key={assessment.id}>
               <Card
                 sx={{ cursor: 'pointer', height: '100%' }}
                 onClick={() => navigate(`/assessment/${assessment.id}`)}
@@ -206,7 +198,7 @@ const AssessmentListPage: React.FC = () => {
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                     <Chip
-                      label={assessment.status}
+                      label={getStatusLabel(assessment.status)}
                       color={getStatusColor(assessment.status)}
                       size="small"
                     />
@@ -223,12 +215,11 @@ const AssessmentListPage: React.FC = () => {
                   )}
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
-      )}
+        </Box>
 
-      {!loading && filteredAssessments.length === 0 && (
+      {filteredAssessments.length === 0 && (
         <Alert severity="info">
           Tidak ada asesmen yang ditemukan
         </Alert>

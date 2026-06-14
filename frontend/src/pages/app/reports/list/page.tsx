@@ -102,7 +102,7 @@ const ReportListPage: React.FC = () => {
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
                 fullWidth
                 label="Cari Rapor"
@@ -113,7 +113,7 @@ const ReportListPage: React.FC = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <FormControl fullWidth>
                 <InputLabel>Status</InputLabel>
                 <Select
@@ -128,7 +128,7 @@ const ReportListPage: React.FC = () => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <Button
                 fullWidth
                 variant="outlined"
@@ -159,7 +159,7 @@ const ReportListPage: React.FC = () => {
       ) : (
         <Grid container spacing={3}>
           {filteredReports.map((report) => (
-            <Grid item xs={12} sm={6} md={4} key={report.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={report.id}>
               <Card
                 sx={{ cursor: 'pointer', height: '100%' }}
                 onClick={() => navigate(`/reports/${report.id}`)}

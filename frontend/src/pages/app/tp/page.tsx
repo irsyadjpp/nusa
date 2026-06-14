@@ -79,7 +79,7 @@ const TeachingPlanPage: React.FC = () => {
     setShowVersionHistory(false);
     // Initialize KKTP criteria from TP success_criteria if available
     if (tp.success_criteria && typeof tp.success_criteria === 'object') {
-      setKKTPCriteria(tp.success_criteria as Criteria[]);
+      setKKTPCriteria(tp.success_criteria as unknown as Criteria[]);
     } else {
       setKKTPCriteria([]);
     }

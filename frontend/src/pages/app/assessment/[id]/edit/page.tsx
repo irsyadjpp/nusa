@@ -1,9 +1,9 @@
 /**
- * Assessment Edit Page
+ * Assessment Edit Page - MIGRATED TO TANSTACK QUERY
  * Edit existing Assessment
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -15,52 +15,37 @@ import {
   ArrowBack,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getAssessmentById, updateAssessment } from '@/api/assessment';
-import { Assessment } from '@/api/assessment';
+import { useAssessment } from '@/services/queries/AssessmentQueryService';
+import { useUpdateAssessment } from '@/services/commands/AssessmentCommandService';
 import AssessmentForm from '@/components/assessment/AssessmentForm';
 
 const AssessmentEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [assessment, setAssessment] = useState<Assessment | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (id) {
-      loadAssessment(id);
-    }
-  }, [id]);
+  // ✅ Using TanStack Query hooks instead of manual state management
+  const { 
+    data: assessment, 
+    isLoading 
+  } = useAssessment(id!);
 
-  const loadAssessment = async (assessmentId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getAssessmentById(assessmentId);
-      setAssessment(data);
-    } catch (err: any) {
-      setError(err.message || 'Gagal memuat data Asesmen');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const updateMutation = useUpdateAssessment({
+    onSuccess: () => {
+      navigate(`/assessment/${id}`);
+    },
+    onError: (err) => {
+      setError(err.message || 'Gagal mengupdate asesmen');
+    },
+  });
 
   const handleSubmit = async (values: any) => {
     if (!id) return;
-    setSaving(true);
     setError(null);
-    try {
-      await updateAssessment(id, values);
-      navigate(`/assessment/${id}`);
-    } catch (err: any) {
-      setError(err.message || 'Gagal mengupdate asesmen');
-    } finally {
-      setSaving(false);
-    }
+    updateMutation.mutate({ id, data: values });
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress />
@@ -108,7 +93,7 @@ const AssessmentEditPage: React.FC = () => {
         }}
         onSubmit={handleSubmit}
         onCancel={() => navigate(`/assessment/${id}`)}
-        loading={saving}
+        loading={updateMutation.isPending}
       />
     </Box>
   );

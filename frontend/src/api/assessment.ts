@@ -1,90 +1,28 @@
 /**
  * Assessment API Client
- * Handles all Assessment-related API calls
+ * Handles all Assessment-related API calls with proper types
  */
 
 import apiClient, { handleApiError } from './client';
-
-// Types
-export interface Assessment {
-  id: string;
-  tp_id: string;
-  tp_version_no: number;
-  success_criteria_snapshot: any;
-  user_id: string;
-  assessment_type: string;
-  status: string;
-  assessment_items: any;
-  answer_key: any;
-  scoring_guidelines: any;
-  ai_confidence_score?: number;
-  ai_generated_at?: string;
-  ai_agent_version?: string;
-  version_no: number;
-  is_current_version: boolean;
-  parent_version_id?: string;
-  created_at: string;
-  updated_at: string;
-  approved_at?: string;
-  approved_by?: string;
-}
-
-export interface AssessmentResponse {
-  id: string;
-  tp_id: string;
-  tp_title: string;
-  tp_version_no: number;
-  success_criteria_snapshot: any;
-  user_id: string;
-  user_name: string;
-  assessment_type: string;
-  status: string;
-  assessment_items: any;
-  answer_key: any;
-  scoring_guidelines: any;
-  ai_confidence_score?: number;
-  ai_generated_at?: string;
-  ai_agent_version?: string;
-  version_no: number;
-  is_current_version: boolean;
-  parent_version_id?: string;
-  created_at: string;
-  updated_at: string;
-  approved_at?: string;
-  approved_by?: string;
-}
-
-export interface CreateAssessmentRequest {
-  tp_id: string;
-  tp_version_no: number;
-  success_criteria_snapshot: any;
-  assessment_type: string;
-  assessment_items: any;
-  answer_key: any;
-  scoring_guidelines: any;
-}
-
-export interface UpdateAssessmentRequest {
-  assessment_type?: string;
-  assessment_items?: any;
-  answer_key?: any;
-  scoring_guidelines?: any;
-  status?: string;
-}
+import {
+  Assessment,
+  AssessmentType,
+  CreateAssessmentRequest,
+  UpdateAssessmentRequest,
+  PaginationParams,
+  FilterParams
+} from '@/shared/types/domain';
 
 /**
  * Get all assessments with optional filters
  */
-export const getAssessments = async (params?: {
+export const getAssessments = async (params?: PaginationParams & FilterParams & {
   tp_id?: string;
   user_id?: string;
-  assessment_type?: string;
-  status?: string;
-  limit?: number;
-  offset?: number;
+  assessment_type?: AssessmentType;
 }): Promise<Assessment[]> => {
   try {
-    const response = await apiClient.get('/assessments', { params });
+    const response = await apiClient.get('/assessment', { params });
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -94,9 +32,9 @@ export const getAssessments = async (params?: {
 /**
  * Get assessment by ID
  */
-export const getAssessmentById = async (id: string): Promise<AssessmentResponse> => {
+export const getAssessmentById = async (id: string): Promise<Assessment> => {
   try {
-    const response = await apiClient.get(`/assessments/${id}`);
+    const response = await apiClient.get(`/assessment/${id}`);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -108,7 +46,7 @@ export const getAssessmentById = async (id: string): Promise<AssessmentResponse>
  */
 export const createAssessment = async (data: CreateAssessmentRequest, userId: string): Promise<Assessment> => {
   try {
-    const response = await apiClient.post('/assessments', {
+    const response = await apiClient.post('/assessment', {
       ...data,
       user_id: userId,
     });
@@ -123,7 +61,7 @@ export const createAssessment = async (data: CreateAssessmentRequest, userId: st
  */
 export const updateAssessment = async (id: string, data: UpdateAssessmentRequest): Promise<Assessment> => {
   try {
-    const response = await apiClient.put(`/assessments/${id}`, data);
+    const response = await apiClient.put(`/assessment/${id}`, data);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -135,7 +73,7 @@ export const updateAssessment = async (id: string, data: UpdateAssessmentRequest
  */
 export const deleteAssessment = async (id: string): Promise<void> => {
   try {
-    await apiClient.delete(`/assessments/${id}`);
+    await apiClient.delete(`/assessment/${id}`);
   } catch (error) {
     throw handleApiError(error);
   }
@@ -146,7 +84,7 @@ export const deleteAssessment = async (id: string): Promise<void> => {
  */
 export const approveAssessment = async (id: string, userId: string): Promise<Assessment> => {
   try {
-    const response = await apiClient.put(`/assessments/${id}/approve`, {
+    const response = await apiClient.post(`/assessment/${id}/approve`, {
       approved_by: userId,
     });
     return response.data.data || response.data;
@@ -160,7 +98,7 @@ export const approveAssessment = async (id: string, userId: string): Promise<Ass
  */
 export const rejectAssessment = async (id: string, userId: string): Promise<Assessment> => {
   try {
-    const response = await apiClient.put(`/assessments/${id}/reject`, {
+    const response = await apiClient.put(`/assessment/${id}/reject`, {
       rejected_by: userId,
     });
     return response.data.data || response.data;

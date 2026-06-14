@@ -72,6 +72,38 @@ func (h *Handler) GetNarrativeReport(c *gin.Context) {
 	response.Success(c, report)
 }
 
+func (h *Handler) UpdateNarrativeReport(c *gin.Context) {
+	ctx := context.Background()
+	id := c.Param("id")
+
+	var req domain.UpdateNarrativeReportRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, 400, "Invalid request")
+		return
+	}
+
+	report, err := h.reportingService.UpdateNarrativeReport(ctx, id, &req)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, report)
+}
+
+func (h *Handler) DeleteNarrativeReport(c *gin.Context) {
+	ctx := context.Background()
+	id := c.Param("id")
+
+	err := h.reportingService.DeleteNarrativeReport(ctx, id)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, gin.H{"message": "Narrative report deleted"})
+}
+
 func (h *Handler) RefreshReportAchievement(c *gin.Context) {
 	ctx := context.Background()
 	id := c.Param("id")

@@ -22,7 +22,7 @@ export const CompetencyProgress = ({ competencies }: CompetencyProgressProps) =>
         Competency Progress
       </Typography>
       <Divider sx={{ my: 2 }} />
-      <Stack spacing={3}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         {competencies.map((competency) => (
           <Box key={competency.name}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -42,7 +42,7 @@ export const CompetencyProgress = ({ competencies }: CompetencyProgressProps) =>
             </Typography>
           </Box>
         ))}
-      </Stack>
+      </Box>
     </Paper>
   );
 };

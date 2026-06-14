@@ -13,7 +13,7 @@ type Achievement struct {
 	TPTitle             string                  `json:"tp_title"`
 	CompetencyCode      string                  `json:"competency_code"`
 	OverallScore        float64                 `json:"overall_score"`
-	PerformanceLevel    PerformanceLevel        `json:"performance_level"`
+	EvaluationPerformanceLevel    EvaluationPerformanceLevel        `json:"performance_level"`
 	MasteryStatus       MasteryStatus           `json:"mastery_status"`
 	CompetencyBreakdown []CompetencyAchievement `json:"competency_breakdown"`
 	EvidenceCount       int                     `json:"evidence_count"`
@@ -25,7 +25,7 @@ type Achievement struct {
 type CompetencyAchievement struct {
 	CompetencyName   string           `json:"competency_name"`
 	Score            float64          `json:"score"`
-	PerformanceLevel PerformanceLevel `json:"performance_level"`
+	EvaluationPerformanceLevel EvaluationPerformanceLevel `json:"performance_level"`
 	MasteryStatus    MasteryStatus    `json:"mastery_status"`
 	EvidenceCount    int              `json:"evidence_count"`
 }
@@ -84,7 +84,7 @@ type SubjectAchievement struct {
 	SubjectID        string           `json:"subject_id"`
 	SubjectName      string           `json:"subject_name"`
 	AverageScore     float64          `json:"average_score"`
-	PerformanceLevel PerformanceLevel `json:"performance_level"`
+	EvaluationPerformanceLevel EvaluationPerformanceLevel `json:"performance_level"`
 	CompetencyCount  int              `json:"competency_count"`
 	MasteredCount    int              `json:"mastered_count"`
 }
@@ -97,7 +97,7 @@ type ClassAchievement struct {
 	SubjectName             string                    `json:"subject_name"`
 	TotalStudents           int                       `json:"total_students"`
 	ClassAverage            float64                   `json:"class_average"`
-	PerformanceDistribution map[PerformanceLevel]int  `json:"performance_distribution"`
+	PerformanceDistribution map[EvaluationPerformanceLevel]int  `json:"performance_distribution"`
 	MasteryDistribution     map[MasteryStatus]int     `json:"mastery_distribution"`
 	StudentAchievements     []StudentClassAchievement `json:"student_achievements"`
 	CalculatedAt            time.Time                 `json:"calculated_at"`
@@ -108,7 +108,7 @@ type StudentClassAchievement struct {
 	StudentID        string           `json:"student_id"`
 	StudentName      string           `json:"student_name"`
 	AverageScore     float64          `json:"average_score"`
-	PerformanceLevel PerformanceLevel `json:"performance_level"`
+	EvaluationPerformanceLevel EvaluationPerformanceLevel `json:"performance_level"`
 	MasteryStatus    MasteryStatus    `json:"mastery_status"`
 	Rank             int              `json:"rank"`
 }
@@ -145,7 +145,7 @@ func (s *AchievementService) CalculateStudentAchievement(
 	}
 
 	// Determine performance level
-	performanceLevel := s.determinePerformanceLevel(overallScore)
+	performanceLevel := s.determineEvaluationPerformanceLevel(overallScore)
 
 	// Determine mastery status
 	masteryStatus := s.determineMasteryStatus(overallScore, performanceLevel)
@@ -157,7 +157,7 @@ func (s *AchievementService) CalculateStudentAchievement(
 		StudentID:           studentID,
 		TPID:                tpID,
 		OverallScore:        overallScore,
-		PerformanceLevel:    performanceLevel,
+		EvaluationPerformanceLevel:    performanceLevel,
 		MasteryStatus:       masteryStatus,
 		CompetencyBreakdown: competencyBreakdown,
 		EvidenceCount:       len(evaluations),
@@ -299,7 +299,7 @@ func (s *AchievementService) GenerateClassAchievement(
 			SubjectName:             subjectName,
 			TotalStudents:           0,
 			ClassAverage:            0,
-			PerformanceDistribution: map[PerformanceLevel]int{},
+			PerformanceDistribution: map[EvaluationPerformanceLevel]int{},
 			MasteryDistribution:     map[MasteryStatus]int{},
 			StudentAchievements:     []StudentClassAchievement{},
 			CalculatedAt:            time.Now(),
@@ -314,11 +314,11 @@ func (s *AchievementService) GenerateClassAchievement(
 	classAverage := totalScore / float64(len(studentAchievements))
 
 	// Build performance distribution
-	perfDist := make(map[PerformanceLevel]int)
+	perfDist := make(map[EvaluationPerformanceLevel]int)
 	masteryDist := make(map[MasteryStatus]int)
 
 	for _, ach := range studentAchievements {
-		perfDist[ach.PerformanceLevel]++
+		perfDist[ach.EvaluationPerformanceLevel]++
 		masteryDist[ach.MasteryStatus]++
 	}
 
@@ -341,21 +341,21 @@ func (s *AchievementService) GenerateClassAchievement(
 
 // Helper methods
 
-func (s *AchievementService) determinePerformanceLevel(score float64) PerformanceLevel {
+func (s *AchievementService) determineEvaluationPerformanceLevel(score float64) EvaluationPerformanceLevel {
 	if score >= 90 {
-		return PerformanceLevelExcellent
+		return EvaluationPerformanceLevelExcellent
 	} else if score >= 75 {
-		return PerformanceLevelProficient
+		return EvaluationPerformanceLevelProficient
 	} else if score >= 60 {
-		return PerformanceLevelDeveloping
+		return EvaluationPerformanceLevelDeveloping
 	}
-	return PerformanceLevelBeginning
+	return EvaluationPerformanceLevelBeginning
 }
 
-func (s *AchievementService) determineMasteryStatus(score float64, level PerformanceLevel) MasteryStatus {
-	if level == PerformanceLevelExcellent {
+func (s *AchievementService) determineMasteryStatus(score float64, level EvaluationPerformanceLevel) MasteryStatus {
+	if level == EvaluationPerformanceLevelExcellent {
 		return MasteryStatusExceeding
-	} else if level == PerformanceLevelProficient {
+	} else if level == EvaluationPerformanceLevelProficient {
 		return MasteryStatusAchieved
 	} else if score > 0 {
 		return MasteryStatusInProgress
@@ -410,9 +410,9 @@ func (s *AchievementService) identifyStrengthsAndWeaknesses(achievements []Achie
 	var weaknesses []string
 
 	for _, ach := range achievements {
-		if ach.PerformanceLevel == PerformanceLevelExcellent {
+		if ach.EvaluationPerformanceLevel == EvaluationPerformanceLevelExcellent {
 			strengths = append(strengths, ach.TPTitle)
-		} else if ach.PerformanceLevel == PerformanceLevelBeginning {
+		} else if ach.EvaluationPerformanceLevel == EvaluationPerformanceLevelBeginning {
 			weaknesses = append(weaknesses, ach.TPTitle)
 		}
 	}
@@ -424,7 +424,7 @@ func (s *AchievementService) generateRecommendations(achievements []Achievement)
 	var recommendations []string
 
 	for _, ach := range achievements {
-		if ach.PerformanceLevel == PerformanceLevelDeveloping || ach.PerformanceLevel == PerformanceLevelBeginning {
+		if ach.EvaluationPerformanceLevel == EvaluationPerformanceLevelDeveloping || ach.EvaluationPerformanceLevel == EvaluationPerformanceLevelBeginning {
 			recommendations = append(recommendations, "Focus on improving "+ach.TPTitle)
 		}
 	}

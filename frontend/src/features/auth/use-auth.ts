@@ -4,7 +4,7 @@
  */
 
 import { useAuthContext } from './auth-context';
-import { LoginCredentials, User } from './types';
+import { LoginCredentials } from './types';
 
 export const useAuth = () => {
   const {

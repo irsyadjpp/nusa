@@ -4,10 +4,13 @@ import { EvaluationWorkspaceHeader } from '@/features/evaluation';
 import { EvaluationQueue, EvaluationFilters, EvaluationPanel, EvaluationForm, EvaluationPreview } from '@/features/evaluation';
 import { useEvaluations } from '@/services/queries/EvaluationQueryService';
 import { useCreateEvaluation, useUpdateEvaluation, useDeleteEvaluation } from '@/services/commands/EvaluationCommandService';
-import { Evaluation } from '@/api/evaluation';
+import { Evaluation } from '@/shared/types/domain';
 import { enqueueSnackbar } from 'notistack';
+import { useNavigate } from 'react-router-dom';
+import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 
 const EvaluationPage: React.FC = () => {
+  const navigate = useNavigate();
   const [selectedEvaluation, setSelectedEvaluation] = useState<Evaluation | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -100,6 +103,12 @@ const EvaluationPage: React.FC = () => {
     setFilters({});
   };
 
+  const handleViewAchievement = () => {
+    if (selectedEvaluation) {
+      navigate('/achievement', { state: { studentId: selectedEvaluation.student_id } });
+    }
+  };
+
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
@@ -176,6 +185,13 @@ const EvaluationPage: React.FC = () => {
                   </Button>
                   <Button variant="outlined" onClick={handlePreview}>
                     Preview
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    startIcon={<NavigateNextIcon />}
+                    onClick={handleViewAchievement}
+                  >
+                    View Achievement
                   </Button>
                   <Button variant="outlined" color="error" onClick={handleDeleteEvaluation}>
                     Delete

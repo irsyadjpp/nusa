@@ -386,7 +386,6 @@ curriculum_phases  ──┼── curriculum_elements ── curriculum_subelem
 | `id` | UUID | NO | `gen_uuid_v7()` | PRIMARY KEY |
 | `code` | VARCHAR(50) | NO | — | UNIQUE |
 | `name` | VARCHAR(255) | NO | — | — |
-| `name_en` | VARCHAR(255) | YES | — | — |
 | `description` | TEXT | YES | — | — |
 | `is_active` | BOOLEAN | NO | `true` | — |
 | `created_at` | TIMESTAMPTZ | NO | `NOW()` | — |
@@ -403,7 +402,6 @@ curriculum_phases  ──┼── curriculum_elements ── curriculum_subelem
 | `id` | UUID | NO | `gen_uuid_v7()` | PRIMARY KEY |
 | `code` | VARCHAR(50) | NO | — | UNIQUE |
 | `name` | VARCHAR(255) | NO | — | — |
-| `name_en` | VARCHAR(255) | YES | — | — |
 | `description` | TEXT | YES | — | — |
 | `grade_level_start` | INTEGER | YES | — | — |
 | `grade_level_end` | INTEGER | YES | — | — |
@@ -424,7 +422,6 @@ curriculum_phases  ──┼── curriculum_elements ── curriculum_subelem
 | `phase_id` | UUID | NO | — | FK → `curriculum_phases(id)` CASCADE |
 | `code` | VARCHAR(50) | NO | — | UNIQUE(subject_id, phase_id, code) |
 | `name` | VARCHAR(255) | NO | — | — |
-| `name_en` | VARCHAR(255) | YES | — | — |
 | `description` | TEXT | YES | — | — |
 | `is_active` | BOOLEAN | NO | `true` | — |
 | `created_at` | TIMESTAMPTZ | NO | `NOW()` | — |
@@ -442,7 +439,6 @@ curriculum_phases  ──┼── curriculum_elements ── curriculum_subelem
 | `element_id` | UUID | NO | — | FK → `curriculum_elements(id)` CASCADE |
 | `code` | VARCHAR(50) | NO | — | UNIQUE(element_id, code) |
 | `name` | VARCHAR(255) | NO | — | — |
-| `name_en` | VARCHAR(255) | YES | — | — |
 | `description` | TEXT | YES | — | — |
 | `is_active` | BOOLEAN | NO | `true` | — |
 | `created_at` | TIMESTAMPTZ | NO | `NOW()` | — |

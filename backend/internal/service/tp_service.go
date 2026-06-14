@@ -50,7 +50,7 @@ func (s *TPService) ListTPSets(ctx context.Context, cpID *string, status *domain
 
 	sets, err := s.tpRepo.ListTPSets(ctx, cpID, status, nil, limit, offset)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, fmt.Errorf("failed to list TP sets: %w", err)
 	}
 
 	return sets, len(sets), nil
@@ -72,6 +72,30 @@ func (s *TPService) RejectTPSet(ctx context.Context, id string, approverID strin
 		return fmt.Errorf("failed to reject TP set: %w", err)
 	}
 	return nil
+}
+
+// UpdateTPSet updates a TP Set (basic update for generation_reason and other metadata)
+func (s *TPService) UpdateTPSet(ctx context.Context, id string, req *domain.UpdateTPSetRequest) error {
+	tpSet, err := s.tpRepo.GetTPSetByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("tp set not found: %w", err)
+	}
+
+	// Update only allowed fields
+	if req.GenerationReason != nil {
+		tpSet.GenerationReason = req.GenerationReason
+	}
+
+	if err := s.tpRepo.UpdateTPSet(ctx, tpSet); err != nil {
+		return fmt.Errorf("failed to update tp set: %w", err)
+	}
+
+	return nil
+}
+
+// GetTPVersionHistory retrieves the version history for a TP Set
+func (s *TPService) GetTPVersionHistory(ctx context.Context, tpSetID string) ([]*domain.TP, error) {
+	return s.tpRepo.GetTPVersionHistory(ctx, tpSetID)
 }
 
 // CreateTP creates a new TP
@@ -117,7 +141,7 @@ func (s *TPService) ListTPs(ctx context.Context, tpSetID, cpID *string, status *
 
 	tps, err := s.tpRepo.ListTPs(ctx, tpSetID, cpID, status, nil, limit, offset)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, fmt.Errorf("failed to list TPs: %w", err)
 	}
 
 	return tps, len(tps), nil
@@ -127,7 +151,7 @@ func (s *TPService) ListTPs(ctx context.Context, tpSetID, cpID *string, status *
 func (s *TPService) UpdateTP(ctx context.Context, id string, req *domain.UpdateTPRequest) (*domain.TP, error) {
 	oldTP, err := s.tpRepo.GetTPByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("tp not found")
+		return nil, fmt.Errorf("tp not found: %w", err)
 	}
 
 	// Check if TP has downstream assessments before allowing update

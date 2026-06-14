@@ -13,10 +13,17 @@ import (
 
 type Handler struct {
 	assessmentService *service.AssessmentService
+	authService       *service.ResourceAuthorizationService
 }
 
-func NewHandler(assessmentService *service.AssessmentService) *Handler {
-	return &Handler{assessmentService: assessmentService}
+func NewHandler(
+	assessmentService *service.AssessmentService,
+	authService *service.ResourceAuthorizationService,
+) *Handler {
+	return &Handler{
+		assessmentService: assessmentService,
+		authService:       authService,
+	}
 }
 
 // Assessment handlers
@@ -112,6 +119,51 @@ func (h *Handler) ListRubrics(c *gin.Context) {
 	response.Success(c, gin.H{"rubrics": rubrics, "total": total, "page": page, "page_size": pageSize})
 }
 
+func (h *Handler) GetRubric(c *gin.Context) {
+	ctx := context.Background()
+	id := c.Param("id")
+
+	rubric, err := h.assessmentService.GetRubric(ctx, id)
+	if err != nil {
+		response.Error(c, 404, "Rubric not found")
+		return
+	}
+
+	response.Success(c, rubric)
+}
+
+func (h *Handler) UpdateRubric(c *gin.Context) {
+	ctx := context.Background()
+	id := c.Param("id")
+
+	var req domain.UpdateRubricRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, 400, "Invalid request")
+		return
+	}
+
+	rubric, err := h.assessmentService.UpdateRubric(ctx, id, &req)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, rubric)
+}
+
+func (h *Handler) DeleteRubric(c *gin.Context) {
+	ctx := context.Background()
+	id := c.Param("id")
+
+	err := h.assessmentService.DeleteRubric(ctx, id)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, gin.H{"message": "Rubric deleted"})
+}
+
 // Evidence handlers
 func (h *Handler) CreateEvidence(c *gin.Context) {
 	ctx := context.Background()
@@ -155,6 +207,52 @@ func (h *Handler) ListEvidences(c *gin.Context) {
 	response.Success(c, gin.H{"evidences": evidences, "total": total, "page": page, "page_size": pageSize})
 }
 
+func (h *Handler) UpdateEvidence(c *gin.Context) {
+	ctx := context.Background()
+	authCtx := middleware.GetAuthContext(c)
+	id := c.Param("id")
+
+	// Authorization check
+	if err := h.authService.AuthorizeEvidenceOwnership(ctx, authCtx.UserID, id); err != nil {
+		response.Error(c, 403, "Access denied")
+		return
+	}
+
+	var req domain.UpdateEvidenceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, 400, "Invalid request")
+		return
+	}
+
+	evidence, err := h.assessmentService.UpdateEvidence(ctx, id, &req)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, evidence)
+}
+
+func (h *Handler) DeleteEvidence(c *gin.Context) {
+	ctx := context.Background()
+	authCtx := middleware.GetAuthContext(c)
+	id := c.Param("id")
+
+	// Authorization check
+	if err := h.authService.AuthorizeEvidenceOwnership(ctx, authCtx.UserID, id); err != nil {
+		response.Error(c, 403, "Access denied")
+		return
+	}
+
+	err := h.assessmentService.DeleteEvidence(ctx, id)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, gin.H{"message": "Evidence deleted"})
+}
+
 // Evaluation handlers
 func (h *Handler) CreateEvaluation(c *gin.Context) {
 	ctx := context.Background()
@@ -167,6 +265,26 @@ func (h *Handler) CreateEvaluation(c *gin.Context) {
 	}
 
 	evaluation, err := h.assessmentService.CreateEvaluation(ctx, &req, authCtx.UserID)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, evaluation)
+}
+
+func (h *Handler) UpdateEvaluation(c *gin.Context) {
+	ctx := context.Background()
+	authCtx := middleware.GetAuthContext(c)
+	id := c.Param("id")
+
+	var req domain.UpdateEvaluationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, 400, "Invalid request")
+		return
+	}
+
+	evaluation, err := h.assessmentService.UpdateEvaluation(ctx, id, &req, authCtx.UserID)
 	if err != nil {
 		response.Error(c, 500, err.Error())
 		return
@@ -198,6 +316,19 @@ func (h *Handler) ListEvaluations(c *gin.Context) {
 	response.Success(c, gin.H{"evaluations": evaluations, "total": total, "page": page, "page_size": pageSize})
 }
 
+func (h *Handler) GetEvaluation(c *gin.Context) {
+	ctx := context.Background()
+	id := c.Param("id")
+
+	evaluation, err := h.assessmentService.GetEvaluation(ctx, id)
+	if err != nil {
+		response.Error(c, 404, "Evaluation not found")
+		return
+	}
+
+	response.Success(c, evaluation)
+}
+
 func (h *Handler) GetEvaluationHistory(c *gin.Context) {
 	ctx := context.Background()
 	evidenceID := c.Param("evidence_id")
@@ -213,7 +344,7 @@ func (h *Handler) GetEvaluationHistory(c *gin.Context) {
 
 func (h *Handler) GetEvaluationFeedbackHistory(c *gin.Context) {
 	ctx := context.Background()
-	evaluationID := c.Param("evaluation_id")
+	evaluationID := c.Param("id")
 
 	history, err := h.assessmentService.GetEvaluationFeedbackHistory(ctx, evaluationID)
 	if err != nil {
@@ -222,4 +353,80 @@ func (h *Handler) GetEvaluationFeedbackHistory(c *gin.Context) {
 	}
 
 	response.Success(c, history)
+}
+
+// UpdateAssessment updates an assessment (EP-03)
+func (h *Handler) UpdateAssessment(c *gin.Context) {
+	ctx := context.Background()
+	authCtx := middleware.GetAuthContext(c)
+	id := c.Param("id")
+
+	// Authorization check
+	if err := h.authService.AuthorizeAssessmentOwnership(ctx, authCtx.UserID, id); err != nil {
+		response.Error(c, 403, "Access denied")
+		return
+	}
+
+	var req domain.UpdateAssessmentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, 400, "Invalid request")
+		return
+	}
+
+	assessment, err := h.assessmentService.UpdateAssessment(ctx, id, &req)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, assessment)
+}
+
+// ApproveAssessment approves an assessment (EP-04)
+func (h *Handler) ApproveAssessment(c *gin.Context) {
+	ctx := context.Background()
+	authCtx := middleware.GetAuthContext(c)
+	id := c.Param("id")
+
+	err := h.assessmentService.ApproveAssessment(ctx, id, authCtx.UserID)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, gin.H{"message": "Assessment approved"})
+}
+
+// UploadEvidence handles evidence file upload (EP-05)
+func (h *Handler) UploadEvidence(c *gin.Context) {
+	ctx := context.Background()
+	authCtx := middleware.GetAuthContext(c)
+
+	var req domain.CreateEvidenceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, 400, "Invalid request")
+		return
+	}
+
+	evidence, err := h.assessmentService.UploadEvidence(ctx, &req, authCtx.UserID)
+	if err != nil {
+		response.Error(c, 500, err.Error())
+		return
+	}
+
+	response.Success(c, evidence)
+}
+
+// GetEvidenceByID retrieves evidence by ID (EP-06)
+func (h *Handler) GetEvidence(c *gin.Context) {
+	ctx := context.Background()
+	id := c.Param("id")
+
+	evidence, err := h.assessmentService.GetEvidenceByID(ctx, id)
+	if err != nil {
+		response.Error(c, 404, "Evidence not found")
+		return
+	}
+
+	response.Success(c, evidence)
 }

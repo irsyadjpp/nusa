@@ -47,7 +47,7 @@ services:
       - "-c"
       - "pg_stat_statements.save=on"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-nusa_user} -d ${DB_NAME:-nusa_db}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-nusa_user} -d ${DB_NAME:-nusa_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -65,7 +65,7 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      test: rabbitmq-diagnostics -q ping
       interval: 15s
       timeout: 10s
       retries: 5
@@ -80,7 +80,7 @@ services:
     volumes:
       - redis_data:/data
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: redis-cli ping
       interval: 10s
       timeout: 5s
       retries: 5
@@ -120,7 +120,7 @@ services:
       - MINIO_COMPRESSION_EXTENSIONS=.txt,.csv,.json,.xml,.log
     command: server /data --console-address ":9001"
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      test: curl -f http://localhost:9000/minio/health/live
       interval: 30s
       timeout: 20s
       retries: 3

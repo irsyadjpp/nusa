@@ -7,7 +7,6 @@ type ReportLanguage string
 
 const (
 	ReportLanguageIndonesian ReportLanguage = "INDONESIAN"
-	ReportLanguageEnglish    ReportLanguage = "ENGLISH"
 )
 
 // NarrativeReport represents a narrative report
@@ -77,7 +76,7 @@ type CreateNarrativeReportRequest struct {
 	StudentID    string         `json:"student_id" binding:"required"`
 	ClassID      string         `json:"class_id" binding:"required"`
 	ReportPeriod interface{}    `json:"report_period" binding:"required"`
-	Language     ReportLanguage `json:"language" binding:"required,oneof=INDONESIAN ENGLISH"`
+	Language     ReportLanguage `json:"language" binding:"required,oneof=INDONESIAN"`
 	Content      interface{}    `json:"content" binding:"required"`
 }
 
@@ -92,5 +91,5 @@ type UpdateNarrativeReportRequest struct {
 type GenerateNarrativeReportRequest struct {
 	StudentID    string         `json:"student_id" binding:"required"`
 	ReportPeriod interface{}    `json:"report_period" binding:"required"`
-	Language     ReportLanguage `json:"language" binding:"required,oneof=INDONESIAN ENGLISH"`
+	Language     ReportLanguage `json:"language" binding:"required,oneof=INDONESIAN"`
 }

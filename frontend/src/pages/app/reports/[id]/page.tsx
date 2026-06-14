@@ -8,13 +8,14 @@ import {
   Box,
   Typography,
   Button,
-  Grid,
   CircularProgress,
   Alert,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  Card,
+  CardContent,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -24,7 +25,6 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import NarrativeReportEditor from '@/components/report/NarrativeReportEditor';
-import AchievementSummary from '@/components/report/AchievementSummary';
 import ReportPreview from '@/components/report/ReportPreview';
 import ReportPublish from '@/components/report/ReportPublish';
 
@@ -38,7 +38,6 @@ const ReportDetailPage: React.FC = () => {
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
   const [narrativeContent, setNarrativeContent] = useState('');
-  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -97,7 +96,7 @@ const ReportDetailPage: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(publishData),
       });
-      loadReport(id);
+      loadReport(id!);
     } catch (err: any) {
       setError(err.message || 'Gagal mempublikasikan rapor');
     }
@@ -177,9 +176,9 @@ const ReportDetailPage: React.FC = () => {
         </Alert>
       )}
 
-      {!editing && !showPreview ? (
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={8}>
+      {!editing ? (
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+          <Box sx={{ width: { xs: '100%', md: '66.67%' }}}>
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -199,9 +198,9 @@ const ReportDetailPage: React.FC = () => {
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
 
-          <Grid item xs={12} md={4}>
+          <Box sx={{ width: { xs: '100%', md: '33.33%' }}}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
@@ -254,26 +253,22 @@ const ReportDetailPage: React.FC = () => {
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       ) : editing ? (
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Edit Narasi Guru
-                </Typography>
-                <NarrativeReportEditor
-                  value={narrativeContent}
-                  onChange={setNarrativeContent}
-                  onSave={handleSave}
-                  onCancel={() => setEditing(false)}
-                />
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Edit Narasi Guru
+            </Typography>
+            <NarrativeReportEditor
+              value={narrativeContent}
+              onChange={setNarrativeContent}
+              onSave={handleSave}
+              onCancel={() => setEditing(false)}
+            />
+          </CardContent>
+        </Card>
       ) : (
         <ReportPreview
           studentName={report.student_name}

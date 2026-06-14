@@ -9,8 +9,10 @@ export function getClientLocale(): LocaleOption {
   return (Cookies.get(COOKIE_KEYS.locale) as LocaleOption) || DEFAULTS.locale;
 }
 
-// Set client locale in cookie
+// Set client locale in cookie (kept for compatibility, but only supports Indonesian)
 export function setClientLocale(locale: LocaleOption) {
-  i18n.changeLanguage(locale);
-  Cookies.set(COOKIE_KEYS.locale, locale, { sameSite: "lax" });
+  if (locale === "id") {
+    i18n.changeLanguage(locale);
+    Cookies.set(COOKIE_KEYS.locale, locale, { sameSite: "lax" });
+  }
 }

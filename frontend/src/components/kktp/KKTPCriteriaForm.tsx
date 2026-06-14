@@ -1,428 +1,300 @@
 /**
- * KKTPCriteria Form Component
- * Form for editing KKTP (Kriteria Ketuntasan Tujuan Pembelajaran)
+ * KKTP Criteria Form Component
+ * Form component for editing Kriteria Ketuntasan Tujuan Pembelajaran (KKTP)
  */
 
 import React from 'react';
 import {
   Box,
   Typography,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   TextField,
-  Grid,
-  Slider,
-  Chip,
-  IconButton,
   Button,
+  Card,
+  CardContent,
+  IconButton,
+  Divider,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
+import {
+  Add as AddIcon,
+  Delete as DeleteIcon,
+} from '@mui/icons-material';
 
-interface MasteryThresholds {
-  excellent_threshold: number;
-  proficient_threshold: number;
-  developing_threshold: number;
-  beginning_threshold: number;
+interface MasteryThreshold {
+  level: string;
+  description: string;
+  min_score: number;
 }
 
-interface PerformanceIndicators {
-  cognitive: string[];
-  psychomotor: string[];
-  affective: string[];
+interface PerformanceIndicator {
+  indicator: string;
+  description: string;
 }
 
-interface MinimumRequirements {
-  core_competencies: string[];
-  essential_skills: string[];
-  required_evidence: string[];
+interface MinimumRequirement {
+  requirement: string;
+  description: string;
 }
 
-interface KKTPCriteria {
-  mastery_thresholds: MasteryThresholds;
-  performance_indicators: PerformanceIndicators;
-  minimum_requirements: MinimumRequirements;
+interface KKTPCriteriaData {
+  mastery_thresholds?: MasteryThreshold[];
+  performance_indicators?: PerformanceIndicator[];
+  minimum_requirements?: MinimumRequirement[];
 }
 
 interface KKTPCriteriaFormProps {
-  data: KKTPCriteria;
-  onChange: (data: KKTPCriteria) => void;
-  disabled?: boolean;
+  data?: KKTPCriteriaData;
+  onChange: (data: KKTPCriteriaData) => void;
 }
 
-const KKTPCriteriaForm: React.FC<KKTPCriteriaFormProps> = ({
-  data,
-  onChange,
-  disabled = false,
-}) => {
-  const handleMasteryThresholdChange = (field: keyof MasteryThresholds, value: number) => {
+const KKTPCriteriaForm: React.FC<KKTPCriteriaFormProps> = ({ data, onChange }) => {
+  const handleChange = (field: keyof KKTPCriteriaData, value: any) => {
     onChange({
       ...data,
-      mastery_thresholds: {
-        ...data.mastery_thresholds,
-        [field]: value,
-      },
+      [field]: value,
     });
   };
 
-  const handlePerformanceIndicatorAdd = (category: keyof PerformanceIndicators, value: string) => {
-    if (!value.trim()) return;
-    onChange({
-      ...data,
-      performance_indicators: {
-        ...data.performance_indicators,
-        [category]: [...data.performance_indicators[category], value.trim()],
-      },
-    });
+  const addMasteryThreshold = () => {
+    const newThreshold: MasteryThreshold = {
+      level: '',
+      description: '',
+      min_score: 70,
+    };
+    handleChange('mastery_thresholds', [
+      ...(data?.mastery_thresholds || []),
+      newThreshold,
+    ]);
   };
 
-  const handlePerformanceIndicatorRemove = (
-    category: keyof PerformanceIndicators,
-    index: number,
-  ) => {
-    onChange({
-      ...data,
-      performance_indicators: {
-        ...data.performance_indicators,
-        [category]: data.performance_indicators[category].filter((_, i) => i !== index),
-      },
-    });
+  const updateMasteryThreshold = (index: number, field: keyof MasteryThreshold, value: any) => {
+    const thresholds = data?.mastery_thresholds || [];
+    const updated = [...thresholds];
+    updated[index] = { ...updated[index], [field]: value };
+    handleChange('mastery_thresholds', updated);
   };
 
-  const handleMinimumRequirementAdd = (category: keyof MinimumRequirements, value: string) => {
-    if (!value.trim()) return;
-    onChange({
-      ...data,
-      minimum_requirements: {
-        ...data.minimum_requirements,
-        [category]: [...data.minimum_requirements[category], value.trim()],
-      },
-    });
+  const removeMasteryThreshold = (index: number) => {
+    const thresholds = data?.mastery_thresholds || [];
+    handleChange('mastery_thresholds', thresholds.filter((_, i) => i !== index));
   };
 
-  const handleMinimumRequirementRemove = (
-    category: keyof MinimumRequirements,
-    index: number,
-  ) => {
-    onChange({
-      ...data,
-      minimum_requirements: {
-        ...data.minimum_requirements,
-        [category]: data.minimum_requirements[category].filter((_, i) => i !== index),
-      },
-    });
+  const addPerformanceIndicator = () => {
+    const newIndicator: PerformanceIndicator = {
+      indicator: '',
+      description: '',
+    };
+    handleChange('performance_indicators', [
+      ...(data?.performance_indicators || []),
+      newIndicator,
+    ]);
   };
 
-  const renderChips = (
-    items: string[],
-    category: keyof PerformanceIndicators | keyof MinimumRequirements,
-    type: 'performance' | 'requirement',
-  ) => (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-      {items.map((item, index) => (
-        <Chip
-          key={index}
-          label={item}
-          onDelete={
-            !disabled
-              ? () => {
-                  if (type === 'performance') {
-                    handlePerformanceIndicatorRemove(category as keyof PerformanceIndicators, index);
-                  } else {
-                    handleMinimumRequirementRemove(category as keyof MinimumRequirements, index);
-                  }
-                }
-              : undefined
-          }
-          color={type === 'performance' ? 'primary' : 'secondary'}
-          size="small"
-        />
-      ))}
-    </Box>
-  );
+  const updatePerformanceIndicator = (index: number, field: keyof PerformanceIndicator, value: any) => {
+    const indicators = data?.performance_indicators || [];
+    const updated = [...indicators];
+    updated[index] = { ...updated[index], [field]: value };
+    handleChange('performance_indicators', updated);
+  };
+
+  const removePerformanceIndicator = (index: number) => {
+    const indicators = data?.performance_indicators || [];
+    handleChange('performance_indicators', indicators.filter((_, i) => i !== index));
+  };
+
+  const addMinimumRequirement = () => {
+    const newRequirement: MinimumRequirement = {
+      requirement: '',
+      description: '',
+    };
+    handleChange('minimum_requirements', [
+      ...(data?.minimum_requirements || []),
+      newRequirement,
+    ]);
+  };
+
+  const updateMinimumRequirement = (index: number, field: keyof MinimumRequirement, value: any) => {
+    const requirements = data?.minimum_requirements || [];
+    const updated = [...requirements];
+    updated[index] = { ...updated[index], [field]: value };
+    handleChange('minimum_requirements', updated);
+  };
+
+  const removeMinimumRequirement = (index: number) => {
+    const requirements = data?.minimum_requirements || [];
+    handleChange('minimum_requirements', requirements.filter((_, i) => i !== index));
+  };
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>
-        Kriteria Ketuntasan Tujuan Pembelajaran (KKTP)
-      </Typography>
-
       {/* Mastery Thresholds */}
-      <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="subtitle1">Ambang Penguasaan</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Excellent (Sangat Baik)
-              </Typography>
-              <Slider
-                value={data.mastery_thresholds.excellent_threshold}
-                onChange={(_, value) => handleMasteryThresholdChange('excellent_threshold', value as number)}
-                min={0}
-                max={100}
-                valueLabelDisplay="auto"
-                disabled={disabled}
-                sx={{ color: 'success.main' }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Proficient (Baik)
-              </Typography>
-              <Slider
-                value={data.mastery_thresholds.proficient_threshold}
-                onChange={(_, value) => handleMasteryThresholdChange('proficient_threshold', value as number)}
-                min={0}
-                max={100}
-                valueLabelDisplay="auto"
-                disabled={disabled}
-                sx={{ color: 'info.main' }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Developing (Sedang Berkembang)
-              </Typography>
-              <Slider
-                value={data.mastery_thresholds.developing_threshold}
-                onChange={(_, value) => handleMasteryThresholdChange('developing_threshold', value as number)}
-                min={0}
-                max={100}
-                valueLabelDisplay="auto"
-                disabled={disabled}
-                sx={{ color: 'warning.main' }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Beginning (Perlu Bimbingan)
-              </Typography>
-              <Slider
-                value={data.mastery_thresholds.beginning_threshold}
-                onChange={(_, value) => handleMasteryThresholdChange('beginning_threshold', value as number)}
-                min={0}
-                max={100}
-                valueLabelDisplay="auto"
-                disabled={disabled}
-                sx={{ color: 'error.main' }}
-              />
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
+      <Box sx={{ mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="subtitle1" fontWeight="medium">
+            Ambang Batas Penguasaan
+          </Typography>
+          <Button
+            startIcon={<AddIcon />}
+            onClick={addMasteryThreshold}
+            size="small"
+            variant="outlined"
+          >
+            Tambah
+          </Button>
+        </Box>
+        {data?.mastery_thresholds?.map((threshold, index) => (
+          <Card key={index} variant="outlined" sx={{ mb: 2 }}>
+            <CardContent>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 2 }}>
+                <Box sx={{ gridColumn: { xs: 'span 12', sm: 'span 4' } }}>
+                  <TextField
+                    fullWidth
+                    label="Level"
+                    value={threshold.level}
+                    onChange={(e) => updateMasteryThreshold(index, 'level', e.target.value)}
+                    size="small"
+                  />
+                </Box>
+                <Box sx={{ gridColumn: { xs: 'span 12', sm: 'span 3' } }}>
+                  <TextField
+                    fullWidth
+                    label="Min Score"
+                    type="number"
+                    value={threshold.min_score}
+                    onChange={(e) => updateMasteryThreshold(index, 'min_score', parseInt(e.target.value))}
+                    size="small"
+                  />
+                </Box>
+                <Box sx={{ gridColumn: { xs: 'span 10', sm: 'span 4' } }}>
+                  <TextField
+                    fullWidth
+                    label="Deskripsi"
+                    value={threshold.description}
+                    onChange={(e) => updateMasteryThreshold(index, 'description', e.target.value)}
+                    size="small"
+                  />
+                </Box>
+                <Box sx={{ gridColumn: { xs: 'span 2', sm: 'span 1' } }}>
+                  <IconButton
+                    onClick={() => removeMasteryThreshold(index)}
+                    color="error"
+                    size="small"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
+              </Box>
+            </CardContent>
+          </Card>
+        ))}
+      </Box>
+
+      <Divider sx={{ my: 2 }} />
 
       {/* Performance Indicators */}
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="subtitle1">Indikator Pencapaian</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Typography variant="body2" gutterBottom>
-                Kognitif
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                <TextField
-                  size="small"
-                  placeholder="Tambah indikator kognitif"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handlePerformanceIndicatorAdd('cognitive', (e.target as HTMLInputElement).value);
-                      (e.target as HTMLInputElement).value = '';
-                    }
-                  }}
-                  disabled={disabled}
-                  fullWidth
-                />
-                {!disabled && (
+      <Box sx={{ mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="subtitle1" fontWeight="medium">
+            Indikator Kinerja
+          </Typography>
+          <Button
+            startIcon={<AddIcon />}
+            onClick={addPerformanceIndicator}
+            size="small"
+            variant="outlined"
+          >
+            Tambah
+          </Button>
+        </Box>
+        {data?.performance_indicators?.map((indicator, index) => (
+          <Card key={index} variant="outlined" sx={{ mb: 2 }}>
+            <CardContent>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 2 }}>
+                <Box sx={{ gridColumn: { xs: 'span 10', sm: 'span 5' } }}>
+                  <TextField
+                    fullWidth
+                    label="Indikator"
+                    value={indicator.indicator}
+                    onChange={(e) => updatePerformanceIndicator(index, 'indicator', e.target.value)}
+                    size="small"
+                  />
+                </Box>
+                <Box sx={{ gridColumn: { xs: 'span 10', sm: 'span 6' } }}>
+                  <TextField
+                    fullWidth
+                    label="Deskripsi"
+                    value={indicator.description}
+                    onChange={(e) => updatePerformanceIndicator(index, 'description', e.target.value)}
+                    size="small"
+                  />
+                </Box>
+                <Box sx={{ gridColumn: { xs: 'span 2', sm: 'span 1' } }}>
                   <IconButton
-                    onClick={(e) => {
-                      const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-                      handlePerformanceIndicatorAdd('cognitive', input.value);
-                      input.value = '';
-                    }}
+                    onClick={() => removePerformanceIndicator(index)}
+                    color="error"
+                    size="small"
                   >
-                    <AddIcon />
+                    <DeleteIcon />
                   </IconButton>
-                )}
+                </Box>
               </Box>
-              {renderChips(data.performance_indicators.cognitive, 'cognitive', 'performance')}
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body2" gutterBottom>
-                Psikomotorik
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                <TextField
-                  size="small"
-                  placeholder="Tambah indikator psikomotorik"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handlePerformanceIndicatorAdd('psychomotor', (e.target as HTMLInputElement).value);
-                      (e.target as HTMLInputElement).value = '';
-                    }
-                  }}
-                  disabled={disabled}
-                  fullWidth
-                />
-                {!disabled && (
-                  <IconButton
-                    onClick={(e) => {
-                      const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-                      handlePerformanceIndicatorAdd('psychomotor', input.value);
-                      input.value = '';
-                    }}
-                  >
-                    <AddIcon />
-                  </IconButton>
-                )}
-              </Box>
-              {renderChips(data.performance_indicators.psychomotor, 'psychomotor', 'performance')}
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body2" gutterBottom>
-                Afektif
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                <TextField
-                  size="small"
-                  placeholder="Tambah indikator afektif"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handlePerformanceIndicatorAdd('affective', (e.target as HTMLInputElement).value);
-                      (e.target as HTMLInputElement).value = '';
-                    }
-                  }}
-                  disabled={disabled}
-                  fullWidth
-                />
-                {!disabled && (
-                  <IconButton
-                    onClick={(e) => {
-                      const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-                      handlePerformanceIndicatorAdd('affective', input.value);
-                      input.value = '';
-                    }}
-                  >
-                    <AddIcon />
-                  </IconButton>
-                )}
-              </Box>
-              {renderChips(data.performance_indicators.affective, 'affective', 'performance')}
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
+            </CardContent>
+          </Card>
+        ))}
+      </Box>
+
+      <Divider sx={{ my: 2 }} />
 
       {/* Minimum Requirements */}
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="subtitle1">Persyaratan Minimum</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Typography variant="body2" gutterBottom>
-                Kompetensi Inti
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                <TextField
-                  size="small"
-                  placeholder="Tambah kompetensi inti"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleMinimumRequirementAdd('core_competencies', (e.target as HTMLInputElement).value);
-                      (e.target as HTMLInputElement).value = '';
-                    }
-                  }}
-                  disabled={disabled}
-                  fullWidth
-                />
-                {!disabled && (
+      <Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="subtitle1" fontWeight="medium">
+            Persyaratan Minimum
+          </Typography>
+          <Button
+            startIcon={<AddIcon />}
+            onClick={addMinimumRequirement}
+            size="small"
+            variant="outlined"
+          >
+            Tambah
+          </Button>
+        </Box>
+        {data?.minimum_requirements?.map((requirement, index) => (
+          <Card key={index} variant="outlined" sx={{ mb: 2 }}>
+            <CardContent>
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 2 }}>
+                <Box sx={{ gridColumn: { xs: 'span 10', sm: 'span 5' } }}>
+                  <TextField
+                    fullWidth
+                    label="Persyaratan"
+                    value={requirement.requirement}
+                    onChange={(e) => updateMinimumRequirement(index, 'requirement', e.target.value)}
+                    size="small"
+                  />
+                </Box>
+                <Box sx={{ gridColumn: { xs: 'span 10', sm: 'span 6' } }}>
+                  <TextField
+                    fullWidth
+                    label="Deskripsi"
+                    value={requirement.description}
+                    onChange={(e) => updateMinimumRequirement(index, 'description', e.target.value)}
+                    size="small"
+                  />
+                </Box>
+                <Box sx={{ gridColumn: { xs: 'span 2', sm: 'span 1' } }}>
                   <IconButton
-                    onClick={(e) => {
-                      const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-                      handleMinimumRequirementAdd('core_competencies', input.value);
-                      input.value = '';
-                    }}
+                    onClick={() => removeMinimumRequirement(index)}
+                    color="error"
+                    size="small"
                   >
-                    <AddIcon />
+                    <DeleteIcon />
                   </IconButton>
-                )}
+                </Box>
               </Box>
-              {renderChips(data.minimum_requirements.core_competencies, 'core_competencies', 'requirement')}
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body2" gutterBottom>
-                Keterampilan Esensial
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                <TextField
-                  size="small"
-                  placeholder="Tambah keterampilan esensial"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleMinimumRequirementAdd('essential_skills', (e.target as HTMLInputElement).value);
-                      (e.target as HTMLInputElement).value = '';
-                    }
-                  }}
-                  disabled={disabled}
-                  fullWidth
-                />
-                {!disabled && (
-                  <IconButton
-                    onClick={(e) => {
-                      const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-                      handleMinimumRequirementAdd('essential_skills', input.value);
-                      input.value = '';
-                    }}
-                  >
-                    <AddIcon />
-                  </IconButton>
-                )}
-              </Box>
-              {renderChips(data.minimum_requirements.essential_skills, 'essential_skills', 'requirement')}
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body2" gutterBottom>
-                Bukti yang Diperlukan
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                <TextField
-                  size="small"
-                  placeholder="Tambah bukti yang diperlukan"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleMinimumRequirementAdd('required_evidence', (e.target as HTMLInputElement).value);
-                      (e.target as HTMLInputElement).value = '';
-                    }
-                  }}
-                  disabled={disabled}
-                  fullWidth
-                />
-                {!disabled && (
-                  <IconButton
-                    onClick={(e) => {
-                      const input = e.currentTarget.previousElementSibling as HTMLInputElement;
-                      handleMinimumRequirementAdd('required_evidence', input.value);
-                      input.value = '';
-                    }}
-                  >
-                    <AddIcon />
-                  </IconButton>
-                )}
-              </Box>
-              {renderChips(data.minimum_requirements.required_evidence, 'required_evidence', 'requirement')}
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
+            </CardContent>
+          </Card>
+        ))}
+      </Box>
     </Box>
   );
 };

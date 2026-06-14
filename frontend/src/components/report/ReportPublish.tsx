@@ -7,8 +7,6 @@ import React, { useState } from 'react';
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
   Button,
   Dialog,
   DialogTitle,
@@ -25,8 +23,6 @@ import {
 } from '@mui/material';
 import {
   Publish,
-  CheckCircle,
-  Warning,
 } from '@mui/icons-material';
 
 interface ReportPublishProps {

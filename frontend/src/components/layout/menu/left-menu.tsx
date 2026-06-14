@@ -164,7 +164,7 @@ export default function LeftMenu() {
 
     return items.filter((item) => {
       // If item has no roles restriction, show it to all
-      if (!item.allowedRoles || item.allowedRoles.length === 0) {
+      if (!item.roles || item.roles.length === 0) {
         return true;
       }
 
@@ -174,7 +174,7 @@ export default function LeftMenu() {
       }
 
       // Check if user's role is in the allowed roles list
-      return item.allowedRoles.includes(userRole);
+      return item.roles.includes(userRole);
     });
   }, [user?.role_name]);
 

@@ -1,71 +1,26 @@
 /**
  * Achievement API Client
- * Handles all Achievement-related API calls
+ * Handles all Achievement-related API calls with proper types
  */
 
 import apiClient, { handleApiError } from './client';
+import {
+  StudentAchievement,
+  ClassAchievement,
+  CompetencyProgress,
+  MasteryLevel,
+  PaginationParams
+} from '@/shared/types/domain';
 
-// Types
-export interface StudentAchievement {
+// API-specific types for achievement data
+export interface StudentTrajectory {
   student_id: string;
   student_name: string;
-  tp_id: string;
-  tp_title: string;
   competency_id: string;
-  competency_name: string;
-  mastery_level: string;
-  score: number;
-  max_score: number;
-  percentage: number;
-  achieved_criteria: string[];
-  pending_criteria: string[];
-  last_updated: string;
-}
-
-export interface CompetencyProgress {
-  competency_id: string;
-  competency_name: string;
-  total_assessments: number;
-  completed_assessments: number;
-  average_score: number;
-  mastery_level: string;
-  progress_percentage: number;
-  criteria_progress: {
-    criteria_id: string;
-    criteria_name: string;
-    achieved: boolean;
-    evidence_count: number;
-  }[];
-}
-
-export interface ClassAchievement {
-  class_id: string;
-  class_name: string;
-  subject_id: string;
-  subject_name: string;
-  total_students: number;
-  average_mastery: number;
-  competency_achievements: {
-    competency_id: string;
-    competency_name: string;
-    average_score: number;
-    mastery_distribution: {
-      excellent: number;
-      proficient: number;
-      developing: number;
-      beginning: number;
-    };
-  }[];
-  top_performers: {
-    student_id: string;
-    student_name: string;
-    average_score: number;
-  }[];
-  areas_for_improvement: {
-    competency_id: string;
-    competency_name: string;
-    average_score: number;
-    struggling_students: number;
+  trajectory_points: {
+    date: string;
+    score: number;
+    mastery_level: MasteryLevel;
   }[];
 }
 
@@ -79,7 +34,7 @@ export interface AchievementSummary {
   competency_summary: {
     competency_id: string;
     competency_name: string;
-    mastery_level: string;
+    mastery_level: MasteryLevel;
     score: number;
     max_score: number;
   }[];
@@ -91,13 +46,12 @@ export interface AchievementSummary {
 /**
  * Get student achievement
  */
-export const getStudentAchievement = async (studentId: string, params?: {
+export const getStudentAchievement = async (studentId: string, params?: PaginationParams & {
   tp_id?: string;
-  competency_id?: string;
 }): Promise<StudentAchievement[]> => {
   try {
-    const response = await apiClient.get(`/students/${studentId}/achievement`, { params });
-    return response.data.data || response.data;
+    const response = await apiClient.get(`students/${studentId}/achievement`, { params });
+    return response.data.student_achievement || response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -106,13 +60,13 @@ export const getStudentAchievement = async (studentId: string, params?: {
 /**
  * Get student progress
  */
-export const getStudentProgress = async (studentId: string, params?: {
-  tp_id?: string;
-  competency_id?: string;
+export const getStudentProgress = async (studentId: string, params?: PaginationParams & {
+  subject_id?: string;
+  phase_id?: string;
 }): Promise<CompetencyProgress[]> => {
   try {
-    const response = await apiClient.get(`/students/${studentId}/progress`, { params });
-    return response.data.data || response.data;
+    const response = await apiClient.get(`students/${studentId}/progress`, { params });
+    return response.data.competency_progress || response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -121,13 +75,12 @@ export const getStudentProgress = async (studentId: string, params?: {
 /**
  * Get class achievement
  */
-export const getClassAchievement = async (classId: string, params?: {
+export const getClassAchievement = async (classId: string, params?: PaginationParams & {
   subject_id?: string;
-  tp_id?: string;
 }): Promise<ClassAchievement> => {
   try {
-    const response = await apiClient.get(`/classes/${classId}/achievement`, { params });
-    return response.data.data || response.data;
+    const response = await apiClient.get(`classes/${classId}/achievement`, { params });
+    return response.data.class_achievement || response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -136,10 +89,13 @@ export const getClassAchievement = async (classId: string, params?: {
 /**
  * Get report achievement summary
  */
-export const getReportAchievementSummary = async (reportId: string): Promise<AchievementSummary> => {
+export const getReportAchievementSummary = async (reportId: string, params?: PaginationParams & {
+  student_id?: string;
+  class_id?: string;
+}): Promise<AchievementSummary> => {
   try {
-    const response = await apiClient.get(`/reports/${reportId}/achievement-summary`);
-    return response.data.data || response.data;
+    const response = await apiClient.get(`reports/${reportId}/achievement-summary`, { params });
+    return response.data.achievement_summary || response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -148,19 +104,11 @@ export const getReportAchievementSummary = async (reportId: string): Promise<Ach
 /**
  * Get student trajectory (progress over time)
  */
-export const getStudentTrajectory = async (studentId: string, params?: {
+export const getStudentTrajectory = async (studentId: string, params?: PaginationParams & {
   competency_id?: string;
   start_date?: string;
   end_date?: string;
-}): Promise<{
-  student_id: string;
-  student_name: string;
-  trajectory_points: {
-    date: string;
-    score: number;
-    mastery_level: string;
-  }[];
-}> => {
+}): Promise<StudentTrajectory> => {
   try {
     const response = await apiClient.get(`/students/${studentId}/trajectory`, { params });
     return response.data.data || response.data;

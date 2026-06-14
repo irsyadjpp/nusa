@@ -3,7 +3,7 @@
  * Form for creating/editing assessments
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -13,10 +13,8 @@ import {
   FormControl,
   InputLabel,
   Button,
-  Grid,
   Card,
   CardContent,
-  Alert,
   CircularProgress,
 } from '@mui/material';
 import { Formik, Form, Field, FormikHelpers } from 'formik';
@@ -51,11 +49,9 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   onCancel,
   loading = false,
 }) => {
-  const [selectedTP, setSelectedTP] = useState<any>(null);
   const [tpSuccessCriteria, setTPSuccessCriteria] = useState<any>(null);
 
-  const handleTPChange = (tpId: string, tp: any) => {
-    setSelectedTP(tp);
+  const handleTPChange = (tpId: string) => {
     loadTPSuccessCriteria(tpId);
   };
 
@@ -91,22 +87,22 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
                 Form Asesmen
               </Typography>
 
-              <Grid container spacing={3}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 {/* TP Selection */}
-                <Grid item xs={12}>
+                <Box sx={{ width: '100%' }}>
                   <TPSelector
                     value={values.tp_id}
-                    onChange={(tpId, tp) => {
+                    onChange={(tpId) => {
                       setFieldValue('tp_id', tpId);
-                      handleTPChange(tpId, tp);
+                      handleTPChange(tpId);
                     }}
                     error={touched.tp_id && !!errors.tp_id}
-                    helperText={touched.tp_id && (errors.tp_id as string)}
+                    helperText={touched.tp_id && (errors.tp_id as string) || undefined}
                   />
-                </Grid>
+                </Box>
 
                 {/* Assessment Type */}
-                <Grid item xs={12} sm={6}>
+                <Box sx={{ width: { xs: '100%', sm: '50%' } }}>
                   <FormControl fullWidth error={touched.assessment_type && !!errors.assessment_type}>
                     <InputLabel>Tipe Asesmen</InputLabel>
                     <Field
@@ -119,10 +115,10 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
                       <MenuItem value="SUMMATIVE">Sumatif</MenuItem>
                     </Field>
                   </FormControl>
-                </Grid>
+                </Box>
 
                 {/* TP Version */}
-                <Grid item xs={12} sm={6}>
+                <Box sx={{ width: { xs: '100%', sm: '50%' } }}>
                   <TextField
                     fullWidth
                     label="Versi TP"
@@ -132,21 +128,21 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
                     disabled
                     helperText="Otomatis diambil dari TP yang dipilih"
                   />
-                </Grid>
+                </Box>
 
                 {/* Success Criteria Snapshot Preview */}
                 {tpSuccessCriteria && (
-                  <Grid item xs={12}>
+                  <Box sx={{ width: '100%' }}>
                     <SuccessCriteriaSnapshot
                       snapshot={tpSuccessCriteria}
                       tpVersion={values.tp_version_no}
                       showWarning
                     />
-                  </Grid>
+                  </Box>
                 )}
 
                 {/* Assessment Items */}
-                <Grid item xs={12}>
+                <Box sx={{ width: '100%' }}>
                   <TextField
                     fullWidth
                     multiline
@@ -165,10 +161,10 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
                     helperText={touched.assessment_items && (errors.assessment_items as string)}
                     disabled={loading}
                   />
-                </Grid>
+                </Box>
 
                 {/* Answer Key */}
-                <Grid item xs={12}>
+                <Box sx={{ width: '100%' }}>
                   <TextField
                     fullWidth
                     multiline
@@ -185,10 +181,10 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
                     }}
                     disabled={loading}
                   />
-                </Grid>
+                </Box>
 
                 {/* Scoring Guidelines */}
-                <Grid item xs={12}>
+                <Box sx={{ width: '100%' }}>
                   <TextField
                     fullWidth
                     multiline
@@ -205,10 +201,10 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
                     }}
                     disabled={loading}
                   />
-                </Grid>
+                </Box>
 
                 {/* Actions */}
-                <Grid item xs={12}>
+                <Box sx={{ width: '100%' }}>
                   <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                     {onCancel && (
                       <Button
@@ -228,8 +224,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
                       {isSubmitting || loading ? 'Menyimpan...' : 'Simpan'}
                     </Button>
                   </Box>
-                </Grid>
-              </Grid>
+                </Box>
+              </Box>
             </CardContent>
           </Card>
         </Form>

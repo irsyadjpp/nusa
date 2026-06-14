@@ -1,91 +1,65 @@
 /**
  * Modul Ajar API Client
- * Handles all Modul Ajar-related API calls
+ * Handles all Modul Ajar-related API calls with proper types
  */
 
 import apiClient, { handleApiError } from './client';
+import {
+  ModulAjar,
+  ModulAjarSet,
+  TeachingMaterials,
+  TimeAllocation,
+  TPStatus,
+  LearningActivities,
+  PaginationParams,
+  FilterParams
+} from '@/shared/types/domain';
 
-// Types
-export interface ModulAjar {
-  id: string;
+// API-specific request types
+export interface ModulAjarCreateRequest {
   modul_ajar_set_id: string;
   atp_id: string;
-  tp_id: string;
-  sequence_number: number;
-  title: string;
-  learning_activities: any;
-  teaching_methods: string[];
-  learning_media: string[];
-  learning_resources: string[];
-  attachments: any[];
-  status: string;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
+  week: number;
+  session_number: number;
+  learning_objectives: string[];
+  learning_activities?: LearningActivities; // Convenience property matching component expectations
+  teaching_materials: TeachingMaterials;
+  learning_methods: string[];
+  assessment_methods: string[];
+  time_allocation: TimeAllocation;
 }
 
-export interface ModulAjarSet {
-  id: string;
+export interface ModulAjarUpdateRequest {
+  learning_objectives?: string[];
+  teaching_materials?: TeachingMaterials;
+  learning_methods?: string[];
+  assessment_methods?: string[];
+  time_allocation?: TimeAllocation;
+  status?: TPStatus;
+}
+
+export interface ModulAjarSetCreateRequest {
   atp_set_id: string;
   subject_id: string;
   phase_id: string;
-  grade: string;
-  semester: string;
-  status: string;
-  created_by: string;
-  created_at: string;
-  updated_at: string;
+  generation_source?: 'MANUAL' | 'AI_GENERATED';
+  generation_reason?: string;
 }
 
-export interface CreateModulAjarRequest {
-  modul_ajar_set_id: string;
-  atp_id: string;
-  tp_id: string;
-  sequence_number: number;
-  title: string;
-  learning_activities: any;
-  teaching_methods: string[];
-  learning_media: string[];
-  learning_resources: string[];
-  attachments?: any[];
-}
-
-export interface UpdateModulAjarRequest {
-  title?: string;
-  learning_activities?: any;
-  teaching_methods?: string[];
-  learning_media?: string[];
-  learning_resources?: string[];
-  attachments?: any[];
-  status?: string;
-}
-
-export interface CreateModulAjarSetRequest {
-  atp_set_id: string;
-  subject_id: string;
-  phase_id: string;
-  grade: string;
-  semester: string;
-}
-
-export interface UpdateModulAjarSetRequest {
-  status?: string;
+export interface ModulAjarSetUpdateRequest {
+  status?: TPStatus;
 }
 
 /**
  * Get all Modul Ajar with optional filters
  */
-export const getModulAjars = async (params?: {
+export const getModulAjars = async (params?: PaginationParams & FilterParams & {
   modul_ajar_set_id?: string;
   atp_id?: string;
-  tp_id?: string;
-  status?: string;
-  limit?: number;
-  offset?: number;
 }): Promise<ModulAjar[]> => {
   try {
-    const response = await apiClient.get('/learning-planning/modul-ajar', { params });
-    return response.data.data || response.data;
+    const response = await apiClient.get('learning-planning/modul-ajar', { params });
+    return response.data.modul_ajar || response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -96,8 +70,8 @@ export const getModulAjars = async (params?: {
  */
 export const getModulAjarById = async (id: string): Promise<ModulAjar> => {
   try {
-    const response = await apiClient.get(`/learning-planning/modul-ajar/${id}`);
-    return response.data.data || response.data;
+    const response = await apiClient.get(`learning-planning/modul-ajar/${id}`);
+    return response.data || response.data.data;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -108,8 +82,8 @@ export const getModulAjarById = async (id: string): Promise<ModulAjar> => {
  */
 export const getModulAjarsBySet = async (modulAjarSetId: string): Promise<ModulAjar[]> => {
   try {
-    const response = await apiClient.get(`/learning-planning/modul-ajar/modul-ajar-set/${modulAjarSetId}`);
-    return response.data.data || response.data;
+    const response = await apiClient.get(`learning-planning/modul-ajar/modul-ajar-set/${modulAjarSetId}`);
+    return response.data.modul_ajar || response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -118,9 +92,9 @@ export const getModulAjarsBySet = async (modulAjarSetId: string): Promise<ModulA
 /**
  * Create new Modul Ajar
  */
-export const createModulAjar = async (data: CreateModulAjarRequest): Promise<ModulAjar> => {
+export const createModulAjar = async (data: ModulAjarCreateRequest): Promise<ModulAjar> => {
   try {
-    const response = await apiClient.post('/learning-planning/modul-ajar', data);
+    const response = await apiClient.post('learning-planning/modul-ajar', data);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -130,9 +104,9 @@ export const createModulAjar = async (data: CreateModulAjarRequest): Promise<Mod
 /**
  * Update Modul Ajar
  */
-export const updateModulAjar = async (id: string, data: UpdateModulAjarRequest): Promise<ModulAjar> => {
+export const updateModulAjar = async (id: string, data: ModulAjarUpdateRequest): Promise<ModulAjar> => {
   try {
-    const response = await apiClient.put(`/learning-planning/modul-ajar/${id}`, data);
+    const response = await apiClient.put(`learning-planning/modul-ajar/${id}`, data);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -144,7 +118,7 @@ export const updateModulAjar = async (id: string, data: UpdateModulAjarRequest):
  */
 export const deleteModulAjar = async (id: string): Promise<void> => {
   try {
-    await apiClient.delete(`/learning-planning/modul-ajar/${id}`);
+    await apiClient.delete(`learning-planning/modul-ajar/${id}`);
   } catch (error) {
     throw handleApiError(error);
   }
@@ -153,17 +127,14 @@ export const deleteModulAjar = async (id: string): Promise<void> => {
 /**
  * Get Modul Ajar Sets
  */
-export const getModulAjarSets = async (params?: {
+export const getModulAjarSets = async (params?: PaginationParams & FilterParams & {
   atp_set_id?: string;
   subject_id?: string;
   phase_id?: string;
-  status?: string;
-  limit?: number;
-  offset?: number;
 }): Promise<ModulAjarSet[]> => {
   try {
-    const response = await apiClient.get('/learning-planning/modul-ajar-sets', { params });
-    return response.data.data || response.data;
+    const response = await apiClient.get('learning-planning/modul-ajar-sets', { params });
+    return response.data.modul_ajar_sets || response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -174,8 +145,8 @@ export const getModulAjarSets = async (params?: {
  */
 export const getModulAjarSetById = async (id: string): Promise<ModulAjarSet> => {
   try {
-    const response = await apiClient.get(`/learning-planning/modul-ajar-sets/${id}`);
-    return response.data.data || response.data;
+    const response = await apiClient.get(`learning-planning/modul-ajar-sets/${id}`);
+    return response.data || response.data.data;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -184,9 +155,9 @@ export const getModulAjarSetById = async (id: string): Promise<ModulAjarSet> => 
 /**
  * Create Modul Ajar Set
  */
-export const createModulAjarSet = async (data: CreateModulAjarSetRequest): Promise<ModulAjarSet> => {
+export const createModulAjarSet = async (data: ModulAjarSetCreateRequest): Promise<ModulAjarSet> => {
   try {
-    const response = await apiClient.post('/learning-planning/modul-ajar-sets', data);
+    const response = await apiClient.post('learning-planning/modul-ajar-sets', data);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -196,10 +167,33 @@ export const createModulAjarSet = async (data: CreateModulAjarSetRequest): Promi
 /**
  * Update Modul Ajar Set
  */
-export const updateModulAjarSet = async (id: string, data: UpdateModulAjarSetRequest): Promise<ModulAjarSet> => {
+export const updateModulAjarSet = async (id: string, data: ModulAjarSetUpdateRequest): Promise<ModulAjarSet> => {
   try {
-    const response = await apiClient.put(`/learning-planning/modul-ajar-sets/${id}`, data);
+    const response = await apiClient.put(`learning-planning/modul-ajar-sets/${id}`, data);
     return response.data.data || response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};
+
+/**
+ * Approve Modul Ajar Set
+ */
+export const approveModulAjarSet = async (id: string): Promise<ModulAjarSet> => {
+  try {
+    const response = await apiClient.post(`learning-planning/modul-ajar-sets/${id}/approve`);
+    return response.data.data || response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};
+
+/**
+ * Delete Modul Ajar Set
+ */
+export const deleteModulAjarSet = async (id: string): Promise<void> => {
+  try {
+    await apiClient.delete(`learning-planning/modul-ajar-sets/${id}`);
   } catch (error) {
     throw handleApiError(error);
   }
@@ -216,4 +210,6 @@ export default {
   getModulAjarSetById,
   createModulAjarSet,
   updateModulAjarSet,
+  approveModulAjarSet,
+  deleteModulAjarSet,
 };

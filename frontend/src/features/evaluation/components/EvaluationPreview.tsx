@@ -4,14 +4,14 @@
  */
 
 import { Box, Typography, Paper, Divider, Chip, LinearProgress } from '@mui/material';
-import { Evaluation } from '@/api/evaluation';
+import { Evaluation } from '@/shared/types/domain';
 
 interface EvaluationPreviewProps {
   evaluation: Evaluation;
 }
 
 export const EvaluationPreview = ({ evaluation }: EvaluationPreviewProps) => {
-  const scorePercentage = evaluation.score || 0;
+  const scorePercentage = evaluation.performance_scores.max_score > 0 ? (evaluation.performance_scores.total_score / evaluation.performance_scores.max_score) * 100 : 0;
 
   return (
     <Paper elevation={2} sx={{ p: 3 }}>
@@ -19,15 +19,15 @@ export const EvaluationPreview = ({ evaluation }: EvaluationPreviewProps) => {
         Evaluation Preview
       </Typography>
       <Divider sx={{ my: 2 }} />
-      <Stack spacing={2}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box>
           <Typography variant="subtitle2" color="text.secondary">
-            Status
+            Performance Level
           </Typography>
           <Chip
-            label={evaluation.status}
+            label={evaluation.performance_level}
             size="small"
-            color={evaluation.status === 'approved' ? 'success' : evaluation.status === 'draft' ? 'default' : 'warning'}
+            color={evaluation.performance_level === 'PROFICIENT' ? 'success' : evaluation.performance_level === 'DEVELOPING' ? 'warning' : 'default'}
           />
         </Box>
 
@@ -36,7 +36,7 @@ export const EvaluationPreview = ({ evaluation }: EvaluationPreviewProps) => {
             Score
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography variant="body1">{evaluation.score}/100</Typography>
+            <Typography variant="body1">{evaluation.performance_scores.total_score}/{evaluation.performance_scores.max_score}</Typography>
             <LinearProgress
               variant="determinate"
               value={scorePercentage}
@@ -57,7 +57,7 @@ export const EvaluationPreview = ({ evaluation }: EvaluationPreviewProps) => {
           <Typography variant="subtitle2" color="text.secondary">
             Evaluator ID
           </Typography>
-          <Typography variant="body1">{evaluation.evaluator_id}</Typography>
+          <Typography variant="body1">{evaluation.teacher_id}</Typography>
         </Box>
 
         <Divider />
@@ -67,23 +67,23 @@ export const EvaluationPreview = ({ evaluation }: EvaluationPreviewProps) => {
             Feedback
           </Typography>
           <Typography variant="body1" whiteSpace="pre-wrap">
-            {evaluation.feedback || 'No feedback provided'}
+            {evaluation.teacher_feedback || 'No feedback provided'}
           </Typography>
         </Box>
 
-        {evaluation.rubric_scores && (
+        {evaluation.performance_scores && (
           <Box>
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              Rubric Scores
+              Performance Scores
             </Typography>
             <Typography variant="body2" whiteSpace="pre-wrap">
-              {typeof evaluation.rubric_scores === 'string'
-                ? evaluation.rubric_scores
-                : JSON.stringify(evaluation.rubric_scores, null, 2)}
+              {typeof evaluation.performance_scores === 'string'
+                ? evaluation.performance_scores
+                : JSON.stringify(evaluation.performance_scores, null, 2)}
             </Typography>
           </Box>
         )}
-      </Stack>
+      </Box>
     </Paper>
   );
 };

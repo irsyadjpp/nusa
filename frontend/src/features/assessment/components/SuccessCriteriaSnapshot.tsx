@@ -3,7 +3,7 @@
  * Displays the success criteria snapshot from a TP
  */
 
-import { Box, Typography, Paper, Divider } from '@mui/material';
+import { Typography, Paper, Divider } from '@mui/material';
 
 interface SuccessCriteriaSnapshotProps {
   snapshot: any;

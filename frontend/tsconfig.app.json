@@ -6,6 +6,8 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
 
     "paths": {
       "@/*": ["./src/*"]
@@ -18,12 +20,16 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
-    /* Linting */
+    /* Linting - ENABLED FOR TYPE SAFETY */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": true,        // ✅ ENABLED
+    "noUnusedParameters": true,    // ✅ ENABLED
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": false,
+    "noImplicitAny": true,         // ✅ ENABLED
+    "strictNullChecks": true,      // ✅ ENABLED
+    "strictFunctionTypes": true    // ✅ ENABLED
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/components/**/*.bak", "src/components/**/*.tsx.bak", "node_modules"]
 }

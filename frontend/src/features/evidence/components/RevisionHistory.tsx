@@ -3,7 +3,8 @@
  * Displays the revision history for evidence
  */
 
-import { Box, Typography, Timeline, TimelineItem, TimelineSeparator, TimelineConnector, TimelineContent, TimelineDot } from '@mui/material';
+import React from 'react';
+import { Box, Typography, List, ListItem, ListItemText, ListItemIcon, Divider, Chip } from '@mui/material';
 import { History as HistoryIcon } from '@mui/icons-material';
 
 interface Revision {
@@ -32,25 +33,36 @@ export const RevisionHistory = ({ revisions }: RevisionHistoryProps) => {
       <Typography variant="h6" gutterBottom>
         Revision History
       </Typography>
-      <Timeline>
-        {revisions.map((revision) => (
-          <TimelineItem key={revision.id}>
-            <TimelineSeparator>
-              <TimelineDot color="primary" />
-              <TimelineConnector />
-            </TimelineSeparator>
-            <TimelineContent>
-              <Typography variant="body1">Version {revision.version_no}</Typography>
-              <Typography variant="body2" color="textSecondary">
-                {revision.changes}
-              </Typography>
-              <Typography variant="caption" color="textSecondary">
-                By {revision.created_by} • {new Date(revision.created_at).toLocaleString()}
-              </Typography>
-            </TimelineContent>
-          </TimelineItem>
+      <List>
+        {revisions.map((revision, index) => (
+          <React.Fragment key={revision.id}>
+            <ListItem>
+              <ListItemIcon>
+                <HistoryIcon color="primary" />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Typography variant="body1">Version {revision.version_no}</Typography>
+                    <Chip label={new Date(revision.created_at).toLocaleString()} size="small" variant="outlined" />
+                  </Box>
+                }
+                secondary={
+                  <>
+                    <Typography variant="body2" color="textSecondary">
+                      {revision.changes}
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      By {revision.created_by}
+                    </Typography>
+                  </>
+                }
+              />
+            </ListItem>
+            {index < revisions.length - 1 && <Divider />}
+          </React.Fragment>
         ))}
-      </Timeline>
+      </List>
     </Box>
   );
 };

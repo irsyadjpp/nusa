@@ -422,6 +422,23 @@ func (r *AssessmentRepository) UpdateRubric(ctx context.Context, rubric *domain.
 	return nil
 }
 
+// DeleteRubric deletes a rubric
+func (r *AssessmentRepository) DeleteRubric(ctx context.Context, id string) error {
+	query := `DELETE FROM rubrics WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("rubric not found")
+	}
+
+	return nil
+}
+
 // ==================== Evidence Operations ====================
 
 // CreateEvidence creates a new evidence
@@ -579,6 +596,23 @@ func (r *AssessmentRepository) UpdateEvidence(ctx context.Context, evidence *dom
 	result, err := r.db.ExecContext(ctx, query,
 		evidence.ID, evidence.EvidenceData, evidence.TeacherNotes, evidence.RubricID,
 		evidence.LinkedCriteria, evidence.EvaluationNotes, evidence.Status)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("evidence not found")
+	}
+
+	return nil
+}
+
+// DeleteEvidence deletes an evidence
+func (r *AssessmentRepository) DeleteEvidence(ctx context.Context, id string) error {
+	query := `DELETE FROM evidences WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
@@ -797,4 +831,80 @@ func (r *AssessmentRepository) GetFeedbackHistory(ctx context.Context, evaluatio
 	}
 
 	return history, nil
+}
+
+// GetCurrentEvaluation retrieves the current version of an evaluation for a given evidence
+func (r *AssessmentRepository) GetCurrentEvaluation(ctx context.Context, evidenceID string) (*domain.Evaluation, error) {
+	query := `
+		SELECT id, student_id, rubric_id, evidence_id, user_id, performance_scores,
+		       total_score, max_score, performance_level, teacher_feedback, revision_no,
+		       is_current_version, parent_revision_id, evaluated_at, created_at, updated_at
+		FROM evaluations
+		WHERE evidence_id = $1 AND is_current_version = true
+	`
+
+	var evaluation domain.Evaluation
+	var teacherFeedback sql.NullString
+
+	err := r.db.QueryRowContext(ctx, query, evidenceID).Scan(
+		&evaluation.ID, &evaluation.StudentID, &evaluation.RubricID, &evaluation.EvidenceID, &evaluation.UserID,
+		&evaluation.PerformanceScores, &evaluation.TotalScore, &evaluation.MaxScore, &evaluation.PerformanceLevel,
+		&teacherFeedback, &evaluation.RevisionNo, &evaluation.IsCurrentVersion, &evaluation.ParentRevisionID,
+		&evaluation.EvaluatedAt, &evaluation.CreatedAt, &evaluation.UpdatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("current evaluation not found for evidence")
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get current evaluation: %w", err)
+	}
+
+	if teacherFeedback.Valid {
+		evaluation.TeacherFeedback = &teacherFeedback.String
+	}
+
+	return &evaluation, nil
+}
+
+// ArchiveCurrentRevision marks the current evaluation revision as archived (not current)
+func (r *AssessmentRepository) ArchiveCurrentRevision(ctx context.Context, evaluationID string) error {
+	query := `
+		UPDATE evaluations
+		SET is_current_version = false, updated_at = NOW()
+		WHERE id = $1 AND is_current_version = true
+	`
+
+	result, err := r.db.ExecContext(ctx, query, evaluationID)
+	if err != nil {
+		return fmt.Errorf("failed to archive current revision: %w", err)
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("evaluation not found or already archived")
+	}
+
+	return nil
+}
+
+// UpdateAssessmentStatus updates the status of an assessment (e.g., for approval workflow)
+func (r *AssessmentRepository) UpdateAssessmentStatus(ctx context.Context, assessmentID string, status domain.WorkflowStatus, approvedBy *string) error {
+	query := `
+		UPDATE assessments
+		SET status = $2, approved_by = $3, updated_at = NOW()
+		WHERE id = $1
+	`
+
+	result, err := r.db.ExecContext(ctx, query, assessmentID, status, approvedBy)
+	if err != nil {
+		return fmt.Errorf("failed to update assessment status: %w", err)
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("assessment not found")
+	}
+
+	return nil
 }

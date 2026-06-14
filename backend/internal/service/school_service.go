@@ -75,12 +75,12 @@ func (s *SchoolService) ListSchools(ctx context.Context, isActive *bool, page, p
 
 	schools, err := s.schoolRepo.List(ctx, isActive, limit, offset)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, fmt.Errorf("failed to list schools: %w", err)
 	}
 
 	total, err := s.schoolRepo.Count(ctx, isActive)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, fmt.Errorf("failed to list schools by user: %w", err)
 	}
 
 	return schools, total, nil
@@ -90,7 +90,7 @@ func (s *SchoolService) ListSchools(ctx context.Context, isActive *bool, page, p
 func (s *SchoolService) UpdateSchool(ctx context.Context, id string, req *domain.UpdateSchoolRequest, updaterID string) (*domain.School, error) {
 	school, err := s.schoolRepo.GetByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("school not found")
+		return nil, fmt.Errorf("school not found: %w", err)
 	}
 
 	if req.Name != nil {

@@ -3,7 +3,7 @@
  * API calls for user management operations
  */
 
-import apiClient, { handleApiError, ApiError } from './client';
+import apiClient, { handleApiError } from './client';
 
 // TypeScript interfaces
 export interface User {

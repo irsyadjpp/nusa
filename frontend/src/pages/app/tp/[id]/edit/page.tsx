@@ -1,5 +1,5 @@
 /**
- * TP Edit Page
+ * TP Edit Page - MIGRATED TO TANSTACK QUERY
  * Edit existing Teaching Plan (TP)
  */
 
@@ -26,8 +26,8 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { Formik, Form, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
-import { getTPById, updateTP, getTPSets } from '@/api/tp';
-import { TP, TPSet } from '@/api/tp';
+import { useTP, useTPSets } from '@/services/queries/TPQueryService';
+import { useUpdateTP } from '@/services/commands/TPCommandService';
 import KKTPCriteriaForm from '@/components/kktp/KKTPCriteriaForm';
 
 const validationSchema = Yup.object().shape({
@@ -46,57 +46,52 @@ const validationSchema = Yup.object().shape({
 const TPEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [tp, setTP] = useState<TP | null>(null);
-  const [tpSets, setTPSets] = useState<TPSet[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successCriteria, setSuccessCriteria] = useState<any>(null);
 
-  useEffect(() => {
-    if (id) {
-      loadData(id);
-    }
-  }, [id]);
+  // ✅ Using TanStack Query hooks instead of manual state management
+  const { 
+    data: tp, 
+    isLoading 
+  } = useTP(id!);
 
-  const loadData = async (tpId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [tpData, tpSetsData] = await Promise.all([
-        getTPById(tpId),
-        getTPSets(),
-      ]);
-      setTP(tpData);
-      setTPSets(tpSetsData);
-      setSuccessCriteria(tpData.success_criteria);
-    } catch (err: any) {
-      setError(err.message || 'Gagal memuat data TP');
-    } finally {
-      setLoading(false);
+  const { 
+    data: tpSets = [],
+    isLoading: tpSetsLoading 
+  } = useTPSets();
+
+  // Using mutation hook for updating TP
+  const updateMutation = useUpdateTP({
+    onSuccess: () => {
+      navigate(`/tp/${id}`);
+    },
+    onError: (err) => {
+      setError(err.message || 'Gagal mengupdate TP');
+    },
+  });
+
+  useEffect(() => {
+    if (tp) {
+      setSuccessCriteria(tp.success_criteria);
     }
-  };
+  }, [tp]);
 
   const handleSubmit = async (values: any, helpers: FormikHelpers<any>) => {
     if (!id) return;
-    setSaving(true);
     setError(null);
     try {
       const payload = {
         ...values,
         success_criteria: successCriteria,
       };
-      await updateTP(id, payload);
-      navigate(`/tp/${id}`);
+      updateMutation.mutate({ id, data: payload });
     } catch (err: any) {
       setError(err.message || 'Gagal mengupdate TP');
       helpers.setSubmitting(false);
-    } finally {
-      setSaving(false);
     }
   };
 
-  if (loading) {
+  if (isLoading || tpSetsLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress />
@@ -156,14 +151,14 @@ const TPEditPage: React.FC = () => {
         {({ values, errors, touched, setFieldValue, isSubmitting }) => (
           <Form>
             <Grid container spacing={3}>
-              <Grid item xs={12} md={8}>
+              <Grid size={{ xs: 12, md: 8 }}>
                 <Card sx={{ mb: 3 }}>
                   <CardContent>
                     <Typography variant="h6" gutterBottom>
                       Informasi TP
                     </Typography>
                     <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
                         <FormControl fullWidth error={touched.tp_set_id && !!errors.tp_set_id}>
                           <InputLabel>Set TP</InputLabel>
                           <Select
@@ -180,7 +175,7 @@ const TPEditPage: React.FC = () => {
                           </Select>
                         </FormControl>
                       </Grid>
-                      <Grid item xs={12} sm={6}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
                         <TextField
                           fullWidth
                           label="Urutan TP"
@@ -192,7 +187,7 @@ const TPEditPage: React.FC = () => {
                           helperText={touched.sequence_number && (errors.sequence_number as string)}
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
                         <TextField
                           fullWidth
                           label="ID CP"
@@ -203,7 +198,7 @@ const TPEditPage: React.FC = () => {
                           helperText={touched.cp_id && (errors.cp_id as string)}
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
                         <TextField
                           fullWidth
                           label="ID Mata Pelajaran"
@@ -214,7 +209,7 @@ const TPEditPage: React.FC = () => {
                           helperText={touched.subject_id && (errors.subject_id as string)}
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
                         <TextField
                           fullWidth
                           label="ID Fase"
@@ -225,7 +220,7 @@ const TPEditPage: React.FC = () => {
                           helperText={touched.phase_id && (errors.phase_id as string)}
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
                         <TextField
                           fullWidth
                           label="ID Elemen"
@@ -236,7 +231,7 @@ const TPEditPage: React.FC = () => {
                           helperText={touched.element_id && (errors.element_id as string)}
                         />
                       </Grid>
-                      <Grid item xs={12}>
+                      <Grid size={{ xs: 12 }}>
                         <TextField
                           fullWidth
                           label="ID Sub-elemen (Opsional)"
@@ -255,7 +250,7 @@ const TPEditPage: React.FC = () => {
                       Detail TP
                     </Typography>
                     <Grid container spacing={2}>
-                      <Grid item xs={12}>
+                      <Grid size={{ xs: 12 }}>
                         <TextField
                           fullWidth
                           label="Judul TP"
@@ -266,7 +261,7 @@ const TPEditPage: React.FC = () => {
                           helperText={touched.title && (errors.title as string)}
                         />
                       </Grid>
-                      <Grid item xs={12}>
+                      <Grid size={{ xs: 12 }}>
                         <TextField
                           fullWidth
                           multiline
@@ -279,7 +274,7 @@ const TPEditPage: React.FC = () => {
                           helperText={touched.learning_objectives && (errors.learning_objectives as string)}
                         />
                       </Grid>
-                      <Grid item xs={12}>
+                      <Grid size={{ xs: 12 }}>
                         <TextField
                           fullWidth
                           label="Alokasi Waktu"
@@ -290,7 +285,7 @@ const TPEditPage: React.FC = () => {
                           helperText={touched.time_allocation && (errors.time_allocation as string)}
                         />
                       </Grid>
-                      <Grid item xs={12}>
+                      <Grid size={{ xs: 12 }}>
                         <TextField
                           fullWidth
                           multiline
@@ -301,7 +296,7 @@ const TPEditPage: React.FC = () => {
                           onChange={(e) => setFieldValue('prerequisites', e.target.value)}
                         />
                       </Grid>
-                      <Grid item xs={12} sm={6}>
+                      <Grid size={{ xs: 12, sm: 6 }}>
                         <TextField
                           fullWidth
                           label="Estimasi Minggu"
@@ -318,7 +313,7 @@ const TPEditPage: React.FC = () => {
                 </Card>
               </Grid>
 
-              <Grid item xs={12} md={4}>
+              <Grid size={{ xs: 12, md: 4 }}>
                 <Card sx={{ mb: 3 }}>
                   <CardContent>
                     <Typography variant="h6" gutterBottom>
@@ -337,36 +332,40 @@ const TPEditPage: React.FC = () => {
                       Status
                     </Typography>
                     <FormControl fullWidth>
+                      <InputLabel>Status</InputLabel>
                       <Select
                         name="status"
+                        label="Status"
                         value={values.status}
                         onChange={(e) => setFieldValue('status', e.target.value)}
                       >
                         <MenuItem value="DRAFT">Draft</MenuItem>
-                        <MenuItem value="PENDING">Pending</MenuItem>
+                        <MenuItem value="UNDER_REVIEW">Dalam Review</MenuItem>
                         <MenuItem value="APPROVED">Disetujui</MenuItem>
+                        <MenuItem value="REJECTED">Ditolak</MenuItem>
+                        <MenuItem value="ARCHIVED">Diarsipkan</MenuItem>
                       </Select>
                     </FormControl>
                   </CardContent>
                 </Card>
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                   <Button
                     variant="outlined"
                     onClick={() => navigate(`/tp/${id}`)}
-                    disabled={isSubmitting || saving}
+                    disabled={isSubmitting || updateMutation.isPending}
                   >
                     Batal
                   </Button>
                   <Button
                     type="submit"
                     variant="contained"
-                    startIcon={isSubmitting || saving ? <CircularProgress size={20} /> : <Save />}
-                    disabled={isSubmitting || saving}
+                    startIcon={isSubmitting || updateMutation.isPending ? <CircularProgress size={20} /> : <Save />}
+                    disabled={isSubmitting || updateMutation.isPending}
                   >
-                    {isSubmitting || saving ? 'Menyimpan...' : 'Simpan'}
+                    {isSubmitting || updateMutation.isPending ? 'Menyimpan...' : 'Simpan'}
                   </Button>
                 </Box>
               </Grid>

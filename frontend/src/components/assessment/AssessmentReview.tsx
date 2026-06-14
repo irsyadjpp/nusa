@@ -11,10 +11,7 @@ import {
   CardContent,
   Chip,
   Button,
-  Grid,
   Divider,
-  Alert,
-  AlertTitle,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -111,32 +108,32 @@ const AssessmentReview: React.FC<AssessmentReviewProps> = ({
           />
         </Box>
 
-        <Grid container spacing={2} sx={{ mb: 2 }}>
-          <Grid item xs={6} sm={4}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
+          <Box sx={{ width: { xs: '50%', sm: '33.33%' } }}>
             <Typography variant="caption" color="text.secondary">
               Tipe Asesmen
             </Typography>
             <Typography variant="body2">
               {getAssessmentTypeLabel(assessment.assessment_type)}
             </Typography>
-          </Grid>
-          <Grid item xs={6} sm={4}>
+          </Box>
+          <Box sx={{ width: { xs: '50%', sm: '33.33%' } }}>
             <Typography variant="caption" color="text.secondary">
               Versi TP
             </Typography>
             <Typography variant="body2">
               {assessment.tp_version_no}
             </Typography>
-          </Grid>
-          <Grid item xs={6} sm={4}>
+          </Box>
+          <Box sx={{ width: { xs: '50%', sm: '33.33%' } }}>
             <Typography variant="caption" color="text.secondary">
               Dibuat
             </Typography>
             <Typography variant="body2">
               {new Date(assessment.created_at).toLocaleDateString('id-ID')}
             </Typography>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
 
         <Divider sx={{ my: 2 }} />
 

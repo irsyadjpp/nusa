@@ -4,7 +4,7 @@
  */
 
 import { Box, List, ListItem, ListItemText, ListItemButton, Chip, Typography } from '@mui/material';
-import { Assessment } from '@/api/assessment';
+import { Assessment } from '@/shared/types/domain';
 
 interface AssessmentListProps {
   assessments: Assessment[];
@@ -36,21 +36,23 @@ export const AssessmentList = ({ assessments, selectedId, onSelect, loading }: A
         <ListItem
           key={assessment.id}
           disablePadding
-          selected={selectedId === assessment.id}
-          secondaryAction={
-            <Chip
-              label={assessment.status}
-              size="small"
-              color={assessment.status === 'approved' ? 'success' : assessment.status === 'draft' ? 'default' : 'warning'}
-            />
-          }
+          sx={{
+            backgroundColor: selectedId === assessment.id ? 'action.selected' : 'transparent',
+          }}
         >
-          <ListItemButton onClick={() => onSelect?.(assessment)} selected={selectedId === assessment.id}>
+          <ListItemButton onClick={() => onSelect?.(assessment)}>
             <ListItemText
               primary={`Assessment v${assessment.version_no}`}
               secondary={`Type: ${assessment.assessment_type} | TP: ${assessment.tp_id}`}
             />
           </ListItemButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', pr: 2 }}>
+            <Chip
+              label={assessment.status}
+              size="small"
+              color={assessment.status === 'APPROVED' ? 'success' : assessment.status === 'DRAFT' ? 'default' : 'warning'}
+            />
+          </Box>
         </ListItem>
       ))}
     </List>

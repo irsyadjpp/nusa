@@ -10,6 +10,7 @@ const (
 	RoleSystemAdmin = "SYSTEM_ADMIN"
 	RoleSchoolAdmin = "SCHOOL_ADMIN"
 	RoleTeacher     = "TEACHER"
+	RoleStudent     = "STUDENT"
 )
 
 func RoleMiddleware(allowedRoles ...string) gin.HandlerFunc {
@@ -43,5 +44,45 @@ func RoleMiddleware(allowedRoles ...string) gin.HandlerFunc {
 		}
 
 		c.Next()
+	}
+}
+
+func ReadOnlyMiddleware(allowedRoles ...string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authCtx := GetAuthContext(c)
+		if authCtx == nil {
+			c.JSON(http.StatusForbidden, gin.H{"success": false, "message": "Authentication required"})
+			c.Abort()
+			return
+		}
+
+		userRole := authCtx.Role
+
+		// Allow full access for admin roles
+		fullAccessRoles := []string{RoleSystemAdmin, RoleSchoolAdmin}
+		for _, fullAccessRole := range fullAccessRoles {
+			if userRole == fullAccessRole {
+				c.Next()
+				return
+			}
+		}
+
+		// Check read-only access for teachers
+		readOnlyRoles := []string{RoleTeacher}
+		for _, readOnlyRole := range readOnlyRoles {
+			if userRole == readOnlyRole {
+				// Only allow GET requests for read-only roles
+				if c.Request.Method != "GET" {
+					c.JSON(http.StatusForbidden, gin.H{"success": false, "message": "Read-only access"})
+					c.Abort()
+					return
+				}
+				c.Next()
+				return
+			}
+		}
+
+		c.JSON(http.StatusForbidden, gin.H{"success": false, "message": "Insufficient permissions"})
+		c.Abort()
 	}
 }

@@ -77,7 +77,7 @@ export default function Page() {
       password: "",
     },
     validationSchema,
-    onSubmit: (values) => {
+    onSubmit: () => {
       // Registration API integration - not yet implemented in backend
       // This will be implemented once backend has public registration endpoint
       console.warn("Registration endpoint not yet implemented in backend");

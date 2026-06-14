@@ -3,7 +3,7 @@
  * API calls for authentication operations
  */
 
-import apiClient, { handleApiError, ApiError } from './client';
+import apiClient, { handleApiError } from './client';
 import { LoginCredentials, AuthResponse, User } from '@/features/auth/types';
 
 /**

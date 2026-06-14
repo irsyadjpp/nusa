@@ -19,7 +19,6 @@ import {
 } from "@mui/material";
 
 import Logo from "@/components/logo/logo";
-import { DEFAULTS } from "@/config";
 import NiCheck from "@/icons/nexture/ni-check";
 import NiCross from "@/icons/nexture/ni-cross";
 import NiCrossSquare from "@/icons/nexture/ni-cross-square";
@@ -69,7 +68,7 @@ export default function Page() {
       password: "",
     },
     validationSchema,
-    onSubmit: (values) => {
+    onSubmit: () => {
       // Password reset confirm API integration - not yet implemented in backend
       // This will be implemented once backend has password reset confirm endpoint
       console.warn("Password reset confirm endpoint not yet implemented in backend");

@@ -8,7 +8,6 @@ import {
   Box,
   Typography,
   Button,
-  Grid,
   Card,
   CardContent,
   TextField,
@@ -26,8 +25,8 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { getEvidences } from '@/api/evidence';
-import { Evidence } from '@/api/evidence';
-import EvidenceReview from '@/components/evidence/EvidenceReview';
+import { Evidence, EvidenceType } from '@/shared/types/domain';
+// import EvidenceReview from '@/components/evidence/EvidenceReview'; // TODO: Implement
 
 const EvidenceListPage: React.FC = () => {
   const navigate = useNavigate();
@@ -37,7 +36,7 @@ const EvidenceListPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<string>('');
   const [selectedAssessment, setSelectedAssessment] = useState<string>('');
-  const [selectedType, setSelectedType] = useState<string>('');
+  const [selectedType, setSelectedType] = useState<EvidenceType | ''>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
 
   useEffect(() => {
@@ -66,34 +65,6 @@ const EvidenceListPage: React.FC = () => {
     evidence.student_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const getStatusColor = (status: string): 'success' | 'warning' | 'error' | 'info' | 'default' => {
-    switch (status) {
-      case 'EVALUATED':
-        return 'success';
-      case 'PENDING':
-        return 'warning';
-      case 'REJECTED':
-        return 'error';
-      case 'SUBMITTED':
-        return 'info';
-      default:
-        return 'default';
-    }
-  };
-
-  const getTypeLabel = (type: string): string => {
-    switch (type) {
-      case 'STUDENT_WORK':
-        return 'Karya Siswa';
-      case 'ASSESSMENT_RESULT':
-        return 'Hasil Asesmen';
-      case 'OBSERVATION':
-        return 'Observasi';
-      default:
-        return type;
-    }
-  };
-
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -109,8 +80,8 @@ const EvidenceListPage: React.FC = () => {
 
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            <Box sx={{ width: { xs: '100%', sm: '33.33%' } }}>
               <TextField
                 fullWidth
                 label="Cari Bukti"
@@ -120,8 +91,8 @@ const EvidenceListPage: React.FC = () => {
                   startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />,
                 }}
               />
-            </Grid>
-            <Grid item xs={12} sm={2}>
+            </Box>
+            <Box sx={{ width: { xs: '100%', sm: '16.67%' } }}>
               <FormControl fullWidth>
                 <InputLabel>Tipe</InputLabel>
                 <Select
@@ -135,8 +106,8 @@ const EvidenceListPage: React.FC = () => {
                   <MenuItem value="OBSERVATION">Observasi</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={2}>
+            </Box>
+            <Box sx={{ width: { xs: '100%', sm: '16.67%' } }}>
               <FormControl fullWidth>
                 <InputLabel>Status</InputLabel>
                 <Select
@@ -151,8 +122,8 @@ const EvidenceListPage: React.FC = () => {
                   <MenuItem value="REJECTED">Ditolak</MenuItem>
                 </Select>
               </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={4}>
+            </Box>
+            <Box sx={{ width: { xs: '100%', sm: '33.33%' } }}>
               <Button
                 fullWidth
                 variant="outlined"
@@ -167,8 +138,8 @@ const EvidenceListPage: React.FC = () => {
               >
                 Reset Filter
               </Button>
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </CardContent>
       </Card>
 
@@ -183,18 +154,30 @@ const EvidenceListPage: React.FC = () => {
           <CircularProgress />
         </Box>
       ) : (
-        <Grid container spacing={3}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
           {filteredEvidences.map((evidence) => (
-            <Grid item xs={12} sm={6} md={4} key={evidence.id}>
-              <EvidenceReview
-                evidence={evidence}
-                onView={(id) => navigate(`/evidence/${id}`)}
-                onEdit={(id) => navigate(`/evidence/${id}/edit`)}
-                onDelete={(id) => console.log('Delete evidence:', id)}
-              />
-            </Grid>
+            <Box sx={{ width: { xs: '100%', sm: '50%', md: '33.33%' } }} key={evidence.id}>
+              <Card>
+                <CardContent>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Evidence: {evidence.id.substring(0, 8)}...
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Student: {evidence.student_id.substring(0, 8)}...
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Status: {evidence.status}
+                  </Typography>
+                  <Box sx={{ mt: 2, display: 'flex', gap: 1 }}>
+                    <Button size="small" onClick={() => navigate(`/evidence/${evidence.id}`)}>
+                      View
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       )}
 
       {!loading && filteredEvidences.length === 0 && (

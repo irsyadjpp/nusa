@@ -1,79 +1,48 @@
 /**
  * Evidence API Client
- * Handles all Evidence-related API calls
+ * Handles all Evidence-related API calls with proper types
  */
 
 import apiClient, { handleApiError } from './client';
+import {
+  Evidence,
+  EvidenceType,
+  EvidenceStatus,
+  FileMetadata,
+  CreateEvidenceRequest,
+  PaginationParams,
+  FilterParams
+} from '@/shared/types/domain';
 
-// Types
-export interface Evidence {
-  id: string;
-  student_id: string;
-  assessment_id: string;
-  user_id: string;
-  evidence_type: string;
-  status: string;
-  evidence_data: any;
-  teacher_notes?: string;
-  rubric_id?: string;
-  linked_criteria?: any;
-  evaluations: any[];
-  created_at: string;
-  updated_at: string;
-}
-
-export interface EvidenceResponse {
-  id: string;
-  student_id: string;
-  student_name: string;
-  assessment_id: string;
-  assessment_type: string;
-  user_id: string;
-  user_name: string;
-  evidence_type: string;
-  status: string;
-  evidence_data: any;
-  teacher_notes?: string;
-  rubric_id?: string;
-  linked_criteria?: any;
-  evaluation_notes?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface CreateEvidenceRequest {
-  student_id: string;
-  assessment_id: string;
-  evidence_type: string;
-  evidence_data: any;
-  teacher_notes?: string;
-  rubric_id?: string;
-  linked_criteria?: any;
-}
-
-export interface UpdateEvidenceRequest {
-  evidence_type?: string;
+// API-specific request types
+export interface EvidenceUpdateRequest {
+  evidence_type?: EvidenceType;
   evidence_data?: any;
   teacher_notes?: string;
   rubric_id?: string;
   linked_criteria?: any;
-  status?: string;
+  status?: EvidenceStatus;
+}
+
+export interface UploadEvidenceRequest {
+  student_id: string;
+  assessment_id: string;
+  evidence_type: EvidenceType;
+  file_url: string;
+  file_metadata: FileMetadata;
 }
 
 /**
  * Get all evidences with optional filters
  */
-export const getEvidences = async (params?: {
+export const getEvidences = async (params?: PaginationParams & FilterParams & {
   student_id?: string;
   assessment_id?: string;
   user_id?: string;
-  evidence_type?: string;
-  status?: string;
-  limit?: number;
-  offset?: number;
+  evidence_type?: EvidenceType;
 }): Promise<Evidence[]> => {
   try {
-    const response = await apiClient.get('/evidences', { params });
+    const response = await apiClient.get('/assessment/evidences', { params });
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -83,9 +52,9 @@ export const getEvidences = async (params?: {
 /**
  * Get evidence by ID
  */
-export const getEvidenceById = async (id: string): Promise<EvidenceResponse> => {
+export const getEvidenceById = async (id: string): Promise<Evidence> => {
   try {
-    const response = await apiClient.get(`/evidences/${id}`);
+    const response = await apiClient.get(`/assessment/evidences/${id}`);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -97,7 +66,7 @@ export const getEvidenceById = async (id: string): Promise<EvidenceResponse> => 
  */
 export const createEvidence = async (data: CreateEvidenceRequest, userId: string): Promise<Evidence> => {
   try {
-    const response = await apiClient.post('/evidences', {
+    const response = await apiClient.post('/assessment/evidences', {
       ...data,
       user_id: userId,
     });
@@ -110,9 +79,9 @@ export const createEvidence = async (data: CreateEvidenceRequest, userId: string
 /**
  * Update evidence
  */
-export const updateEvidence = async (id: string, data: UpdateEvidenceRequest): Promise<Evidence> => {
+export const updateEvidence = async (id: string, data: EvidenceUpdateRequest): Promise<Evidence> => {
   try {
-    const response = await apiClient.put(`/evidences/${id}`, data);
+    const response = await apiClient.put(`/assessment/evidences/${id}`, data);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -124,7 +93,7 @@ export const updateEvidence = async (id: string, data: UpdateEvidenceRequest): P
  */
 export const deleteEvidence = async (id: string): Promise<void> => {
   try {
-    await apiClient.delete(`/evidences/${id}`);
+    await apiClient.delete(`/assessment/evidences/${id}`);
   } catch (error) {
     throw handleApiError(error);
   }
@@ -133,11 +102,9 @@ export const deleteEvidence = async (id: string): Promise<void> => {
 /**
  * Get evidences by student ID
  */
-export const getEvidencesByStudent = async (studentId: string, params?: {
+export const getEvidencesByStudent = async (studentId: string, params?: PaginationParams & FilterParams & {
   assessment_id?: string;
-  status?: string;
-  limit?: number;
-  offset?: number;
+  status?: EvidenceStatus;
 }): Promise<Evidence[]> => {
   try {
     const response = await apiClient.get(`/students/${studentId}/evidences`, { params });
@@ -150,13 +117,26 @@ export const getEvidencesByStudent = async (studentId: string, params?: {
 /**
  * Get evidences by assessment ID
  */
-export const getEvidencesByAssessment = async (assessmentId: string, params?: {
-  status?: string;
-  limit?: number;
-  offset?: number;
+export const getEvidencesByAssessment = async (assessmentId: string, params?: PaginationParams & FilterParams & {
+  status?: EvidenceStatus;
 }): Promise<Evidence[]> => {
   try {
-    const response = await apiClient.get(`/assessments/${assessmentId}/evidences`, { params });
+    const response = await apiClient.get(`/assessment/${assessmentId}/evidences`, { params });
+    return response.data.data || response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};
+
+/**
+ * Upload evidence with metadata
+ */
+export const uploadEvidence = async (data: UploadEvidenceRequest, userId: string): Promise<Evidence> => {
+  try {
+    const response = await apiClient.post(`/assessment/evidences/upload`, {
+      ...data,
+      user_id: userId,
+    });
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -171,4 +151,5 @@ export default {
   deleteEvidence,
   getEvidencesByStudent,
   getEvidencesByAssessment,
+  uploadEvidence,
 };

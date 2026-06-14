@@ -6,11 +6,11 @@
 import { Box, TextField, Button, Stack, Typography } from '@mui/material';
 import { Formik, Form, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
-import { CreateModulAjarRequest, UpdateModulAjarRequest } from '@/api/modul-ajar';
+import { ModulAjarCreateRequest, ModulAjarUpdateRequest } from '@/api/modul-ajar';
 
 interface ModulAjarFormProps {
-  initialValues?: Partial<CreateModulAjarRequest>;
-  onSubmit: (values: CreateModulAjarRequest | UpdateModulAjarRequest) => void;
+  initialValues?: Partial<ModulAjarCreateRequest>;
+  onSubmit: (values: ModulAjarCreateRequest | ModulAjarUpdateRequest) => void;
   onCancel?: () => void;
   isEdit?: boolean;
 }
@@ -24,17 +24,34 @@ const validationSchema = Yup.object({
 });
 
 export const ModulAjarForm = ({ initialValues, onSubmit, onCancel, isEdit = false }: ModulAjarFormProps) => {
-  const defaultValues: CreateModulAjarRequest = {
+  const defaultValues: ModulAjarCreateRequest = {
     modul_ajar_set_id: '',
     atp_id: '',
-    tp_id: '',
-    sequence_number: 1,
-    title: '',
-    learning_activities: '',
-    teaching_methods: [],
-    learning_media: [],
-    learning_resources: [],
-    attachments: [],
+    week: 1,
+    session_number: 1,
+    learning_objectives: [],
+    learning_activities: {
+      opening: [],
+      core_activities: [],
+      closing: [],
+    },
+    teaching_materials: {
+      resources: [],
+      media: [],
+      references: [],
+      core_materials: [],
+      supporting_materials: [],
+      digital_resources: [],
+    },
+    learning_methods: [],
+    assessment_methods: [],
+    time_allocation: {
+      total_hours: 2,
+      per_week_hours: 2,
+      hours_per_week: 2,
+      hours_per_session: 1,
+      breakdown: {},
+    },
   };
 
   return (
@@ -45,7 +62,7 @@ export const ModulAjarForm = ({ initialValues, onSubmit, onCancel, isEdit = fals
       <Formik
         initialValues={{ ...defaultValues, ...initialValues }}
         validationSchema={validationSchema}
-        onSubmit={(values: CreateModulAjarRequest, helpers: FormikHelpers<CreateModulAjarRequest>) => {
+        onSubmit={(values: ModulAjarCreateRequest, helpers: FormikHelpers<ModulAjarCreateRequest>) => {
           onSubmit(values);
           helpers.resetForm();
         }}
@@ -71,37 +88,6 @@ export const ModulAjarForm = ({ initialValues, onSubmit, onCancel, isEdit = fals
                 onChange={handleChange}
                 error={touched.atp_id && Boolean(errors.atp_id)}
                 helperText={touched.atp_id && errors.atp_id}
-              />
-
-              <TextField
-                fullWidth
-                label="TP ID"
-                name="tp_id"
-                value={values.tp_id}
-                onChange={handleChange}
-                error={touched.tp_id && Boolean(errors.tp_id)}
-                helperText={touched.tp_id && errors.tp_id}
-              />
-
-              <TextField
-                fullWidth
-                type="number"
-                label="Sequence Number"
-                name="sequence_number"
-                value={values.sequence_number}
-                onChange={handleChange}
-                error={touched.sequence_number && Boolean(errors.sequence_number)}
-                helperText={touched.sequence_number && errors.sequence_number}
-              />
-
-              <TextField
-                fullWidth
-                label="Title"
-                name="title"
-                value={values.title}
-                onChange={handleChange}
-                error={touched.title && Boolean(errors.title)}
-                helperText={touched.title && errors.title}
               />
 
               <TextField

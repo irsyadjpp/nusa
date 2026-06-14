@@ -1,6 +1,6 @@
 import React from 'react';
-import { Box, Typography, Timeline, TimelineItem, TimelineSeparator, TimelineConnector, TimelineContent, TimelineDot, Chip, Button } from '@mui/material';
-import { History as HistoryIcon, Compare as CompareIcon } from '@mui/icons-material';
+import { Box, Typography, List, ListItem, ListItemText, ListItemIcon, Chip, Button, Divider } from '@mui/material';
+import { Compare as CompareIcon } from '@mui/icons-material';
 
 interface TPVersion {
   id: string;
@@ -43,30 +43,38 @@ export const TPVersionHistory: React.FC<TPVersionHistoryProps> = ({ tpSetId, seq
           Compare Versions
         </Button>
       </Box>
-      <Timeline>
-        {history.map((version) => (
-          <TimelineItem key={version.id}>
-            <TimelineSeparator>
-              <TimelineDot color={version.is_current_version ? "primary" : "grey"} />
-              <TimelineConnector />
-            </TimelineSeparator>
-            <TimelineContent>
-              <Box display="flex" alignItems="center" gap={1}>
-                <Typography variant="body1">Version {version.version_no}</Typography>
-                {version.is_current_version && (
-                  <Chip label="Current" color="primary" size="small" />
-                )}
-              </Box>
-              <Typography variant="body2" color="textSecondary">
-                {version.title}
-              </Typography>
-              <Typography variant="caption" color="textSecondary">
-                Created: {new Date(version.created_at).toLocaleString()}
-              </Typography>
-            </TimelineContent>
-          </TimelineItem>
+      <List>
+        {history.map((version, index) => (
+          <React.Fragment key={version.id}>
+            <ListItem>
+              <ListItemIcon>
+                <CompareIcon color={version.is_current_version ? "primary" : "disabled"} />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Typography variant="body1">Version {version.version_no}</Typography>
+                    {version.is_current_version && (
+                      <Chip label="Current" color="primary" size="small" />
+                    )}
+                  </Box>
+                }
+                secondary={
+                  <>
+                    <Typography variant="body2" color="textSecondary">
+                      {version.title}
+                    </Typography>
+                    <Typography variant="caption" color="textSecondary">
+                      Created: {new Date(version.created_at).toLocaleString()}
+                    </Typography>
+                  </>
+                }
+              />
+            </ListItem>
+            {index < history.length - 1 && <Divider />}
+          </React.Fragment>
         ))}
-      </Timeline>
+      </List>
     </Box>
   );
 };

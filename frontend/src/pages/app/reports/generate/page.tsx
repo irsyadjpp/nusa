@@ -11,14 +11,8 @@ import {
   Card,
   CardContent,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   CircularProgress,
   Alert,
-  Grid,
-  Divider,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -123,67 +117,59 @@ const ReportGeneratePage: React.FC = () => {
         >
           {({ values, errors, touched, setFieldValue, isSubmitting }) => (
             <Form>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={4}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                <Box sx={{ width: { xs: '100%', md: '33.33%' }}}>
                   <Card sx={{ mb: 3 }}>
                     <CardContent>
                       <Typography variant="h6" gutterBottom>
                         Informasi Rapor
                       </Typography>
-                      <Grid container spacing={2}>
-                        <Grid item xs={12}>
-                          <TextField
-                            fullWidth
-                            label="ID Siswa"
-                            name="student_id"
-                            value={values.student_id}
-                            onChange={(e) => setFieldValue('student_id', e.target.value)}
-                            error={touched.student_id && !!errors.student_id}
-                            helperText={touched.student_id && (errors.student_id as string)}
-                          />
-                        </Grid>
-                        <Grid item xs={12}>
-                          <TextField
-                            fullWidth
-                            label="Tanggal Mulai Periode"
-                            type="date"
-                            name="period_start"
-                            value={values.period_start}
-                            onChange={(e) => setFieldValue('period_start', e.target.value)}
-                            error={touched.period_start && !!errors.period_start}
-                            helperText={touched.period_start && (errors.period_start as string)}
-                            InputLabelProps={{ shrink: true }}
-                          />
-                        </Grid>
-                        <Grid item xs={12}>
-                          <TextField
-                            fullWidth
-                            label="Tanggal Akhir Periode"
-                            type="date"
-                            name="period_end"
-                            value={values.period_end}
-                            onChange={(e) => setFieldValue('period_end', e.target.value)}
-                            error={touched.period_end && !!errors.period_end}
-                            helperText={touched.period_end && (errors.period_end as string)}
-                            InputLabelProps={{ shrink: true }}
-                          />
-                        </Grid>
-                        <Grid item xs={12}>
-                          <Button
-                            fullWidth
-                            variant="outlined"
-                            onClick={() => handleGenerateAchievement(values.student_id, values.period_start, values.period_end)}
-                            disabled={!values.student_id}
-                          >
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        <TextField
+                          fullWidth
+                          label="ID Siswa"
+                          name="student_id"
+                          value={values.student_id}
+                          onChange={(e) => setFieldValue('student_id', e.target.value)}
+                          error={touched.student_id && !!errors.student_id}
+                          helperText={touched.student_id && (errors.student_id as string)}
+                        />
+                        <TextField
+                          fullWidth
+                          label="Tanggal Mulai Periode"
+                          type="date"
+                          name="period_start"
+                          value={values.period_start}
+                          onChange={(e) => setFieldValue('period_start', e.target.value)}
+                          error={touched.period_start && !!errors.period_start}
+                          helperText={touched.period_start && (errors.period_start as string)}
+                          InputLabelProps={{ shrink: true }}
+                        />
+                        <TextField
+                          fullWidth
+                          label="Tanggal Akhir Periode"
+                          type="date"
+                          name="period_end"
+                          value={values.period_end}
+                          onChange={(e) => setFieldValue('period_end', e.target.value)}
+                          error={touched.period_end && !!errors.period_end}
+                          helperText={touched.period_end && (errors.period_end as string)}
+                          InputLabelProps={{ shrink: true }}
+                        />
+                        <Button
+                          fullWidth
+                          variant="outlined"
+                          onClick={() => handleGenerateAchievement(values.student_id, values.period_start, values.period_end)}
+                          disabled={!values.student_id}
+                        >
                             Generate Ringkasan
                           </Button>
-                        </Grid>
-                      </Grid>
+                      </Box>
                     </CardContent>
                   </Card>
-                </Grid>
+                </Box>
 
-                <Grid item xs={12} md={8}>
+                <Box sx={{ width: { xs: '100%', md: '66.67%' }}}>
                   {achievementData && (
                     <Card sx={{ mb: 3 }}>
                       <CardContent>
@@ -208,9 +194,9 @@ const ReportGeneratePage: React.FC = () => {
                       />
                     </CardContent>
                   </Card>
-                </Grid>
+                </Box>
 
-                <Grid item xs={12}>
+                <Box sx={{ width: '100%' }}>
                   <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
                     <Button
                       variant="outlined"
@@ -228,8 +214,8 @@ const ReportGeneratePage: React.FC = () => {
                       {isSubmitting || loading ? 'Menyimpan...' : 'Simpan Draft'}
                     </Button>
                   </Box>
-                </Grid>
-              </Grid>
+                </Box>
+              </Box>
             </Form>
           )}
         </Formik>

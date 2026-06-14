@@ -75,3 +75,56 @@ export const useCreateModulAjarSet = (
     ...options,
   });
 };
+
+/**
+ * Update Modul Ajar Set mutation
+ */
+export const useUpdateModulAjarSet = (
+  options?: Omit<UseMutationOptions<any, Error, { id: string; data: any }>, 'mutationFn'>
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }) => modulAjarApi.updateModulAjarSet(id, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: modulAjarKeys.setDetail(variables.id) });
+      queryClient.invalidateQueries({ queryKey: modulAjarKeys.sets() });
+    },
+    ...options,
+  });
+};
+
+/**
+ * Delete Modul Ajar Set mutation
+ */
+export const useDeleteModulAjarSet = (
+  options?: Omit<UseMutationOptions<void, Error, string>, 'mutationFn'>
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => modulAjarApi.deleteModulAjarSet(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: modulAjarKeys.sets() });
+    },
+    ...options,
+  });
+};
+
+/**
+ * Approve Modul Ajar Set mutation
+ */
+export const useApproveModulAjarSet = (
+  options?: Omit<UseMutationOptions<any, Error, string>, 'mutationFn'>
+) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => modulAjarApi.approveModulAjarSet(id),
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({ queryKey: modulAjarKeys.setDetail(id) });
+      queryClient.invalidateQueries({ queryKey: modulAjarKeys.sets() });
+    },
+    ...options,
+  });
+};

@@ -1,103 +1,27 @@
 /**
  * TP (Teaching Plan) API Client
- * Handles all TP-related API calls
+ * Handles all TP-related API calls with proper types
  */
 
 import apiClient, { handleApiError } from './client';
+import {
+  TP,
+  TPSet,
+  CreateTPRequest,
+  UpdateTPRequest,
+  CreateTPSetRequest,
+  PaginationParams,
+  FilterParams
+} from '@/shared/types/domain';
 
-// Types
-export interface TP {
-  id: string;
-  tp_set_id: string;
-  sequence_number: number;
-  cp_id: string;
-  subject_id: string;
-  phase_id: string;
-  element_id: string;
-  subelement_id: string;
-  user_id: string;
-  status: string;
-  title: string;
-  learning_objectives: any;
-  time_allocation: any;
-  prerequisites: any;
-  estimated_weeks: number;
-  success_criteria: any;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface TPSet {
-  id: string;
-  cp_id: string;
-  version_no: number;
-  status: string;
-  generation_source: string;
-  generation_reason?: string;
-  generated_by: string;
-  ai_generation_id?: string;
-  approved_by?: string;
-  approved_at?: string;
-  created_at: string;
-}
-
-export interface CreateTPRequest {
-  tp_set_id: string;
-  sequence_number: number;
-  cp_id: string;
-  subject_id: string;
-  phase_id: string;
-  element_id: string;
-  subelement_id: string;
-  title: string;
-  learning_objectives: any;
-  time_allocation: any;
-  prerequisites: any;
-  estimated_weeks: number;
-  success_criteria?: any;
-}
-
-export interface UpdateTPRequest {
-  title?: string;
-  learning_objectives?: any;
-  time_allocation?: any;
-  prerequisites?: any;
-  estimated_weeks?: number;
-  status?: string;
-  success_criteria?: any;
-}
-
-export interface TPResponse {
-  id: string;
-  tp_set_id: string;
-  sequence_number: number;
-  cp_id: string;
-  subject_id: string;
-  phase_id: string;
-  element_id: string;
-  subelement_id: string;
-  user_id: string;
-  status: string;
-  title: string;
-  learning_objectives: any;
-  time_allocation: any;
-  prerequisites: any;
-  estimated_weeks: number;
-  success_criteria: any;
-  created_at: string;
-  updated_at: string;
-}
+// Re-export types for convenience
+export type { TP, TPSet, CreateTPRequest, UpdateTPRequest, CreateTPSetRequest } from '@/shared/types/domain';
 
 /**
  * Get all TPs with optional filters
  */
-export const getTPs = async (params?: {
+export const getTPs = async (params?: PaginationParams & FilterParams & {
   tp_set_id?: string;
-  subject_id?: string;
-  phase_id?: string;
-  status?: string;
-  limit?: number;
-  offset?: number;
 }): Promise<TP[]> => {
   try {
     const response = await apiClient.get('/tp', { params });
@@ -169,16 +93,11 @@ export const deleteTP = async (id: string): Promise<void> => {
 /**
  * Get TP Sets
  */
-export const getTPSets = async (params?: {
+export const getTPSets = async (params?: PaginationParams & FilterParams & {
   cp_id?: string;
-  subject_id?: string;
-  phase_id?: string;
-  status?: string;
-  limit?: number;
-  offset?: number;
 }): Promise<TPSet[]> => {
   try {
-    const response = await apiClient.get('/tp-sets', { params });
+    const response = await apiClient.get('/learning-planning/tp-sets', { params });
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -190,7 +109,7 @@ export const getTPSets = async (params?: {
  */
 export const getTPSetById = async (id: string): Promise<TPSet> => {
   try {
-    const response = await apiClient.get(`/tp-sets/${id}`);
+    const response = await apiClient.get(`/learning-planning/tp-sets/${id}`);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -200,15 +119,9 @@ export const getTPSetById = async (id: string): Promise<TPSet> => {
 /**
  * Create TP Set
  */
-export const createTPSet = async (data: {
-  cp_id: string;
-  subject_id: string;
-  phase_id: string;
-  generation_source: string;
-  generation_reason?: string;
-}): Promise<TPSet> => {
+export const createTPSet = async (data: CreateTPSetRequest): Promise<TPSet> => {
   try {
-    const response = await apiClient.post('/tp-sets', data);
+    const response = await apiClient.post('/learning-planning/tp-sets', data);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -220,8 +133,34 @@ export const createTPSet = async (data: {
  */
 export const approveTPSet = async (id: string): Promise<TPSet> => {
   try {
-    const response = await apiClient.post(`/tp-sets/${id}/approve`);
+    const response = await apiClient.post(`/learning-planning/tp-sets/${id}/approve`);
     return response.data.data || response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};
+
+/**
+ * Update TP Set
+ */
+export const updateTPSet = async (id: string, data: {
+  generation_reason?: string;
+}): Promise<TPSet> => {
+  try {
+    const response = await apiClient.put(`/learning-planning/tp-sets/${id}`, data);
+    return response.data.data || response.data;
+  } catch (error) {
+    throw handleApiError(error);
+  }
+};
+
+/**
+ * Get TP Set Version History
+ */
+export const getTPSetVersions = async (id: string): Promise<TP[]> => {
+  try {
+    const response = await apiClient.get(`/learning-planning/tp-sets/${id}/versions`);
+    return response.data.versions || response.data;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -238,4 +177,6 @@ export default {
   getTPSetById,
   createTPSet,
   approveTPSet,
+  updateTPSet,
+  getTPSetVersions,
 };

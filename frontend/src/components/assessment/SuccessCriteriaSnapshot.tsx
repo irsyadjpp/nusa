@@ -10,7 +10,6 @@ import {
   Card,
   CardContent,
   Chip,
-  Grid,
   LinearProgress,
   Alert,
   AlertTitle,
@@ -93,8 +92,8 @@ const SuccessCriteriaSnapshot: React.FC<SuccessCriteriaSnapshotProps> = ({
                 Ambang Penguasaan
               </Typography>
             </Box>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+              <Box sx={{ width: { xs: '100%', sm: '50%' } }}>
                 <Box sx={{ mb: 1 }}>
                   <Typography variant="caption" color="text.secondary">
                     Sangat Baik
@@ -109,8 +108,8 @@ const SuccessCriteriaSnapshot: React.FC<SuccessCriteriaSnapshotProps> = ({
                     {snapshot.mastery_thresholds.excellent_threshold}%
                   </Typography>
                 </Box>
-              </Grid>
-              <Grid item xs={12} sm={6}>
+              </Box>
+              <Box sx={{ width: { xs: '100%', sm: '50%' } }}>
                 <Box sx={{ mb: 1 }}>
                   <Typography variant="caption" color="text.secondary">
                     Baik
@@ -125,8 +124,8 @@ const SuccessCriteriaSnapshot: React.FC<SuccessCriteriaSnapshotProps> = ({
                     {snapshot.mastery_thresholds.proficient_threshold}%
                   </Typography>
                 </Box>
-              </Grid>
-              <Grid item xs={12} sm={6}>
+              </Box>
+              <Box sx={{ width: { xs: '100%', sm: '50%' } }}>
                 <Box sx={{ mb: 1 }}>
                   <Typography variant="caption" color="text.secondary">
                     Sedang Berkembang
@@ -141,8 +140,8 @@ const SuccessCriteriaSnapshot: React.FC<SuccessCriteriaSnapshotProps> = ({
                     {snapshot.mastery_thresholds.developing_threshold}%
                   </Typography>
                 </Box>
-              </Grid>
-              <Grid item xs={12} sm={6}>
+              </Box>
+              <Box sx={{ width: { xs: '100%', sm: '50%' } }}>
                 <Box sx={{ mb: 1 }}>
                   <Typography variant="caption" color="text.secondary">
                     Perlu Bimbingan
@@ -157,8 +156,8 @@ const SuccessCriteriaSnapshot: React.FC<SuccessCriteriaSnapshotProps> = ({
                     {snapshot.mastery_thresholds.beginning_threshold}%
                   </Typography>
                 </Box>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </Box>
 
           {/* Performance Indicators */}
@@ -169,8 +168,8 @@ const SuccessCriteriaSnapshot: React.FC<SuccessCriteriaSnapshotProps> = ({
                 Indikator Pencapaian
               </Typography>
             </Box>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ width: '100%' }}>
                 <Typography variant="caption" color="text.secondary" gutterBottom>
                   Kognitif
                 </Typography>
@@ -184,8 +183,8 @@ const SuccessCriteriaSnapshot: React.FC<SuccessCriteriaSnapshotProps> = ({
                     />
                   ))}
                 </Box>
-              </Grid>
-              <Grid item xs={12}>
+              </Box>
+              <Box sx={{ width: '100%' }}>
                 <Typography variant="caption" color="text.secondary" gutterBottom>
                   Psikomotorik
                 </Typography>
@@ -199,8 +198,8 @@ const SuccessCriteriaSnapshot: React.FC<SuccessCriteriaSnapshotProps> = ({
                     />
                   ))}
                 </Box>
-              </Grid>
-              <Grid item xs={12}>
+              </Box>
+              <Box sx={{ width: '100%' }}>
                 <Typography variant="caption" color="text.secondary" gutterBottom>
                   Afektif
                 </Typography>
@@ -214,8 +213,8 @@ const SuccessCriteriaSnapshot: React.FC<SuccessCriteriaSnapshotProps> = ({
                     />
                   ))}
                 </Box>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </Box>
 
           {/* Minimum Requirements */}
@@ -226,8 +225,8 @@ const SuccessCriteriaSnapshot: React.FC<SuccessCriteriaSnapshotProps> = ({
                 Persyaratan Minimum
               </Typography>
             </Box>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ width: '100%' }}>
                 <Typography variant="caption" color="text.secondary" gutterBottom>
                   Kompetensi Inti
                 </Typography>
@@ -242,8 +241,8 @@ const SuccessCriteriaSnapshot: React.FC<SuccessCriteriaSnapshotProps> = ({
                     />
                   ))}
                 </Box>
-              </Grid>
-              <Grid item xs={12}>
+              </Box>
+              <Box sx={{ width: '100%' }}>
                 <Typography variant="caption" color="text.secondary" gutterBottom>
                   Keterampilan Esensial
                 </Typography>
@@ -258,8 +257,8 @@ const SuccessCriteriaSnapshot: React.FC<SuccessCriteriaSnapshotProps> = ({
                     />
                   ))}
                 </Box>
-              </Grid>
-              <Grid item xs={12}>
+              </Box>
+              <Box sx={{ width: '100%' }}>
                 <Typography variant="caption" color="text.secondary" gutterBottom>
                   Bukti yang Diperlukan
                 </Typography>
@@ -274,8 +273,8 @@ const SuccessCriteriaSnapshot: React.FC<SuccessCriteriaSnapshotProps> = ({
                     />
                   ))}
                 </Box>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
           </Box>
         </CardContent>
       </Card>

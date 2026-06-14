@@ -3,8 +3,9 @@
  * Displays a queue of evaluations pending review
  */
 
-import { Box, List, ListItem, ListItemText, ListItemButton, Chip, Typography, Badge } from '@mui/material';
-import { Evaluation } from '@/api/evaluation';
+import React from 'react';
+import { Box, List, ListItem, ListItemText, ListItemButton, Chip, Typography, Badge, Divider } from '@mui/material';
+import { Evaluation } from '@/shared/types/domain';
 
 interface EvaluationQueueProps {
   evaluations: Evaluation[];
@@ -14,7 +15,8 @@ interface EvaluationQueueProps {
 }
 
 export const EvaluationQueue = ({ evaluations, selectedId, onSelect, loading }: EvaluationQueueProps) => {
-  const pendingCount = evaluations.filter(e => e.status === 'pending').length;
+  // Remove pending count since status doesn't exist
+  const pendingCount = 0;
 
   if (loading) {
     return (
@@ -45,26 +47,30 @@ export const EvaluationQueue = ({ evaluations, selectedId, onSelect, loading }: 
         )}
       </Box>
       <List>
-        {evaluations.map((evaluation) => (
-          <ListItem
-            key={evaluation.id}
-            disablePadding
-            selected={selectedId === evaluation.id}
-            secondaryAction={
-              <Chip
-                label={evaluation.status}
-                size="small"
-                color={evaluation.status === 'approved' ? 'success' : evaluation.status === 'draft' ? 'default' : 'warning'}
-              />
-            }
-          >
-            <ListItemButton onClick={() => onSelect?.(evaluation)} selected={selectedId === evaluation.id}>
-              <ListItemText
-                primary={`Evidence: ${evaluation.evidence_id}`}
-                secondary={`Score: ${evaluation.score} | Evaluator: ${evaluation.evaluator_id}`}
-              />
-            </ListItemButton>
-          </ListItem>
+        {evaluations.map((evaluation, index) => (
+          <React.Fragment key={evaluation.id}>
+            <ListItem
+              disablePadding
+              sx={{
+                backgroundColor: selectedId === evaluation.id ? 'action.selected' : 'transparent',
+              }}
+            >
+              <ListItemButton onClick={() => onSelect?.(evaluation)}>
+                <ListItemText
+                  primary={`Evidence: ${evaluation.evidence_id}`}
+                  secondary={`Score: ${evaluation.performance_scores.total_score}/${evaluation.performance_scores.max_score} | Level: ${evaluation.performance_level}`}
+                />
+              </ListItemButton>
+              <Box sx={{ display: 'flex', alignItems: 'center', pr: 2 }}>
+                <Chip
+                  label={evaluation.performance_level}
+                  size="small"
+                  color={evaluation.performance_level === 'PROFICIENT' ? 'success' : evaluation.performance_level === 'DEVELOPING' ? 'warning' : 'default'}
+                />
+              </Box>
+            </ListItem>
+            {index < evaluations.length - 1 && <Divider />}
+          </React.Fragment>
         ))}
       </List>
     </Box>

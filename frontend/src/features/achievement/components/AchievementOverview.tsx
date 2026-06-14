@@ -3,7 +3,7 @@
  * Displays overview statistics for achievements
  */
 
-import { Box, Grid, Card, CardContent, Typography } from '@mui/material';
+import { Box, Card, CardContent, Typography } from '@mui/material';
 import { TrendingUp, People, Assignment, CheckCircle } from '@mui/icons-material';
 
 interface AchievementOverviewProps {
@@ -18,8 +18,8 @@ interface AchievementOverviewProps {
 export const AchievementOverview = ({ stats }: AchievementOverviewProps) => {
   return (
     <Box sx={{ mb: 3 }}>
-      <Grid container spacing={3}>
-        <Grid item xs={12} sm={6} md={3}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+        <Box sx={{ width: { xs: '100%', sm: '50%', md: '25%' } }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -33,9 +33,9 @@ export const AchievementOverview = ({ stats }: AchievementOverviewProps) => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Box sx={{ width: { xs: '100%', sm: '50%', md: '25%' } }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -49,9 +49,9 @@ export const AchievementOverview = ({ stats }: AchievementOverviewProps) => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Box sx={{ width: { xs: '100%', sm: '50%', md: '25%' } }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -65,9 +65,9 @@ export const AchievementOverview = ({ stats }: AchievementOverviewProps) => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Box sx={{ width: { xs: '100%', sm: '50%', md: '25%' } }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -81,8 +81,8 @@ export const AchievementOverview = ({ stats }: AchievementOverviewProps) => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </Box>
   );
 };

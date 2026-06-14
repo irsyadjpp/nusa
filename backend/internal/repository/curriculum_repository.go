@@ -24,28 +24,27 @@ func NewCurriculumRepository(db *sqlx.DB) *CurriculumRepository {
 // CreateCurriculumSubject creates a new curriculum subject
 func (r *CurriculumRepository) CreateCurriculumSubject(ctx context.Context, subject *domain.CurriculumSubject) error {
 	query := `
-		INSERT INTO curriculum_subjects (id, code, name, name_en, description, is_active)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		INSERT INTO curriculum_subjects (id, code, name, description, is_active)
+		VALUES ($1, $2, $3, $4, $5)
 	`
 
 	_, err := r.db.ExecContext(ctx, query,
-		subject.ID, subject.Code, subject.Name, subject.NameEN, subject.Description, subject.IsActive)
+		subject.ID, subject.Code, subject.Name, subject.Description, subject.IsActive)
 	return err
 }
 
 // GetCurriculumSubjectByID retrieves a curriculum subject by ID
 func (r *CurriculumRepository) GetCurriculumSubjectByID(ctx context.Context, id string) (*domain.CurriculumSubject, error) {
 	query := `
-		SELECT id, code, name, name_en, description, is_active, created_at, updated_at
+		SELECT id, code, name, description, is_active, created_at, updated_at
 		FROM curriculum_subjects WHERE id = $1
 	`
 
 	var subject domain.CurriculumSubject
-	var nameEN sql.NullString
 	var description sql.NullString
 
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
-		&subject.ID, &subject.Code, &subject.Name, &nameEN, &description,
+		&subject.ID, &subject.Code, &subject.Name, &description,
 		&subject.IsActive, &subject.CreatedAt, &subject.UpdatedAt,
 	)
 
@@ -56,9 +55,6 @@ func (r *CurriculumRepository) GetCurriculumSubjectByID(ctx context.Context, id 
 		return nil, err
 	}
 
-	if nameEN.Valid {
-		subject.NameEN = &nameEN.String
-	}
 	if description.Valid {
 		subject.Description = &description.String
 	}
@@ -69,16 +65,15 @@ func (r *CurriculumRepository) GetCurriculumSubjectByID(ctx context.Context, id 
 // GetCurriculumSubjectByCode retrieves a curriculum subject by code
 func (r *CurriculumRepository) GetCurriculumSubjectByCode(ctx context.Context, code string) (*domain.CurriculumSubject, error) {
 	query := `
-		SELECT id, code, name, name_en, description, is_active, created_at, updated_at
+		SELECT id, code, name, description, is_active, created_at, updated_at
 		FROM curriculum_subjects WHERE code = $1
 	`
 
 	var subject domain.CurriculumSubject
-	var nameEN sql.NullString
 	var description sql.NullString
 
 	err := r.db.QueryRowContext(ctx, query, code).Scan(
-		&subject.ID, &subject.Code, &subject.Name, &nameEN, &description,
+		&subject.ID, &subject.Code, &subject.Name, &description,
 		&subject.IsActive, &subject.CreatedAt, &subject.UpdatedAt,
 	)
 
@@ -89,9 +84,6 @@ func (r *CurriculumRepository) GetCurriculumSubjectByCode(ctx context.Context, c
 		return nil, err
 	}
 
-	if nameEN.Valid {
-		subject.NameEN = &nameEN.String
-	}
 	if description.Valid {
 		subject.Description = &description.String
 	}
@@ -102,7 +94,7 @@ func (r *CurriculumRepository) GetCurriculumSubjectByCode(ctx context.Context, c
 // ListCurriculumSubjects retrieves curriculum subjects with optional filters
 func (r *CurriculumRepository) ListCurriculumSubjects(ctx context.Context, isActive *bool, limit, offset int) ([]*domain.CurriculumSubject, error) {
 	query := `
-		SELECT id, code, name, name_en, description, is_active, created_at, updated_at
+		SELECT id, code, name, description, is_active, created_at, updated_at
 		FROM curriculum_subjects
 		WHERE 1=1
 	`
@@ -138,20 +130,16 @@ func (r *CurriculumRepository) ListCurriculumSubjects(ctx context.Context, isAct
 	var subjects []*domain.CurriculumSubject
 	for rows.Next() {
 		var subject domain.CurriculumSubject
-		var nameEN sql.NullString
 		var description sql.NullString
 
 		err := rows.Scan(
-			&subject.ID, &subject.Code, &subject.Name, &nameEN, &description,
+			&subject.ID, &subject.Code, &subject.Name, &description,
 			&subject.IsActive, &subject.CreatedAt, &subject.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
 
-		if nameEN.Valid {
-			subject.NameEN = &nameEN.String
-		}
 		if description.Valid {
 			subject.Description = &description.String
 		}
@@ -165,13 +153,30 @@ func (r *CurriculumRepository) ListCurriculumSubjects(ctx context.Context, isAct
 // UpdateCurriculumSubject updates a curriculum subject
 func (r *CurriculumRepository) UpdateCurriculumSubject(ctx context.Context, subject *domain.CurriculumSubject) error {
 	query := `
-		UPDATE curriculum_subjects 
-		SET name = $2, name_en = $3, description = $4, is_active = $5, updated_at = NOW()
+		UPDATE curriculum_subjects
+		SET name = $2, description = $3, is_active = $4, updated_at = NOW()
 		WHERE id = $1
 	`
 
 	result, err := r.db.ExecContext(ctx, query,
-		subject.ID, subject.Name, subject.NameEN, subject.Description, subject.IsActive)
+		subject.ID, subject.Name, subject.Description, subject.IsActive)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("curriculum subject not found")
+	}
+
+	return nil
+}
+
+// DeleteCurriculumSubject deletes a curriculum subject
+func (r *CurriculumRepository) DeleteCurriculumSubject(ctx context.Context, id string) error {
+	query := `DELETE FROM curriculum_subjects WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
@@ -189,12 +194,12 @@ func (r *CurriculumRepository) UpdateCurriculumSubject(ctx context.Context, subj
 // CreateCurriculumPhase creates a new curriculum phase
 func (r *CurriculumRepository) CreateCurriculumPhase(ctx context.Context, phase *domain.CurriculumPhase) error {
 	query := `
-		INSERT INTO curriculum_phases (id, code, name, name_en, description, grade_level_start, grade_level_end, is_active)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		INSERT INTO curriculum_phases (id, code, name, description, grade_level_start, grade_level_end, is_active)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
 
 	_, err := r.db.ExecContext(ctx, query,
-		phase.ID, phase.Code, phase.Name, phase.NameEN, phase.Description,
+		phase.ID, phase.Code, phase.Name, phase.Description,
 		phase.GradeLevelStart, phase.GradeLevelEnd, phase.IsActive)
 	return err
 }
@@ -202,16 +207,16 @@ func (r *CurriculumRepository) CreateCurriculumPhase(ctx context.Context, phase 
 // GetCurriculumPhaseByID retrieves a curriculum phase by ID
 func (r *CurriculumRepository) GetCurriculumPhaseByID(ctx context.Context, id string) (*domain.CurriculumPhase, error) {
 	query := `
-		SELECT id, code, name, name_en, description, grade_level_start, grade_level_end, is_active, created_at, updated_at
+		SELECT id, code, name, description, grade_level_start, grade_level_end, is_active, created_at, updated_at
 		FROM curriculum_phases WHERE id = $1
 	`
 
 	var phase domain.CurriculumPhase
-	var nameEN, description sql.NullString
+	var description sql.NullString
 	var gradeLevelStart, gradeLevelEnd sql.NullInt32
 
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
-		&phase.ID, &phase.Code, &phase.Name, &nameEN, &description,
+		&phase.ID, &phase.Code, &phase.Name, &description,
 		&gradeLevelStart, &gradeLevelEnd, &phase.IsActive, &phase.CreatedAt, &phase.UpdatedAt,
 	)
 
@@ -222,9 +227,6 @@ func (r *CurriculumRepository) GetCurriculumPhaseByID(ctx context.Context, id st
 		return nil, err
 	}
 
-	if nameEN.Valid {
-		phase.NameEN = &nameEN.String
-	}
 	if description.Valid {
 		phase.Description = &description.String
 	}
@@ -243,7 +245,7 @@ func (r *CurriculumRepository) GetCurriculumPhaseByID(ctx context.Context, id st
 // ListCurriculumPhases retrieves curriculum phases with optional filters
 func (r *CurriculumRepository) ListCurriculumPhases(ctx context.Context, isActive *bool, limit, offset int) ([]*domain.CurriculumPhase, error) {
 	query := `
-		SELECT id, code, name, name_en, description, grade_level_start, grade_level_end, is_active, created_at, updated_at
+		SELECT id, code, name, description, grade_level_start, grade_level_end, is_active, created_at, updated_at
 		FROM curriculum_phases
 		WHERE 1=1
 	`
@@ -279,20 +281,17 @@ func (r *CurriculumRepository) ListCurriculumPhases(ctx context.Context, isActiv
 	var phases []*domain.CurriculumPhase
 	for rows.Next() {
 		var phase domain.CurriculumPhase
-		var nameEN, description sql.NullString
+		var description sql.NullString
 		var gradeLevelStart, gradeLevelEnd sql.NullInt32
 
 		err := rows.Scan(
-			&phase.ID, &phase.Code, &phase.Name, &nameEN, &description,
+			&phase.ID, &phase.Code, &phase.Name, &description,
 			&gradeLevelStart, &gradeLevelEnd, &phase.IsActive, &phase.CreatedAt, &phase.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
 
-		if nameEN.Valid {
-			phase.NameEN = &nameEN.String
-		}
 		if description.Valid {
 			phase.Description = &description.String
 		}
@@ -316,29 +315,29 @@ func (r *CurriculumRepository) ListCurriculumPhases(ctx context.Context, isActiv
 // CreateCurriculumElement creates a new curriculum element
 func (r *CurriculumRepository) CreateCurriculumElement(ctx context.Context, element *domain.CurriculumElement) error {
 	query := `
-		INSERT INTO curriculum_elements (id, subject_id, phase_id, code, name, name_en, description, is_active)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+		INSERT INTO curriculum_elements (id, subject_id, phase_id, code, name, description, is_active)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
 
 	_, err := r.db.ExecContext(ctx, query,
 		element.ID, element.SubjectID, element.PhaseID, element.Code,
-		element.Name, element.NameEN, element.Description, element.IsActive)
+		element.Name, element.Description, element.IsActive)
 	return err
 }
 
 // GetCurriculumElementByID retrieves a curriculum element by ID
 func (r *CurriculumRepository) GetCurriculumElementByID(ctx context.Context, id string) (*domain.CurriculumElement, error) {
 	query := `
-		SELECT id, subject_id, phase_id, code, name, name_en, description, is_active, created_at, updated_at
+		SELECT id, subject_id, phase_id, code, name, description, is_active, created_at, updated_at
 		FROM curriculum_elements WHERE id = $1
 	`
 
 	var element domain.CurriculumElement
-	var nameEN, description sql.NullString
+	var description sql.NullString
 
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&element.ID, &element.SubjectID, &element.PhaseID, &element.Code,
-		&element.Name, &nameEN, &description, &element.IsActive, &element.CreatedAt, &element.UpdatedAt,
+		&element.Name, &description, &element.IsActive, &element.CreatedAt, &element.UpdatedAt,
 	)
 
 	if err == sql.ErrNoRows {
@@ -348,9 +347,6 @@ func (r *CurriculumRepository) GetCurriculumElementByID(ctx context.Context, id 
 		return nil, err
 	}
 
-	if nameEN.Valid {
-		element.NameEN = &nameEN.String
-	}
 	if description.Valid {
 		element.Description = &description.String
 	}
@@ -361,7 +357,7 @@ func (r *CurriculumRepository) GetCurriculumElementByID(ctx context.Context, id 
 // ListCurriculumElements retrieves curriculum elements with optional filters
 func (r *CurriculumRepository) ListCurriculumElements(ctx context.Context, subjectID, phaseID *string, isActive *bool, limit, offset int) ([]*domain.CurriculumElement, error) {
 	query := `
-		SELECT id, subject_id, phase_id, code, name, name_en, description, is_active, created_at, updated_at
+		SELECT id, subject_id, phase_id, code, name, description, is_active, created_at, updated_at
 		FROM curriculum_elements
 		WHERE 1=1
 	`
@@ -409,19 +405,16 @@ func (r *CurriculumRepository) ListCurriculumElements(ctx context.Context, subje
 	var elements []*domain.CurriculumElement
 	for rows.Next() {
 		var element domain.CurriculumElement
-		var nameEN, description sql.NullString
+		var description sql.NullString
 
 		err := rows.Scan(
 			&element.ID, &element.SubjectID, &element.PhaseID, &element.Code,
-			&element.Name, &nameEN, &description, &element.IsActive, &element.CreatedAt, &element.UpdatedAt,
+			&element.Name, &description, &element.IsActive, &element.CreatedAt, &element.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
 
-		if nameEN.Valid {
-			element.NameEN = &nameEN.String
-		}
 		if description.Valid {
 			element.Description = &description.String
 		}
@@ -437,29 +430,29 @@ func (r *CurriculumRepository) ListCurriculumElements(ctx context.Context, subje
 // CreateCurriculumSubelement creates a new curriculum subelement
 func (r *CurriculumRepository) CreateCurriculumSubelement(ctx context.Context, subelement *domain.CurriculumSubelement) error {
 	query := `
-		INSERT INTO curriculum_subelements (id, element_id, code, name, name_en, description, is_active)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		INSERT INTO curriculum_subelements (id, element_id, code, name, description, is_active)
+		VALUES ($1, $2, $3, $4, $5, $6)
 	`
 
 	_, err := r.db.ExecContext(ctx, query,
 		subelement.ID, subelement.ElementID, subelement.Code,
-		subelement.Name, subelement.NameEN, subelement.Description, subelement.IsActive)
+		subelement.Name, subelement.Description, subelement.IsActive)
 	return err
 }
 
 // GetCurriculumSubelementByID retrieves a curriculum subelement by ID
 func (r *CurriculumRepository) GetCurriculumSubelementByID(ctx context.Context, id string) (*domain.CurriculumSubelement, error) {
 	query := `
-		SELECT id, element_id, code, name, name_en, description, is_active, created_at, updated_at
+		SELECT id, element_id, code, name, description, is_active, created_at, updated_at
 		FROM curriculum_subelements WHERE id = $1
 	`
 
 	var subelement domain.CurriculumSubelement
-	var nameEN, description sql.NullString
+	var description sql.NullString
 
 	err := r.db.QueryRowContext(ctx, query, id).Scan(
 		&subelement.ID, &subelement.ElementID, &subelement.Code,
-		&subelement.Name, &nameEN, &description, &subelement.IsActive, &subelement.CreatedAt, &subelement.UpdatedAt,
+		&subelement.Name, &description, &subelement.IsActive, &subelement.CreatedAt, &subelement.UpdatedAt,
 	)
 
 	if err == sql.ErrNoRows {
@@ -469,9 +462,6 @@ func (r *CurriculumRepository) GetCurriculumSubelementByID(ctx context.Context, 
 		return nil, err
 	}
 
-	if nameEN.Valid {
-		subelement.NameEN = &nameEN.String
-	}
 	if description.Valid {
 		subelement.Description = &description.String
 	}
@@ -482,7 +472,7 @@ func (r *CurriculumRepository) GetCurriculumSubelementByID(ctx context.Context, 
 // ListCurriculumSubelements retrieves curriculum subelements with optional filters
 func (r *CurriculumRepository) ListCurriculumSubelements(ctx context.Context, elementID *string, isActive *bool, limit, offset int) ([]*domain.CurriculumSubelement, error) {
 	query := `
-		SELECT id, element_id, code, name, name_en, description, is_active, created_at, updated_at
+		SELECT id, element_id, code, name, description, is_active, created_at, updated_at
 		FROM curriculum_subelements
 		WHERE 1=1
 	`
@@ -524,19 +514,16 @@ func (r *CurriculumRepository) ListCurriculumSubelements(ctx context.Context, el
 	var subelements []*domain.CurriculumSubelement
 	for rows.Next() {
 		var subelement domain.CurriculumSubelement
-		var nameEN, description sql.NullString
+		var description sql.NullString
 
 		err := rows.Scan(
 			&subelement.ID, &subelement.ElementID, &subelement.Code,
-			&subelement.Name, &nameEN, &description, &subelement.IsActive, &subelement.CreatedAt, &subelement.UpdatedAt,
+			&subelement.Name, &description, &subelement.IsActive, &subelement.CreatedAt, &subelement.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
 
-		if nameEN.Valid {
-			subelement.NameEN = &nameEN.String
-		}
 		if description.Valid {
 			subelement.Description = &description.String
 		}
@@ -545,6 +532,45 @@ func (r *CurriculumRepository) ListCurriculumSubelements(ctx context.Context, el
 	}
 
 	return subelements, nil
+}
+
+// UpdateCurriculumSubelement updates a curriculum subelement
+func (r *CurriculumRepository) UpdateCurriculumSubelement(ctx context.Context, subelement *domain.CurriculumSubelement) error {
+	query := `
+		UPDATE curriculum_subelements
+		SET name = $2, description = $3, is_active = $4, updated_at = NOW()
+		WHERE id = $1
+	`
+
+	result, err := r.db.ExecContext(ctx, query,
+		subelement.ID, subelement.Name, subelement.Description, subelement.IsActive)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("curriculum subelement not found")
+	}
+
+	return nil
+}
+
+// DeleteCurriculumSubelement deletes a curriculum subelement
+func (r *CurriculumRepository) DeleteCurriculumSubelement(ctx context.Context, id string) error {
+	query := `DELETE FROM curriculum_subelements WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("curriculum subelement not found")
+	}
+
+	return nil
 }
 
 // ==================== CP Operations ====================
@@ -749,16 +775,50 @@ func (r *CurriculumRepository) UpdateCP(ctx context.Context, cp *domain.CP) erro
 	return nil
 }
 
+// DeleteCP deletes a CP
+func (r *CurriculumRepository) DeleteCP(ctx context.Context, id string) error {
+	query := `DELETE FROM cp WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("cp not found")
+	}
+
+	return nil
+}
+
 // UpdateCurriculumPhase updates a curriculum phase
 func (r *CurriculumRepository) UpdateCurriculumPhase(ctx context.Context, phase *domain.CurriculumPhase) error {
 	query := `
-		UPDATE curriculum_phases 
-		SET name = $2, name_en = $3, description = $4, grade_level_start = $5, grade_level_end = $6, is_active = $7, updated_at = NOW()
+		UPDATE curriculum_phases
+		SET name = $2, description = $3, grade_level_start = $4, grade_level_end = $5, is_active = $6, updated_at = NOW()
 		WHERE id = $1
 	`
 
 	result, err := r.db.ExecContext(ctx, query,
-		phase.ID, phase.Name, phase.NameEN, phase.Description, phase.GradeLevelStart, phase.GradeLevelEnd, phase.IsActive)
+		phase.ID, phase.Name, phase.Description, phase.GradeLevelStart, phase.GradeLevelEnd, phase.IsActive)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("curriculum phase not found")
+	}
+
+	return nil
+}
+
+// DeleteCurriculumPhase deletes a curriculum phase
+func (r *CurriculumRepository) DeleteCurriculumPhase(ctx context.Context, id string) error {
+	query := `DELETE FROM curriculum_phases WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
@@ -774,13 +834,30 @@ func (r *CurriculumRepository) UpdateCurriculumPhase(ctx context.Context, phase 
 // UpdateCurriculumElement updates a curriculum element
 func (r *CurriculumRepository) UpdateCurriculumElement(ctx context.Context, element *domain.CurriculumElement) error {
 	query := `
-		UPDATE curriculum_elements 
-		SET name = $2, name_en = $3, description = $4, is_active = $5, updated_at = NOW()
+		UPDATE curriculum_elements
+		SET name = $2, description = $3, is_active = $4, updated_at = NOW()
 		WHERE id = $1
 	`
 
 	result, err := r.db.ExecContext(ctx, query,
-		element.ID, element.Name, element.NameEN, element.Description, element.IsActive)
+		element.ID, element.Name, element.Description, element.IsActive)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("curriculum element not found")
+	}
+
+	return nil
+}
+
+// DeleteCurriculumElement deletes a curriculum element
+func (r *CurriculumRepository) DeleteCurriculumElement(ctx context.Context, id string) error {
+	query := `DELETE FROM curriculum_elements WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}

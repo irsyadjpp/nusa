@@ -4,7 +4,7 @@
  */
 
 import { Box, Typography, Paper, Divider, Chip } from '@mui/material';
-import { ModulAjar } from '@/api/modul-ajar';
+import { ModulAjar } from '@/shared/types/domain';
 
 interface ModulAjarPreviewPanelProps {
   modulAjar: ModulAjar;
@@ -17,7 +17,7 @@ export const ModulAjarPreviewPanel = ({ modulAjar }: ModulAjarPreviewPanelProps)
         {modulAjar.title}
       </Typography>
       <Divider sx={{ my: 2 }} />
-      <Stack spacing={2}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box>
           <Typography variant="subtitle2" color="text.secondary">
             Status
@@ -25,7 +25,7 @@ export const ModulAjarPreviewPanel = ({ modulAjar }: ModulAjarPreviewPanelProps)
           <Chip
             label={modulAjar.status}
             size="small"
-            color={modulAjar.status === 'approved' ? 'success' : modulAjar.status === 'draft' ? 'default' : 'warning'}
+            color={modulAjar.status === 'APPROVED' ? 'success' : modulAjar.status === 'DRAFT' ? 'default' : 'warning'}
           />
         </Box>
 
@@ -68,9 +68,9 @@ export const ModulAjarPreviewPanel = ({ modulAjar }: ModulAjarPreviewPanelProps)
             Teaching Methods
           </Typography>
           <Typography variant="body1">
-            {Array.isArray(modulAjar.teaching_methods)
-              ? modulAjar.teaching_methods.join(', ')
-              : JSON.stringify(modulAjar.teaching_methods, null, 2)}
+            {Array.isArray(modulAjar.teaching_methods || modulAjar.learning_methods)
+              ? (modulAjar.teaching_methods || modulAjar.learning_methods).join(', ')
+              : JSON.stringify(modulAjar.teaching_methods || modulAjar.learning_methods, null, 2)}
           </Typography>
         </Box>
 
@@ -95,7 +95,7 @@ export const ModulAjarPreviewPanel = ({ modulAjar }: ModulAjarPreviewPanelProps)
               : JSON.stringify(modulAjar.learning_resources, null, 2)}
           </Typography>
         </Box>
-      </Stack>
+      </Box>
     </Paper>
   );
 };

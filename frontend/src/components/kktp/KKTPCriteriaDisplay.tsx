@@ -1,6 +1,6 @@
 /**
- * KKTPCriteria Display Component
- * Read-only display of KKTP (Kriteria Ketuntasan Tujuan Pembelajaran)
+ * KKTP Criteria Display Component
+ * Display-only component for Kriteria Ketuntasan Tujuan Pembelajaran (KKTP)
  */
 
 import React from 'react';
@@ -9,296 +9,129 @@ import {
   Typography,
   Card,
   CardContent,
-  Grid,
-  Chip,
-  LinearProgress,
   Divider,
+  Chip,
 } from '@mui/material';
-import {
-  CheckCircle,
-  TrendingUp,
-  Psychology,
-  EmojiObjects,
-  Star,
-} from '@mui/icons-material';
 
-interface MasteryThresholds {
-  excellent_threshold: number;
-  proficient_threshold: number;
-  developing_threshold: number;
-  beginning_threshold: number;
+interface MasteryThreshold {
+  level: string;
+  description: string;
+  min_score: number;
 }
 
-interface PerformanceIndicators {
-  cognitive: string[];
-  psychomotor: string[];
-  affective: string[];
+interface PerformanceIndicator {
+  indicator: string;
+  description: string;
 }
 
-interface MinimumRequirements {
-  core_competencies: string[];
-  essential_skills: string[];
-  required_evidence: string[];
+interface MinimumRequirement {
+  requirement: string;
+  description: string;
 }
 
-interface KKTPCriteria {
-  mastery_thresholds: MasteryThresholds;
-  performance_indicators: PerformanceIndicators;
-  minimum_requirements: MinimumRequirements;
+interface KKTPCriteriaData {
+  mastery_thresholds?: MasteryThreshold[];
+  performance_indicators?: PerformanceIndicator[];
+  minimum_requirements?: MinimumRequirement[];
 }
 
 interface KKTPCriteriaDisplayProps {
-  data: KKTPCriteria;
-  compact?: boolean;
+  data?: KKTPCriteriaData;
 }
 
-const KKTPCriteriaDisplay: React.FC<KKTPCriteriaDisplayProps> = ({
-  data,
-  compact = false,
-}) => {
-  const getMasteryColor = (level: string): string => {
-    switch (level) {
-      case 'excellent':
-        return 'success';
-      case 'proficient':
-        return 'info';
-      case 'developing':
-        return 'warning';
-      case 'beginning':
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
-
-  const getMasteryLabel = (level: string): string => {
-    switch (level) {
-      case 'excellent':
-        return 'Sangat Baik';
-      case 'proficient':
-        return 'Baik';
-      case 'developing':
-        return 'Sedang Berkembang';
-      case 'beginning':
-        return 'Perlu Bimbingan';
-      default:
-        return level;
-    }
-  };
+const KKTPCriteriaDisplay: React.FC<KKTPCriteriaDisplayProps> = ({ data }) => {
+  if (!data) {
+    return (
+      <Typography variant="body2" color="text.secondary">
+        Tidak ada data KKTP
+      </Typography>
+    );
+  }
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>
-        Kriteria Ketuntasan Tujuan Pembelajaran (KKTP)
-      </Typography>
-
       {/* Mastery Thresholds */}
-      <Card sx={{ mb: 2 }}>
-        <CardContent>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <TrendingUp color="primary" sx={{ mr: 1 }} />
-            <Typography variant="subtitle1" fontWeight="bold">
-              Ambang Penguasaan
-            </Typography>
+      {data.mastery_thresholds && data.mastery_thresholds.length > 0 && (
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
+            Ambang Batas Penguasaan
+          </Typography>
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 2 }}>
+            {data.mastery_thresholds.map((threshold, index) => (
+              <Box sx={{ gridColumn: { xs: 'span 12', sm: 'span 6' } }} key={index}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                      <Chip
+                        label={threshold.level}
+                        size="small"
+                        color="primary"
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        Min: {threshold.min_score}
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">
+                      {threshold.description}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Box>
+            ))}
           </Box>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Box sx={{ mb: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Sangat Baik
-                </Typography>
-                <LinearProgress
-                  variant="determinate"
-                  value={data.mastery_thresholds.excellent_threshold}
-                  color="success"
-                  sx={{ height: 8, borderRadius: 4 }}
-                />
-                <Typography variant="caption" color="text.secondary">
-                  {data.mastery_thresholds.excellent_threshold}%
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Box sx={{ mb: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Baik
-                </Typography>
-                <LinearProgress
-                  variant="determinate"
-                  value={data.mastery_thresholds.proficient_threshold}
-                  color="info"
-                  sx={{ height: 8, borderRadius: 4 }}
-                />
-                <Typography variant="caption" color="text.secondary">
-                  {data.mastery_thresholds.proficient_threshold}%
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Box sx={{ mb: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Sedang Berkembang
-                </Typography>
-                <LinearProgress
-                  variant="determinate"
-                  value={data.mastery_thresholds.developing_threshold}
-                  color="warning"
-                  sx={{ height: 8, borderRadius: 4 }}
-                />
-                <Typography variant="caption" color="text.secondary">
-                  {data.mastery_thresholds.developing_threshold}%
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Box sx={{ mb: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  Perlu Bimbingan
-                </Typography>
-                <LinearProgress
-                  variant="determinate"
-                  value={data.mastery_thresholds.beginning_threshold}
-                  color="error"
-                  sx={{ height: 8, borderRadius: 4 }}
-                />
-                <Typography variant="caption" color="text.secondary">
-                  {data.mastery_thresholds.beginning_threshold}%
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+        </Box>
+      )}
+
+      <Divider sx={{ my: 2 }} />
 
       {/* Performance Indicators */}
-      <Card sx={{ mb: 2 }}>
-        <CardContent>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Psychology color="primary" sx={{ mr: 1 }} />
-            <Typography variant="subtitle1" fontWeight="bold">
-              Indikator Pencapaian
-            </Typography>
-          </Box>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Kognitif
+      {data.performance_indicators && data.performance_indicators.length > 0 && (
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
+            Indikator Kinerja
+          </Typography>
+          {data.performance_indicators.map((indicator, index) => (
+            <Box key={index} sx={{ mb: 2 }}>
+              <Typography variant="body2" fontWeight="medium">
+                {indicator.indicator}
               </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {data.performance_indicators.cognitive.map((indicator, index) => (
-                  <Chip
-                    key={index}
-                    label={indicator}
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                    icon={<CheckCircle fontSize="small" />}
-                  />
-                ))}
-              </Box>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Psikomotorik
+              <Typography variant="body2" color="text.secondary">
+                {indicator.description}
               </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {data.performance_indicators.psychomotor.map((indicator, index) => (
-                  <Chip
-                    key={index}
-                    label={indicator}
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                    icon={<CheckCircle fontSize="small" />}
-                  />
-                ))}
-              </Box>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Afektif
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {data.performance_indicators.affective.map((indicator, index) => (
-                  <Chip
-                    key={index}
-                    label={indicator}
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                    icon={<CheckCircle fontSize="small" />}
-                  />
-                ))}
-              </Box>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+            </Box>
+          ))}
+        </Box>
+      )}
+
+      <Divider sx={{ my: 2 }} />
 
       {/* Minimum Requirements */}
-      <Card>
-        <CardContent>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Star color="primary" sx={{ mr: 1 }} />
-            <Typography variant="subtitle1" fontWeight="bold">
-              Persyaratan Minimum
-            </Typography>
-          </Box>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Kompetensi Inti
+      {data.minimum_requirements && data.minimum_requirements.length > 0 && (
+        <Box>
+          <Typography variant="subtitle1" fontWeight="medium" gutterBottom>
+            Persyaratan Minimum
+          </Typography>
+          {data.minimum_requirements.map((requirement, index) => (
+            <Box key={index} sx={{ mb: 2 }}>
+              <Typography variant="body2" fontWeight="medium">
+                {requirement.requirement}
               </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {data.minimum_requirements.core_competencies.map((req, index) => (
-                  <Chip
-                    key={index}
-                    label={req}
-                    size="small"
-                    color="secondary"
-                    variant="outlined"
-                    icon={<EmojiObjects fontSize="small" />}
-                  />
-                ))}
-              </Box>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Keterampilan Esensial
+              <Typography variant="body2" color="text.secondary">
+                {requirement.description}
               </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {data.minimum_requirements.essential_skills.map((req, index) => (
-                  <Chip
-                    key={index}
-                    label={req}
-                    size="small"
-                    color="secondary"
-                    variant="outlined"
-                    icon={<EmojiObjects fontSize="small" />}
-                  />
-                ))}
-              </Box>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Bukti yang Diperlukan
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {data.minimum_requirements.required_evidence.map((req, index) => (
-                  <Chip
-                    key={index}
-                    label={req}
-                    size="small"
-                    color="secondary"
-                    variant="outlined"
-                    icon={<CheckCircle fontSize="small" />}
-                  />
-                ))}
-              </Box>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
+            </Box>
+          ))}
+        </Box>
+      )}
+
+      {/* Empty State */}
+      {!data.mastery_thresholds?.length && 
+       !data.performance_indicators?.length && 
+       !data.minimum_requirements?.length && (
+        <Typography variant="body2" color="text.secondary">
+          Tidak ada data KKTP tersedia
+        </Typography>
+      )}
     </Box>
   );
 };

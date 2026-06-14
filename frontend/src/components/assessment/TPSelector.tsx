@@ -50,6 +50,13 @@ const TPSelector: React.FC<TPSelectorProps> = ({
   const [previewOpen, setPreviewOpen] = useState(false);
 
   useEffect(() => {
+    if (value && tps.length > 0) {
+      const found = tps.find(tp => tp.id === value);
+      if (found) setSelectedTP(found);
+    }
+  }, [value, tps]);
+
+  useEffect(() => {
     loadTPs();
   }, [subjectId, phaseId]);
 
@@ -90,6 +97,17 @@ const TPSelector: React.FC<TPSelectorProps> = ({
 
   return (
     <Box>
+      <TextField
+        fullWidth
+        placeholder="Cari TP..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        disabled={disabled}
+        InputProps={{
+          startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+        }}
+        sx={{ mb: 2 }}
+      />
       <Autocomplete
         value={selectedTP}
         onChange={handleTPChange}
@@ -103,10 +121,6 @@ const TPSelector: React.FC<TPSelectorProps> = ({
             error={error}
             helperText={helperText}
             disabled={disabled || loading}
-            InputProps={{
-              ...params.InputProps,
-              startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-            }}
           />
         )}
         renderOption={(props, option) => (

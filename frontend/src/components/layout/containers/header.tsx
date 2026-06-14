@@ -3,7 +3,6 @@ import Notifications from "../notifications/notifications";
 import Search from "../search/search";
 import Shortcuts from "../shortcuts/shortcuts";
 import User from "../user/user";
-import VersionSelect from "../version-select/version-select";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -57,16 +56,9 @@ export default function Header() {
 
         <Box className="flex h-full flex-1 flex-row items-center gap-4 md:gap-6">
           {/* Logo */}
-          <Link to="/dashboards/default">
+          <Link to="/dashboard">
             <Logo classNameFull="ms-2 hidden md:block" classNameMobile="ms-2 md:hidden" />
           </Link>
-
-          {/* Version select */}
-          <Fade in={!rightButtonsVisibleMobile || !isMobile}>
-            <Box>
-              <VersionSelect className={cn("sm:flex!", rightButtonsVisibleMobile ? "hidden" : "flex")} />
-            </Box>
-          </Fade>
         </Box>
 
         {/* Right buttons */}

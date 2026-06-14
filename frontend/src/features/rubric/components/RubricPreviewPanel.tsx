@@ -4,7 +4,7 @@
  */
 
 import { Box, Typography, Paper, Divider, Chip } from '@mui/material';
-import { Rubric } from '@/api/rubric';
+import { Rubric } from '@/shared/types/domain';
 
 interface RubricPreviewPanelProps {
   rubric: Rubric;
@@ -17,7 +17,7 @@ export const RubricPreviewPanel = ({ rubric }: RubricPreviewPanelProps) => {
         {rubric.title}
       </Typography>
       <Divider sx={{ my: 2 }} />
-      <Stack spacing={2}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box>
           <Typography variant="subtitle2" color="text.secondary">
             Status
@@ -25,7 +25,7 @@ export const RubricPreviewPanel = ({ rubric }: RubricPreviewPanelProps) => {
           <Chip
             label={rubric.status}
             size="small"
-            color={rubric.status === 'approved' ? 'success' : rubric.status === 'draft' ? 'default' : 'warning'}
+            color={rubric.status === 'APPROVED' ? 'success' : rubric.status === 'DRAFT' ? 'default' : 'warning'}
           />
         </Box>
 
@@ -77,7 +77,7 @@ export const RubricPreviewPanel = ({ rubric }: RubricPreviewPanelProps) => {
             {new Date(rubric.updated_at).toLocaleString()}
           </Typography>
         </Box>
-      </Stack>
+      </Box>
     </Paper>
   );
 };

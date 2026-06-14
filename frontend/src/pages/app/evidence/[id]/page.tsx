@@ -8,7 +8,8 @@ import {
   Box,
   Typography,
   Button,
-  Grid,
+  Card,
+  CardContent,
   CircularProgress,
   Alert,
   Divider,
@@ -21,14 +22,15 @@ import {
   ArrowBack,
   Edit,
   Delete,
+  ArrowForward,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getEvidenceById, deleteEvidence } from '@/api/evidence';
+import { Evidence } from '@/shared/types/domain';
 import { getEvaluationsByEvidence } from '@/api/evaluation';
-import { Evidence } from '@/api/evidence';
-import EvidenceReview from '@/components/evidence/EvidenceReview';
-import EvaluationForm from '@/components/evidence/EvaluationForm';
-import RevisionHistory from '@/components/evidence/RevisionHistory';
+// import EvidenceReview from '@/components/evidence/EvidenceReview'; // TODO: Implement
+// import EvaluationForm from '@/components/evidence/EvaluationForm'; // TODO: Implement
+// import RevisionHistory from '@/components/evidence/RevisionHistory'; // TODO: Implement
 
 const EvidenceDetailPage: React.FC = () => {
   const navigate = useNavigate();
@@ -78,23 +80,8 @@ const EvidenceDetailPage: React.FC = () => {
     }
   };
 
-  const handleEvaluationSubmit = async (values: any) => {
-    if (!id) return;
-    try {
-      // Create evaluation
-      await fetch(`/api/evaluations`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          evidence_id: id,
-          ...values,
-        }),
-      });
-      loadData(id);
-      setShowEvaluationForm(false);
-    } catch (err: any) {
-      setError(err.message || 'Gagal menyimpan evaluasi');
-    }
+  const handleGoToEvaluation = () => {
+    navigate('/evaluation', { state: { evidenceId: id } });
   };
 
   if (loading) {
@@ -128,12 +115,15 @@ const EvidenceDetailPage: React.FC = () => {
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
           {evidence.status === 'SUBMITTED' && (
-            <Button
-              variant="contained"
-              onClick={() => setShowEvaluationForm(true)}
-            >
-              Evaluasi
-            </Button>
+            <>
+              <Button
+                variant="contained"
+                startIcon={<ArrowForward />}
+                onClick={handleGoToEvaluation}
+              >
+                Evaluate
+              </Button>
+            </>
           )}
           <Button
             variant="outlined"
@@ -153,32 +143,60 @@ const EvidenceDetailPage: React.FC = () => {
         </Box>
       </Box>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-          <EvidenceReview
-            evidence={evidence}
-            onView={() => {}}
-            onEdit={(id) => navigate(`/evidence/${id}/edit`)}
-            onDelete={(id) => setDeleteDialogOpen(true)}
-          />
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+        <Box sx={{ width: { xs: '100%', md: '66.67%' } }}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Evidence Review
+              </Typography>
+              <Alert severity="info">
+                Evidence Review component - TODO: Implement
+              </Alert>
+              <Typography variant="body2" sx={{ mt: 2 }}>
+                Evidence ID: {evidence.id}
+              </Typography>
+            </CardContent>
+          </Card>
 
           {showEvaluationForm && (
             <Box sx={{ mt: 3 }}>
-              <EvaluationForm
-                onSubmit={handleEvaluationSubmit}
-                onCancel={() => setShowEvaluationForm(false)}
-              />
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    Evaluation Form
+                  </Typography>
+                  <Alert severity="info">
+                    Evaluation Form component - TODO: Implement
+                  </Alert>
+                  <Button onClick={() => setShowEvaluationForm(false)}>
+                    Cancel
+                  </Button>
+                </CardContent>
+              </Card>
             </Box>
           )}
 
           {evaluations.length > 0 && (
             <Box sx={{ mt: 3 }}>
-              <RevisionHistory evaluations={evaluations} />
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    Revision History
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {evaluations.length} evaluation(s)
+                  </Typography>
+                  <Typography variant="caption" sx={{ mt: 1 }}>
+                    Revision History component - TODO: Implement
+                  </Typography>
+                </CardContent>
+              </Card>
             </Box>
           )}
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} md={4}>
+        <Box sx={{ width: { xs: '100%', md: '33.33%' } }}>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <Box>
               <Typography variant="h6" gutterBottom>
@@ -250,8 +268,8 @@ const EvidenceDetailPage: React.FC = () => {
               </Box>
             )}
           </Box>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
         <DialogTitle>Hapus Bukti</DialogTitle>

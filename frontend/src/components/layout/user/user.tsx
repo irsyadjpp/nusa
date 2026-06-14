@@ -3,7 +3,7 @@ import UserModeSwitch from "./user-mode-switch";
 import UserThemeSwitch from "./user-theme-switch";
 import { SyntheticEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth";
 
 import {
@@ -155,10 +155,10 @@ export default function User() {
                                   {t("user-accounts")}
                                 </Typography>
                                 <AvatarGroup max={3} className="tiny transition-opacity group-aria-expanded:opacity-0">
-                                  <Avatar className="tiny" alt="Laura Ellis" src="/images/avatars/avatar-3.jpg" />
-                                  <Avatar className="tiny" alt="Travis Howard" src="/images/avatars/avatar-2.jpg" />
-                                  <Avatar className="tiny" alt="Cindy Baker" src="/images/avatars/avatar-7.jpg" />
-                                  <Avatar className="tiny" alt="Agnes Walker" src="/images/avatars/avatar-4.jpg" />
+                                  <Avatar className="tiny" alt="Budi Santoso" src="/images/avatars/avatar-3.jpg" />
+                                  <Avatar className="tiny" alt="Siti Rahayu" src="/images/avatars/avatar-2.jpg" />
+                                  <Avatar className="tiny" alt="Ahmad Wijaya" src="/images/avatars/avatar-7.jpg" />
+                                  <Avatar className="tiny" alt="Dewi Lestari" src="/images/avatars/avatar-4.jpg" />
                                 </AvatarGroup>
                               </Box>
                             </Button>
@@ -167,53 +167,53 @@ export default function User() {
                             <MenuList className="mb-4 p-0">
                               <MenuItem onClick={handleClose}>
                                 <ListItemIcon className="me-2">
-                                  <Avatar className="tiny" alt="Laura Ellis" src="/images/avatars/avatar-3.jpg" />
+                                  <Avatar className="tiny" alt="Budi Santoso" src="/images/avatars/avatar-3.jpg" />
                                 </ListItemIcon>
                                 <Box>
                                   <Typography variant="body1" component="div">
-                                    Laura Ellis
+                                    Budi Santoso
                                   </Typography>
                                   <Typography variant="body2" component="div" className="text-text-secondary -mt-1">
-                                    laura@gogo.dev
+                                    budi@nusa.dev
                                   </Typography>
                                 </Box>
                               </MenuItem>
                               <MenuItem onClick={handleClose}>
                                 <ListItemIcon className="me-2">
-                                  <Avatar className="tiny" alt="Travis Howard" src="/images/avatars/avatar-2.jpg" />
+                                  <Avatar className="tiny" alt="Siti Rahayu" src="/images/avatars/avatar-2.jpg" />
                                 </ListItemIcon>
                                 <Box>
                                   <Typography variant="body1" component="div">
-                                    Travis Howard
+                                    Siti Rahayu
                                   </Typography>
                                   <Typography variant="body2" component="div" className="text-text-secondary -mt-1">
-                                    travis@gogo.dev
+                                    siti@nusa.dev
                                   </Typography>
                                 </Box>
                               </MenuItem>
                               <MenuItem onClick={handleClose}>
                                 <ListItemIcon className="me-2">
-                                  <Avatar className="tiny" alt="Cindy Baker" src="/images/avatars/avatar-7.jpg" />
+                                  <Avatar className="tiny" alt="Ahmad Wijaya" src="/images/avatars/avatar-7.jpg" />
                                 </ListItemIcon>
                                 <Box>
                                   <Typography variant="body1" component="div">
-                                    Cindy Baker
+                                    Ahmad Wijaya
                                   </Typography>
                                   <Typography variant="body2" component="div" className="text-text-secondary -mt-1">
-                                    cindy@gogo.dev
+                                    ahmad@nusa.dev
                                   </Typography>
                                 </Box>
                               </MenuItem>
                               <MenuItem onClick={handleClose}>
                                 <ListItemIcon className="me-2">
-                                  <Avatar className="tiny" alt="Agnes Walker" src="/images/avatars/avatar-4.jpg" />
+                                  <Avatar className="tiny" alt="Dewi Lestari" src="/images/avatars/avatar-4.jpg" />
                                 </ListItemIcon>
                                 <Box>
                                   <Typography variant="body1" component="div">
-                                    Agnes Walker
+                                    Dewi Lestari
                                   </Typography>
                                   <Typography variant="body2" component="div" className="text-text-secondary -mt-1">
-                                    agnes@gogo.dev
+                                    dewi@nusa.dev
                                   </Typography>
                                 </Box>
                               </MenuItem>

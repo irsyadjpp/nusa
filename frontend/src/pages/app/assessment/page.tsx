@@ -4,7 +4,7 @@ import { AssessmentDesignerHeader } from '@/features/assessment';
 import { AssessmentList, AssessmentFilters, AssessmentForm, AssessmentPreviewPanel, AssessmentApprovalPanel } from '@/features/assessment';
 import { useAssessments } from '@/services/queries/AssessmentQueryService';
 import { useCreateAssessment, useUpdateAssessment, useDeleteAssessment, useApproveAssessment, useRejectAssessment } from '@/services/commands/AssessmentCommandService';
-import { Assessment } from '@/api/assessment';
+import { Assessment, AssessmentType } from '@/shared/types/domain';
 import { enqueueSnackbar } from 'notistack';
 
 const AssessmentPage: React.FC = () => {
@@ -13,7 +13,7 @@ const AssessmentPage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [showApproval, setShowApproval] = useState(false);
-  const [filters, setFilters] = useState<{ tp_id?: string; assessment_type?: string; status?: string }>({});
+  const [filters, setFilters] = useState<{ tp_id?: string; assessment_type?: AssessmentType; status?: string }>({});
 
   // Query Assessments
   const { data: assessments = [], isLoading, refetch } = useAssessments(filters);
@@ -134,13 +134,13 @@ const AssessmentPage: React.FC = () => {
 
   const handleApprove = () => {
     if (selectedAssessment) {
-      approveAssessmentMutation.mutate(selectedAssessment.id);
+      approveAssessmentMutation.mutate({ id: selectedAssessment.id, userId: 'current-user' });
     }
   };
 
   const handleReject = () => {
     if (selectedAssessment) {
-      rejectAssessmentMutation.mutate(selectedAssessment.id);
+      rejectAssessmentMutation.mutate({ id: selectedAssessment.id, userId: 'current-user' });
     }
   };
 

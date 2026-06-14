@@ -3,7 +3,7 @@
  * Panel for uploading new evidence
  */
 
-import { Box, Typography, Button, Stack, TextField } from '@mui/material';
+import { Box, Typography, Button, TextField } from '@mui/material';
 import { CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 
 interface EvidenceUploadPanelProps {
@@ -25,7 +25,7 @@ export const EvidenceUploadPanel = ({ onUpload, onCancel, loading = false }: Evi
       <Typography variant="h6" gutterBottom>
         Upload Evidence
       </Typography>
-      <Stack spacing={3}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <Box
           sx={{
             border: '2px dashed',
@@ -72,7 +72,7 @@ export const EvidenceUploadPanel = ({ onUpload, onCancel, loading = false }: Evi
           size="small"
         />
 
-        <Stack direction="row" spacing={2} justifyContent="flex-end">
+        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, justifyContent: 'flex-end' }}>
           {onCancel && (
             <Button variant="outlined" onClick={onCancel} disabled={loading}>
               Cancel
@@ -81,8 +81,8 @@ export const EvidenceUploadPanel = ({ onUpload, onCancel, loading = false }: Evi
           <Button variant="contained" disabled={loading}>
             {loading ? 'Uploading...' : 'Upload'}
           </Button>
-        </Stack>
-      </Stack>
+        </Box>
+      </Box>
     </Box>
   );
 };

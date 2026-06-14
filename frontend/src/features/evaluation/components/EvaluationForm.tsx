@@ -53,7 +53,7 @@ export const EvaluationForm = ({ initialValues, onSubmit, onCancel, isEdit = fal
                 value={values.evidence_id}
                 onChange={handleChange}
                 error={touched.evidence_id && Boolean(errors.evidence_id)}
-                helperText={touched.evidence_id && errors.evidence_id}
+                helperText={touched.evidence_id && typeof errors.evidence_id === 'string' ? errors.evidence_id : undefined}
               />
 
               <TextField
@@ -63,7 +63,7 @@ export const EvaluationForm = ({ initialValues, onSubmit, onCancel, isEdit = fal
                 value={values.evaluator_id}
                 onChange={handleChange}
                 error={touched.evaluator_id && Boolean(errors.evaluator_id)}
-                helperText={touched.evaluator_id && errors.evaluator_id}
+                helperText={touched.evaluator_id && typeof errors.evaluator_id === 'string' ? errors.evaluator_id : undefined}
               />
 
               <TextField
@@ -74,7 +74,7 @@ export const EvaluationForm = ({ initialValues, onSubmit, onCancel, isEdit = fal
                 value={values.score}
                 onChange={handleChange}
                 error={touched.score && Boolean(errors.score)}
-                helperText={touched.score && errors.score}
+                helperText={touched.score && typeof errors.score === 'string' ? errors.score : undefined}
                 inputProps={{ min: 0, max: 100 }}
               />
 
@@ -87,7 +87,7 @@ export const EvaluationForm = ({ initialValues, onSubmit, onCancel, isEdit = fal
                 value={values.feedback}
                 onChange={handleChange}
                 error={touched.feedback && Boolean(errors.feedback)}
-                helperText={touched.feedback && errors.feedback}
+                helperText={touched.feedback && typeof errors.feedback === 'string' ? errors.feedback : undefined}
               />
 
               <TextField

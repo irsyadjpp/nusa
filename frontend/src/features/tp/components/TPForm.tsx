@@ -31,11 +31,28 @@ export const TPForm = ({ initialValues, onSubmit, onCancel, isEdit = false }: TP
     element_id: '',
     subelement_id: '',
     title: '',
-    learning_objectives: '',
-    time_allocation: '',
-    prerequisites: '',
+    learning_objectives: {
+      main_objective: '',
+      supporting_objectives: [],
+    },
+    time_allocation: {
+      total_hours: 2,
+      per_week_hours: 2,
+      hours_per_week: 2,
+      breakdown: {},
+    },
+    prerequisites: {
+      required_tps: [],
+      required_skills: [],
+      notes: '',
+    },
     estimated_weeks: 1,
-    success_criteria: '',
+    success_criteria: {
+      mastery_thresholds: [],
+      performance_indicators: [],
+      minimum_requirements: [],
+      minimum_mastery_level: 75,
+    },
   };
 
   return (
@@ -73,7 +90,7 @@ export const TPForm = ({ initialValues, onSubmit, onCancel, isEdit = false }: TP
                 value={values.learning_objectives}
                 onChange={handleChange}
                 error={touched.learning_objectives && Boolean(errors.learning_objectives)}
-                helperText={touched.learning_objectives && errors.learning_objectives}
+                helperText={touched.learning_objectives && typeof errors.learning_objectives === 'string' ? errors.learning_objectives : undefined}
               />
 
               <TextField

@@ -4,7 +4,7 @@
  */
 
 import { Box, Typography, Paper, Divider, Chip } from '@mui/material';
-import { ATP } from '@/api/atp';
+import { ATP } from '@/shared/types/domain';
 
 interface ATPDetailPanelProps {
   atp: ATP;
@@ -17,7 +17,7 @@ export const ATPDetailPanel = ({ atp }: ATPDetailPanelProps) => {
         ATP Details
       </Typography>
       <Divider sx={{ my: 2 }} />
-      <Stack spacing={2}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box>
           <Typography variant="subtitle2" color="text.secondary">
             Status
@@ -25,7 +25,7 @@ export const ATPDetailPanel = ({ atp }: ATPDetailPanelProps) => {
           <Chip
             label={atp.status}
             size="small"
-            color={atp.status === 'approved' ? 'success' : atp.status === 'draft' ? 'default' : 'warning'}
+            color={atp.status === 'APPROVED' ? 'success' : atp.status === 'DRAFT' ? 'default' : 'warning'}
           />
         </Box>
 
@@ -83,7 +83,7 @@ export const ATPDetailPanel = ({ atp }: ATPDetailPanelProps) => {
             {new Date(atp.updated_at).toLocaleString()}
           </Typography>
         </Box>
-      </Stack>
+      </Box>
     </Paper>
   );
 };

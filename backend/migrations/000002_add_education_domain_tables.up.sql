@@ -463,7 +463,7 @@ CREATE TABLE narrative_reports (
   approved_at TIMESTAMP WITH TIME ZONE,
   approved_by UUID REFERENCES users(id),
   CONSTRAINT chk_narrative_reports_status CHECK (status IN ('DRAFT', 'APPROVED', 'REJECTED')),
-  CONSTRAINT chk_narrative_reports_language CHECK (language IN ('INDONESIAN', 'ENGLISH')),
+  CONSTRAINT chk_narrative_reports_language CHECK (language = 'INDONESIAN'),
   CONSTRAINT chk_narrative_reports_ai_confidence_score CHECK (
     ai_confidence_score IS NULL
     OR (

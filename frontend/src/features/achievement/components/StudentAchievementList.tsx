@@ -43,21 +43,23 @@ export const StudentAchievementList = ({ students, selectedId, onSelect, loading
         <ListItem
           key={student.id}
           disablePadding
-          selected={selectedId === student.id}
-          secondaryAction={
-            <Chip
-              label={`${student.averageScore}%`}
-              size="small"
-              color={student.averageScore >= 70 ? 'success' : student.averageScore >= 50 ? 'warning' : 'error'}
-            />
-          }
+          sx={{
+            backgroundColor: selectedId === student.id ? 'action.selected' : 'transparent',
+          }}
         >
-          <ListItemButton onClick={() => onSelect?.(student)} selected={selectedId === student.id}>
+          <ListItemButton onClick={() => onSelect?.(student)}>
             <ListItemText
               primary={student.name}
               secondary={`${student.completedAssessments}/${student.totalAssessments} assessments completed`}
             />
           </ListItemButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', pr: 2 }}>
+            <Chip
+              label={`${student.averageScore}%`}
+              size="small"
+              color={student.averageScore >= 70 ? 'success' : student.averageScore >= 50 ? 'warning' : 'error'}
+            />
+          </Box>
         </ListItem>
       ))}
     </List>

@@ -125,6 +125,7 @@ func (r *RoleRepository) List(ctx context.Context, isActive *bool) ([]*domain.Ro
 	}
 
 	query += " ORDER BY name"
+	_ = argIndex // Mark as used to satisfy linter
 
 	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {

@@ -3,7 +3,7 @@ import { ContentType, MenuType } from "@/types/types";
 
 export const DEFAULTS = {
   appRoot: "/dashboard",
-  locale: "en",
+  locale: "id",
   themeColor: "theme-purple" as ThemeVariant,
   themeMode: "system" as ModeVariant,
   contentType: ContentType.Boxed,

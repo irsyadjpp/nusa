@@ -1,28 +1,44 @@
 /**
  * Evidence Query Service
- * Provides query operations for Evidence data using TanStack Query
+ * Provides query operations for Evidence data using TanStack Query with proper types
  */
 
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import * as evidenceApi from '@/api/evidence';
+import { Evidence, EvidenceType, EvidenceStatus, PaginationParams, FilterParams } from '@/shared/types/domain';
 
 // Query Keys
 export const evidenceKeys = {
   all: ['evidence'] as const,
-  list: (params?: any) => ['evidence', 'list', params] as const,
+  list: (params?: PaginationParams & FilterParams & { 
+    student_id?: string; 
+    assessment_id?: string; 
+    user_id?: string;
+    evidence_type?: EvidenceType;
+  }) => ['evidence', 'list', params] as const,
   detail: (id: string) => ['evidence', 'detail', id] as const,
-  byStudent: (studentId: string) => ['evidence', 'student', studentId] as const,
-  byAssessment: (assessmentId: string) => ['evidence', 'assessment', assessmentId] as const,
-};
+  byStudent: (studentId: string, params?: PaginationParams & FilterParams & {
+    assessment_id?: string;
+    status?: EvidenceStatus;
+  }) => ['evidence', 'student', studentId, params] as const,
+  byAssessment: (assessmentId: string, params?: PaginationParams & FilterParams & {
+    status?: EvidenceStatus;
+  }) => ['evidence', 'assessment', assessmentId, params] as const,
+} as const;
 
 /**
  * Get evidences list
  */
 export const useEvidences = (
-  params?: any,
-  options?: Omit<UseQueryOptions<any, Error, any>, 'queryKey' | 'queryFn'>
+  params?: PaginationParams & FilterParams & { 
+    student_id?: string; 
+    assessment_id?: string; 
+    user_id?: string;
+    evidence_type?: EvidenceType;
+  },
+  options?: Omit<UseQueryOptions<Evidence[], Error, Evidence[]>, 'queryKey' | 'queryFn'>
 ) => {
-  return useQuery({
+  return useQuery<Evidence[], Error, Evidence[]>({
     queryKey: evidenceKeys.list(params),
     queryFn: () => evidenceApi.getEvidences(params),
     staleTime: 60000, // 1 minute - evidence data changes moderately
@@ -35,9 +51,9 @@ export const useEvidences = (
  */
 export const useEvidence = (
   id: string,
-  options?: Omit<UseQueryOptions<any, Error, any>, 'queryKey' | 'queryFn'>
+  options?: Omit<UseQueryOptions<Evidence, Error, Evidence>, 'queryKey' | 'queryFn'>
 ) => {
-  return useQuery({
+  return useQuery<Evidence, Error, Evidence>({
     queryKey: evidenceKeys.detail(id),
     queryFn: () => evidenceApi.getEvidenceById(id),
     staleTime: 300000, // 5 minutes
@@ -50,11 +66,14 @@ export const useEvidence = (
  */
 export const useEvidencesByStudent = (
   studentId: string,
-  params?: any,
-  options?: Omit<UseQueryOptions<any, Error, any>, 'queryKey' | 'queryFn'>
+  params?: PaginationParams & FilterParams & {
+    assessment_id?: string;
+    status?: EvidenceStatus;
+  },
+  options?: Omit<UseQueryOptions<Evidence[], Error, Evidence[]>, 'queryKey' | 'queryFn'>
 ) => {
-  return useQuery({
-    queryKey: evidenceKeys.byStudent(studentId),
+  return useQuery<Evidence[], Error, Evidence[]>({
+    queryKey: evidenceKeys.byStudent(studentId, params),
     queryFn: () => evidenceApi.getEvidencesByStudent(studentId, params),
     staleTime: 60000, // 1 minute
     ...options,
@@ -66,11 +85,13 @@ export const useEvidencesByStudent = (
  */
 export const useEvidencesByAssessment = (
   assessmentId: string,
-  params?: any,
-  options?: Omit<UseQueryOptions<any, Error, any>, 'queryKey' | 'queryFn'>
+  params?: PaginationParams & FilterParams & {
+    status?: EvidenceStatus;
+  },
+  options?: Omit<UseQueryOptions<Evidence[], Error, Evidence[]>, 'queryKey' | 'queryFn'>
 ) => {
-  return useQuery({
-    queryKey: evidenceKeys.byAssessment(assessmentId),
+  return useQuery<Evidence[], Error, Evidence[]>({
+    queryKey: evidenceKeys.byAssessment(assessmentId, params),
     queryFn: () => evidenceApi.getEvidencesByAssessment(assessmentId, params),
     staleTime: 60000, // 1 minute
     ...options,
@@ -80,13 +101,13 @@ export const useEvidencesByAssessment = (
 /**
  * Invalidate evidence queries
  */
-export const invalidateEvidenceQueries = (queryClient: any) => {
+export const invalidateEvidenceQueries = (queryClient: import('@tanstack/react-query').QueryClient) => {
   queryClient.invalidateQueries({ queryKey: evidenceKeys.all });
 };
 
 /**
  * Invalidate evidence detail
  */
-export const invalidateEvidence = (queryClient: any, id: string) => {
+export const invalidateEvidence = (queryClient: import('@tanstack/react-query').QueryClient, id: string) => {
   queryClient.invalidateQueries({ queryKey: evidenceKeys.detail(id) });
 };

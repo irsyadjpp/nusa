@@ -1,22 +1,23 @@
 /**
  * Assessment Command Service
- * Provides command operations for Assessment data using TanStack Query mutations
+ * Provides command operations for Assessment data using TanStack Query mutations with proper types
  */
 
 import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
 import * as assessmentApi from '@/api/assessment';
 import { assessmentKeys } from '../queries/AssessmentQueryService';
+import { Assessment, CreateAssessmentRequest, UpdateAssessmentRequest } from '@/shared/types/domain';
 
 /**
  * Create Assessment mutation
  */
 export const useCreateAssessment = (
-  options?: Omit<UseMutationOptions<any, Error, any>, 'mutationFn'>
+  options?: Omit<UseMutationOptions<Assessment, Error, { data: CreateAssessmentRequest; userId: string }>, 'mutationFn'>
 ) => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (data: any) => assessmentApi.createAssessment(data),
+  return useMutation<Assessment, Error, { data: CreateAssessmentRequest; userId: string }>({
+    mutationFn: ({ data, userId }) => assessmentApi.createAssessment(data, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: assessmentKeys.all });
     },
@@ -28,11 +29,11 @@ export const useCreateAssessment = (
  * Update Assessment mutation
  */
 export const useUpdateAssessment = (
-  options?: Omit<UseMutationOptions<any, Error, { id: string; data: any }>, 'mutationFn'>
+  options?: Omit<UseMutationOptions<Assessment, Error, { id: string; data: UpdateAssessmentRequest }>, 'mutationFn'>
 ) => {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<Assessment, Error, { id: string; data: UpdateAssessmentRequest }>({
     mutationFn: ({ id, data }) => assessmentApi.updateAssessment(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: assessmentKeys.detail(variables.id) });
@@ -50,7 +51,7 @@ export const useDeleteAssessment = (
 ) => {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<void, Error, string>({
     mutationFn: (id: string) => assessmentApi.deleteAssessment(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: assessmentKeys.all });
@@ -63,13 +64,13 @@ export const useDeleteAssessment = (
  * Approve Assessment mutation
  */
 export const useApproveAssessment = (
-  options?: Omit<UseMutationOptions<any, Error, string>, 'mutationFn'>
+  options?: Omit<UseMutationOptions<Assessment, Error, { id: string; userId: string }>, 'mutationFn'>
 ) => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (id: string) => assessmentApi.approveAssessment(id),
-    onSuccess: (_, id) => {
+  return useMutation<Assessment, Error, { id: string; userId: string }>({
+    mutationFn: ({ id, userId }) => assessmentApi.approveAssessment(id, userId),
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: assessmentKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: assessmentKeys.all });
     },
@@ -81,13 +82,13 @@ export const useApproveAssessment = (
  * Reject Assessment mutation
  */
 export const useRejectAssessment = (
-  options?: Omit<UseMutationOptions<any, Error, string>, 'mutationFn'>
+  options?: Omit<UseMutationOptions<Assessment, Error, { id: string; userId: string }>, 'mutationFn'>
 ) => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (id: string) => assessmentApi.rejectAssessment(id),
-    onSuccess: (_, id) => {
+  return useMutation<Assessment, Error, { id: string; userId: string }>({
+    mutationFn: ({ id, userId }) => assessmentApi.rejectAssessment(id, userId),
+    onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: assessmentKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: assessmentKeys.all });
     },

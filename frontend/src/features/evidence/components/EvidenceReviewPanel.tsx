@@ -3,9 +3,9 @@
  * Panel for reviewing and approving/rejecting evidence
  */
 
-import { Box, Typography, Paper, Divider, Button, Stack, Alert } from '@mui/material';
+import { Box, Typography, Paper, Divider, Button, Alert } from '@mui/material';
 import { Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
-import { Evidence } from '@/api/evidence';
+import { Evidence } from '@/shared/types/domain';
 
 interface EvidenceReviewPanelProps {
   evidence: Evidence;
@@ -30,7 +30,7 @@ export const EvidenceReviewPanel = ({
         Evidence Review
       </Typography>
       <Divider sx={{ my: 2 }} />
-      <Stack spacing={2}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box>
           <Typography variant="subtitle2" color="text.secondary">
             Title
@@ -65,7 +65,7 @@ export const EvidenceReviewPanel = ({
           Review the evidence details before approving or rejecting.
         </Alert>
 
-        <Stack direction="row" spacing={2} justifyContent="flex-end">
+        <Box sx={{ display: 'flex', flexDirection: 'row', gap: 2, justifyContent: 'flex-end' }}>
           <Button
             variant="contained"
             color="success"
@@ -84,8 +84,8 @@ export const EvidenceReviewPanel = ({
           >
             {loading ? 'Processing...' : 'Reject'}
           </Button>
-        </Stack>
-      </Stack>
+        </Box>
+      </Box>
     </Paper>
   );
 };

@@ -17,7 +17,7 @@ export const TPPreviewPanel = ({ tp }: TPPreviewPanelProps) => {
         {tp.title}
       </Typography>
       <Divider sx={{ my: 2 }} />
-      <Stack spacing={2}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box>
           <Typography variant="subtitle2" color="text.secondary">
             Status
@@ -25,7 +25,7 @@ export const TPPreviewPanel = ({ tp }: TPPreviewPanelProps) => {
           <Chip
             label={tp.status}
             size="small"
-            color={tp.status === 'approved' ? 'success' : tp.status === 'draft' ? 'default' : 'warning'}
+            color={tp.status === 'APPROVED' ? 'success' : tp.status === 'DRAFT' ? 'default' : 'warning'}
           />
         </Box>
 
@@ -102,7 +102,7 @@ export const TPPreviewPanel = ({ tp }: TPPreviewPanelProps) => {
               : JSON.stringify(tp.success_criteria, null, 2)}
           </Typography>
         </Box>
-      </Stack>
+      </Box>
     </Paper>
   );
 };

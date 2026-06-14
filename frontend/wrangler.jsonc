@@ -1,8 +1,9 @@
 {
   "main": "./worker/cloudflare-worker.ts",
-  "name": "gogo-vite-mui-admin",
+  "name": "nusa-vite-mui-admin",
   "compatibility_date": "2025-06-20",
   "assets": {
+    "directory": "./dist",
     "not_found_handling": "single-page-application",
   },
   "observability": {

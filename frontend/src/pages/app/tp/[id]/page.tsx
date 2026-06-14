@@ -1,9 +1,9 @@
 /**
- * TP Detail Page
+ * TP Detail Page - MIGRATED TO TANSTACK QUERY
  * Detail view for Teaching Plan (TP)
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -24,71 +24,68 @@ import {
   ArrowBack,
   Edit,
   Delete,
-  Visibility,
+  History,
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getTPById, deleteTP } from '@/api/tp';
-import { TP } from '@/api/tp';
+import { useTP } from '@/services/queries/TPQueryService';
+import { useDeleteTP } from '@/services/commands/TPCommandService';
+import { TPStatus } from '@/shared/types/domain';
 import KKTPCriteriaDisplay from '@/components/kktp/KKTPCriteriaDisplay';
+import TPVersionHistory from '@/components/tp/TPVersionHistory';
 
 const TPDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [tp, setTP] = useState<TP | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      loadTP(id);
-    }
-  }, [id]);
+  // ✅ Using TanStack Query hook instead of manual state management
+  const {
+    data: tp,
+    isLoading,
+    error
+  } = useTP(id!);
 
-  const loadTP = async (tpId: string) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getTPById(tpId);
-      setTP(data);
-    } catch (err: any) {
-      setError(err.message || 'Gagal memuat data TP');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const deleteMutation = useDeleteTP({
+    onSuccess: () => {
+      navigate('/tp');
+    },
+  });
 
   const handleDelete = async () => {
     if (!id) return;
-    setDeleting(true);
-    try {
-      await deleteTP(id);
-      navigate('/tp');
-    } catch (err: any) {
-      setError(err.message || 'Gagal menghapus TP');
-      setDeleteDialogOpen(false);
-    } finally {
-      setDeleting(false);
-    }
+    deleteMutation.mutate(id);
   };
 
-  const getStatusColor = (status: string): 'success' | 'warning' | 'error' | 'info' | 'default' => {
+  const getStatusColor = (status: TPStatus): 'success' | 'warning' | 'error' | 'info' | 'default' => {
     switch (status) {
       case 'APPROVED':
         return 'success';
-      case 'PENDING':
+      case 'UNDER_REVIEW':
         return 'warning';
       case 'REJECTED':
         return 'error';
       case 'DRAFT':
         return 'info';
+      case 'ARCHIVED':
+        return 'default';
       default:
         return 'default';
     }
   };
 
-  if (loading) {
+  const getStatusLabel = (status: TPStatus): string => {
+    switch (status) {
+      case 'APPROVED': return 'Disetujui';
+      case 'UNDER_REVIEW': return 'Dalam Review';
+      case 'REJECTED': return 'Ditolak';
+      case 'DRAFT': return 'Draft';
+      case 'ARCHIVED': return 'Diarsipkan';
+      default: return status;
+    }
+  };
+
+  if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress />
@@ -99,7 +96,7 @@ const TPDetailPage: React.FC = () => {
   if (error || !tp) {
     return (
       <Alert severity="error">
-        {error || 'TP tidak ditemukan'}
+        {error?.message || 'TP tidak ditemukan'}
       </Alert>
     );
   }
@@ -127,6 +124,13 @@ const TPDetailPage: React.FC = () => {
           </Button>
           <Button
             variant="outlined"
+            startIcon={<History />}
+            onClick={() => setVersionHistoryOpen(true)}
+          >
+            Riwayat Versi
+          </Button>
+          <Button
+            variant="outlined"
             color="error"
             startIcon={<Delete />}
             onClick={() => setDeleteDialogOpen(true)}
@@ -137,13 +141,13 @@ const TPDetailPage: React.FC = () => {
       </Box>
 
       <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Card sx={{ mb: 3 }}>
             <CardContent>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                 <Typography variant="h5">{tp.title}</Typography>
                 <Chip
-                  label={tp.status}
+                  label={getStatusLabel(tp.status)}
                   color={getStatusColor(tp.status)}
                 />
               </Box>
@@ -151,7 +155,7 @@ const TPDetailPage: React.FC = () => {
               <Divider sx={{ my: 2 }} />
 
               <Grid container spacing={2}>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="caption" color="text.secondary">
                     Urutan TP
                   </Typography>
@@ -159,7 +163,7 @@ const TPDetailPage: React.FC = () => {
                     #{tp.sequence_number}
                   </Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="caption" color="text.secondary">
                     Estimasi Minggu
                   </Typography>
@@ -167,28 +171,28 @@ const TPDetailPage: React.FC = () => {
                     {tp.estimated_weeks} minggu
                   </Typography>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="caption" color="text.secondary">
                     Tujuan Pembelajaran
                   </Typography>
                   <Typography variant="body1">
-                    {tp.learning_objectives}
+                    {typeof tp.learning_objectives === 'string' ? tp.learning_objectives : JSON.stringify(tp.learning_objectives)}
                   </Typography>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="caption" color="text.secondary">
                     Alokasi Waktu
                   </Typography>
                   <Typography variant="body1">
-                    {tp.time_allocation}
+                    {typeof tp.time_allocation === 'string' ? tp.time_allocation : JSON.stringify(tp.time_allocation)}
                   </Typography>
                 </Grid>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="caption" color="text.secondary">
                     Prasyarat
                   </Typography>
                   <Typography variant="body1">
-                    {tp.prerequisites || '-'}
+                    {typeof tp.prerequisites === 'string' ? tp.prerequisites : JSON.stringify(tp.prerequisites) || '-'}
                   </Typography>
                 </Grid>
               </Grid>
@@ -201,13 +205,13 @@ const TPDetailPage: React.FC = () => {
                 <Typography variant="h6" gutterBottom>
                   Kriteria Ketuntasan Tujuan Pembelajaran (KKTP)
                 </Typography>
-                <KKTPCriteriaDisplay data={tp.success_criteria} />
+                <KKTPCriteriaDisplay data={tp.success_criteria as any} />
               </CardContent>
             </Card>
           )}
         </Grid>
 
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -304,12 +308,18 @@ const TPDetailPage: React.FC = () => {
             variant="contained"
             color="error"
             onClick={handleDelete}
-            disabled={deleting}
+            disabled={deleteMutation.isPending}
           >
-            {deleting ? 'Menghapus...' : 'Hapus'}
+            {deleteMutation.isPending ? 'Menghapus...' : 'Hapus'}
           </Button>
         </DialogActions>
       </Dialog>
+
+      <TPVersionHistory
+        tpSetId={tp.tp_set_id}
+        open={versionHistoryOpen}
+        onClose={() => setVersionHistoryOpen(false)}
+      />
     </Box>
   );
 };

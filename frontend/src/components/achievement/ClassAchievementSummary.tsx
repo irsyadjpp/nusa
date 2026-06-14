@@ -9,7 +9,6 @@ import {
   Typography,
   Card,
   CardContent,
-  Grid,
   Table,
   TableBody,
   TableCell,
@@ -76,9 +75,9 @@ const ClassAchievementSummary: React.FC<ClassAchievementSummaryProps> = ({ data 
         Ringkasan Pencapaian Kelas
       </Typography>
 
-      <Grid container spacing={3}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: 3 }}>
         {/* Overview Cards */}
-        <Grid item xs={12} sm={6} md={3}>
+        <Box sx={{ gridColumn: { xs: 'span 12', sm: 'span 6', md: 'span 3' } }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -92,9 +91,9 @@ const ClassAchievementSummary: React.FC<ClassAchievementSummaryProps> = ({ data 
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Box sx={{ gridColumn: { xs: 'span 12', sm: 'span 6', md: 'span 3' } }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -108,9 +107,9 @@ const ClassAchievementSummary: React.FC<ClassAchievementSummaryProps> = ({ data 
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Box sx={{ gridColumn: { xs: 'span 12', sm: 'span 6', md: 'span 3' } }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -124,9 +123,9 @@ const ClassAchievementSummary: React.FC<ClassAchievementSummaryProps> = ({ data 
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Box sx={{ gridColumn: { xs: 'span 12', sm: 'span 6', md: 'span 3' } }}>
           <Card>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -140,10 +139,10 @@ const ClassAchievementSummary: React.FC<ClassAchievementSummaryProps> = ({ data 
               </Typography>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Competency Achievements */}
-        <Grid item xs={12}>
+        <Box sx={{ gridColumn: 'span 12' }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -177,10 +176,10 @@ const ClassAchievementSummary: React.FC<ClassAchievementSummaryProps> = ({ data 
               </TableContainer>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Top Performers */}
-        <Grid item xs={12} sm={6}>
+        <Box sx={{ gridColumn: { xs: 'span 12', sm: 'span 6' } }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -209,10 +208,10 @@ const ClassAchievementSummary: React.FC<ClassAchievementSummaryProps> = ({ data 
               ))}
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
         {/* Areas for Improvement */}
-        <Grid item xs={12} sm={6}>
+        <Box sx={{ gridColumn: { xs: 'span 12', sm: 'span 6' } }}>
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
@@ -238,8 +237,8 @@ const ClassAchievementSummary: React.FC<ClassAchievementSummaryProps> = ({ data 
               ))}
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
     </Box>
   );
 };

@@ -353,10 +353,193 @@ func (s *TPSetApplicationService) ListTPSets(ctx context.Context, query *ListTPS
 	}, nil
 }
 
+// ==================== Individual TP Operations ====================
+
+// CreateTPCommand represents the command to create a TP
+type CreateTPCommand struct {
+	TPSetID           string
+	SequenceNumber    int
+	CPID              string
+	SubjectID         string
+	PhaseID           string
+	ElementID         *string
+	SubelementID      *string
+	Title             *string
+	LearningObjectives map[string]interface{}
+	TimeAllocation    map[string]interface{}
+	Prerequisites     string
+	EstimatedWeeks    *int
+	SuccessCriteria  map[string]interface{}
+	UserID            string // Authenticated user ID
+}
+
+// CreateTPResponse represents the response for creating a TP
+type CreateTPResponse struct {
+	TPID   string
+	Status domain.WorkflowStatus
+}
+
+// CreateTP creates a new TP
+// Orchestrates: authorization, school scope validation, domain invariant enforcement, transaction
+func (s *TPSetApplicationService) CreateTP(ctx context.Context, cmd *CreateTPCommand) (*CreateTPResponse, error) {
+	// 1. Authorization: Get user and validate school scope
+	user, err := s.userRepo.GetByID(ctx, cmd.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("user not found: %w", err)
+	}
+
+	// 2. School scope: Validate user belongs to a school
+	if user.SchoolID == nil || *user.SchoolID == "" {
+		return nil, fmt.Errorf("user must belong to a school")
+	}
+
+	// 3. Validate TP Set exists and user has access
+	tpSet, err := s.tpRepo.GetTPSetByID(ctx, cmd.TPSetID)
+	if err != nil {
+		return nil, fmt.Errorf("TP set not found: %w", err)
+	}
+
+	// 4. School scope: Validate user belongs to same school as TP Set
+	owner, err := s.userRepo.GetByID(ctx, tpSet.GeneratedBy)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get TP set owner: %w", err)
+	}
+	if owner.SchoolID != nil && user.SchoolID != nil && *user.SchoolID != *owner.SchoolID && user.RoleID != "SYSTEM_ADMIN" {
+		return nil, fmt.Errorf("cross-school access not allowed")
+	}
+
+	// 5. Create domain TP
+	tp := &domain.TP{
+		ID:                generateTPID(),
+		TPSetID:           cmd.TPSetID,
+		SequenceNumber:    cmd.SequenceNumber,
+		CPID:              cmd.CPID,
+		SubjectID:         cmd.SubjectID,
+		PhaseID:           cmd.PhaseID,
+		ElementID:         cmd.ElementID,
+		SubelementID:      cmd.SubelementID,
+		UserID:            cmd.UserID,
+		Status:            domain.WorkflowStatusDraft,
+		Title:             cmd.Title,
+		LearningObjectives: cmd.LearningObjectives,
+		TimeAllocation:    cmd.TimeAllocation,
+		Prerequisites:     cmd.Prerequisites,
+		EstimatedWeeks:    cmd.EstimatedWeeks,
+		SuccessCriteria:   cmd.SuccessCriteria,
+		VersionNo:         1,
+		IsCurrentVersion:  true,
+	}
+
+	// 6. Transaction boundary: Persist TP
+	if err := s.tpRepo.CreateTP(ctx, tp); err != nil {
+		return nil, fmt.Errorf("failed to create TP: %w", err)
+	}
+
+	return &CreateTPResponse{
+		TPID:   tp.ID,
+		Status: tp.Status,
+	}, nil
+}
+
+// ListTPsQuery represents the query to list TPs
+type ListTPsQuery struct {
+	TPSetID *string
+	CPID    *string
+	Status  *domain.WorkflowStatus
+	UserID  string // Authenticated user ID
+	Page    int
+	PageSize int
+}
+
+// ListTPsResponse represents the response for listing TPs
+type ListTPsResponse struct {
+	TPs     []*domain.TP
+	Total   int
+	Page    int
+	PageSize int
+}
+
+// ListTPs lists TPs
+// Orchestrates: authorization, school scope filtering
+func (s *TPSetApplicationService) ListTPs(ctx context.Context, query *ListTPsQuery) (*ListTPsResponse, error) {
+	// 1. Authorization: Get user
+	user, err := s.userRepo.GetByID(ctx, query.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("user not found: %w", err)
+	}
+
+	// 2. School scope: Filter by user's school unless System Admin
+	var schoolID *string
+	if user.RoleID != "SYSTEM_ADMIN" && user.SchoolID != nil {
+		schoolID = user.SchoolID
+	}
+
+	limit := query.PageSize
+	offset := (query.Page - 1) * query.PageSize
+
+	tps, err := s.tpRepo.ListTPs(ctx, query.TPSetID, query.CPID, query.Status, schoolID, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list TPs: %w", err)
+	}
+
+	return &ListTPsResponse{
+		TPs:     tps,
+		Total:   len(tps),
+		Page:    query.Page,
+		PageSize: query.PageSize,
+	}, nil
+}
+
+// GetTPQuery represents the query to get a TP
+type GetTPQuery struct {
+	TPID   string
+	UserID string // Authenticated user ID
+}
+
+// GetTPResponse represents the response for getting a TP
+type GetTPResponse struct {
+	TP *domain.TP
+}
+
+// GetTP retrieves a TP
+// Orchestrates: authorization, school scope validation
+func (s *TPSetApplicationService) GetTP(ctx context.Context, query *GetTPQuery) (*GetTPResponse, error) {
+	// 1. Authorization: Get user
+	user, err := s.userRepo.GetByID(ctx, query.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("user not found: %w", err)
+	}
+
+	// 2. Load TP
+	tp, err := s.tpRepo.GetTPByID(ctx, query.TPID)
+	if err != nil {
+		return nil, fmt.Errorf("TP not found: %w", err)
+	}
+
+	// 3. School scope: Validate user belongs to same school as TP creator
+	if user.RoleID != "SYSTEM_ADMIN" {
+		creator, err := s.userRepo.GetByID(ctx, tp.UserID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get TP creator: %w", err)
+		}
+		if creator.SchoolID != nil && user.SchoolID != nil && *user.SchoolID != *creator.SchoolID {
+			return nil, fmt.Errorf("cross-school access not allowed")
+		}
+	}
+
+	return &GetTPResponse{
+		TP: tp,
+	}, nil
+}
+
 // Helper functions
 
 func generateID() string {
 	return fmt.Sprintf("tp-set-%d", now().UnixNano())
+}
+
+func generateTPID() string {
+	return fmt.Sprintf("tp-%d", now().UnixNano())
 }
 
 func now() time.Time {

@@ -3,8 +3,9 @@
  * Displays a list of Modul Ajars with filtering and pagination
  */
 
-import { Box, List, ListItem, ListItemText, ListItemButton, Chip, Typography } from '@mui/material';
-import { ModulAjar } from '@/api/modul-ajar';
+import React from 'react';
+import { Box, List, ListItem, ListItemText, ListItemButton, Chip, Typography, Divider } from '@mui/material';
+import { ModulAjar } from '@/shared/types/domain';
 
 interface ModulAjarListProps {
   modulAjars: ModulAjar[];
@@ -32,26 +33,30 @@ export const ModulAjarList = ({ modulAjars, selectedId, onSelect, loading }: Mod
 
   return (
     <List>
-      {modulAjars.map((modulAjar) => (
-        <ListItem
-          key={modulAjar.id}
-          disablePadding
-          selected={selectedId === modulAjar.id}
-          secondaryAction={
-            <Chip
-              label={modulAjar.status}
-              size="small"
-              color={modulAjar.status === 'approved' ? 'success' : modulAjar.status === 'draft' ? 'default' : 'warning'}
-            />
-          }
-        >
-          <ListItemButton onClick={() => onSelect?.(modulAjar)} selected={selectedId === modulAjar.id}>
-            <ListItemText
-              primary={modulAjar.title}
-              secondary={`Sequence: ${modulAjar.sequence_number}`}
-            />
-          </ListItemButton>
-        </ListItem>
+      {modulAjars.map((modulAjar, index) => (
+        <React.Fragment key={modulAjar.id}>
+          <ListItem
+            disablePadding
+            sx={{
+              backgroundColor: selectedId === modulAjar.id ? 'action.selected' : 'transparent',
+            }}
+          >
+            <ListItemButton onClick={() => onSelect?.(modulAjar)}>
+              <ListItemText
+                primary={modulAjar.title}
+                secondary={`Sequence: ${modulAjar.sequence_number}`}
+              />
+            </ListItemButton>
+            <Box sx={{ display: 'flex', alignItems: 'center', pr: 2 }}>
+              <Chip
+                label={modulAjar.status}
+                size="small"
+                color={modulAjar.status === 'APPROVED' ? 'success' : modulAjar.status === 'DRAFT' ? 'default' : 'warning'}
+              />
+            </Box>
+          </ListItem>
+          {index < modulAjars.length - 1 && <Divider />}
+        </React.Fragment>
       ))}
     </List>
   );

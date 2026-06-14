@@ -90,12 +90,7 @@ export {
   publishNarrativeReport,
   getAchievementSummary,
 } from './narrative-report';
-export type {
-  NarrativeReport,
-  CreateNarrativeReportRequest,
-  UpdateNarrativeReportRequest,
-  NarrativeReportResponse,
-} from './narrative-report';
+export {} from './narrative-report';
 export { default as narrativeReportApiDefault } from './narrative-report';
 
 // CP (Capaian Pembelajaran) API
@@ -113,11 +108,11 @@ export {
 } from './cp';
 export type {
   CP,
-  Subject,
-  Phase,
-  Element,
-  Subelement,
-} from './cp';
+  CurriculumSubject as Subject,
+  CurriculumPhase as Phase,
+  CurriculumElement as Element,
+  CurriculumSubelement as Subelement,
+} from '@/shared/types/domain';
 export { default as cpApiDefault } from './cp';
 
 // ATP (Alur Tujuan Pembelajaran) API
@@ -137,11 +132,7 @@ export {
 export type {
   ATP,
   ATPSet,
-  CreateATPRequest,
-  UpdateATPRequest,
-  CreateATPSetRequest,
-  UpdateATPSetRequest,
-} from './atp';
+} from '@/shared/types/domain';
 export { default as atpApiDefault } from './atp';
 
 // Modul Ajar API
@@ -159,10 +150,5 @@ export {
 } from './modul-ajar';
 export type {
   ModulAjar,
-  ModulAjarSet,
-  CreateModulAjarRequest,
-  UpdateModulAjarRequest,
-  CreateModulAjarSetRequest,
-  UpdateModulAjarSetRequest,
-} from './modul-ajar';
+} from '@/shared/types/domain';
 export { default as modulAjarApiDefault } from './modul-ajar';

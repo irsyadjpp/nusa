@@ -94,7 +94,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
         </Box>
 
         <Grid container spacing={2} sx={{ mb: 2 }}>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 6 }}>
             <Typography variant="caption" color="text.secondary">
               Skor
             </Typography>
@@ -102,7 +102,7 @@ const AchievementCard: React.FC<AchievementCardProps> = ({
               {achievement.score}/{achievement.max_score}
             </Typography>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 6 }}>
             <Typography variant="caption" color="text.secondary">
               Persentase
             </Typography>

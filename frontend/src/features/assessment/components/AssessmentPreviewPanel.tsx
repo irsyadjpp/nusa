@@ -4,7 +4,7 @@
  */
 
 import { Box, Typography, Paper, Divider, Chip } from '@mui/material';
-import { Assessment } from '@/api/assessment';
+import { Assessment } from '@/shared/types/domain';
 
 interface AssessmentPreviewPanelProps {
   assessment: Assessment;
@@ -17,7 +17,7 @@ export const AssessmentPreviewPanel = ({ assessment }: AssessmentPreviewPanelPro
         Assessment Preview
       </Typography>
       <Divider sx={{ my: 2 }} />
-      <Stack spacing={2}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Box>
           <Typography variant="subtitle2" color="text.secondary">
             Status
@@ -25,7 +25,7 @@ export const AssessmentPreviewPanel = ({ assessment }: AssessmentPreviewPanelPro
           <Chip
             label={assessment.status}
             size="small"
-            color={assessment.status === 'approved' ? 'success' : assessment.status === 'draft' ? 'default' : 'warning'}
+            color={assessment.status === 'APPROVED' ? 'success' : assessment.status === 'DRAFT' ? 'default' : 'warning'}
           />
         </Box>
 
@@ -100,7 +100,7 @@ export const AssessmentPreviewPanel = ({ assessment }: AssessmentPreviewPanelPro
             <Typography variant="body1">{assessment.ai_confidence_score}%</Typography>
           </Box>
         )}
-      </Stack>
+      </Box>
     </Paper>
   );
 };

@@ -42,13 +42,6 @@ func (s *UserService) Register(ctx context.Context, req *domain.CreateUserReques
 		return nil, fmt.Errorf("role is not active")
 	}
 
-	// If user has a school, verify school exists
-	if req.SchoolID != nil {
-		// Note: School repository verification is handled at the handler level
-		// to avoid circular dependencies. The handler checks school membership
-		// before calling this service.
-	}
-
 	user := &domain.User{
 		ID:                  domain.NewID(),
 		Email:               req.Email,
@@ -137,12 +130,12 @@ func (s *UserService) ListUsers(ctx context.Context, schoolID, roleID *string, i
 
 	users, err := s.userRepo.List(ctx, schoolID, roleID, isActive, limit, offset)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, fmt.Errorf("failed to list users: %w", err)
 	}
 
 	total, err := s.userRepo.Count(ctx, schoolID, roleID, isActive)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, fmt.Errorf("failed to list users by school: %w", err)
 	}
 
 	return users, total, nil

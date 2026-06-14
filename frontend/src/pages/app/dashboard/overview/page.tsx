@@ -7,7 +7,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Grid,
   Card,
   CardContent,
   CircularProgress,
@@ -21,7 +20,6 @@ import {
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { getClassAchievement } from '@/api/achievement';
-import ClassAchievementSummary from '@/components/achievement/ClassAchievementSummary';
 
 const DashboardOverviewPage: React.FC = () => {
   const navigate = useNavigate();
@@ -67,8 +65,8 @@ const DashboardOverviewPage: React.FC = () => {
         </Alert>
       )}
 
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mb: 3 }}>
+        <Box sx={{ width: { xs: '100%', sm: '50%', md: '25%' } }}>
           <Card
             sx={{ cursor: 'pointer' }}
             onClick={() => navigate('/tp')}
@@ -85,9 +83,9 @@ const DashboardOverviewPage: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Box sx={{ width: { xs: '100%', sm: '50%', md: '25%' } }}>
           <Card
             sx={{ cursor: 'pointer' }}
             onClick={() => navigate('/assessment')}
@@ -104,9 +102,9 @@ const DashboardOverviewPage: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Box sx={{ width: { xs: '100%', sm: '50%', md: '25%' } }}>
           <Card
             sx={{ cursor: 'pointer' }}
             onClick={() => navigate('/evidence')}
@@ -123,9 +121,9 @@ const DashboardOverviewPage: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Box sx={{ width: { xs: '100%', sm: '50%', md: '25%' } }}>
           <Card
             sx={{ cursor: 'pointer' }}
             onClick={() => navigate('/reports')}
@@ -142,11 +140,21 @@ const DashboardOverviewPage: React.FC = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       {classData && (
-        <ClassAchievementSummary data={classData} />
+        <Card sx={{ mt: 3 }}>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Ringkasan Pencapaian Kelas
+            </Typography>
+            <Typography variant="body2">
+              Data pencapaian kelas dimuat. Komponen ClassAchievementSummary dinonaktifkan sementara.
+            </Typography>
+            <pre>{JSON.stringify(classData, null, 2)}</pre>
+          </CardContent>
+        </Card>
       )}
     </Box>
   );

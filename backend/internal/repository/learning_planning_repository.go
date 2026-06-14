@@ -324,6 +324,40 @@ func (r *LearningPlanningRepository) UpdateATP(ctx context.Context, atp *domain.
 	return nil
 }
 
+// DeleteATP deletes an ATP
+func (r *LearningPlanningRepository) DeleteATP(ctx context.Context, id string) error {
+	query := `DELETE FROM atp WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("atp not found")
+	}
+
+	return nil
+}
+
+// DeleteATPSet deletes an ATP Set
+func (r *LearningPlanningRepository) DeleteATPSet(ctx context.Context, id string) error {
+	query := `DELETE FROM atp_sets WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("atp set not found")
+	}
+
+	return nil
+}
+
 // ==================== Modul Ajar Set Operations ====================
 
 // CreateModulAjarSet creates a new Modul Ajar Set
@@ -522,6 +556,23 @@ func (r *LearningPlanningRepository) UpdateModulAjarSet(ctx context.Context, mod
 	return nil
 }
 
+// DeleteModulAjarSet deletes a Modul Ajar Set
+func (r *LearningPlanningRepository) DeleteModulAjarSet(ctx context.Context, id string) error {
+	query := `DELETE FROM modul_ajar_sets WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("modul ajar set not found")
+	}
+
+	return nil
+}
+
 // ==================== Modul Ajar Item Operations ====================
 
 // CreateModulAjar creates a new Modul Ajar
@@ -640,6 +691,23 @@ func (r *LearningPlanningRepository) UpdateModulAjar(ctx context.Context, modulA
 	result, err := r.db.ExecContext(ctx, query,
 		modulAjar.ID, modulAjar.Topic, modulAjar.Resources, modulAjar.ClassCharacteristics,
 		modulAjar.LearningActivities, modulAjar.ResourceRequirements, modulAjar.AssessmentMethods, modulAjar.Status)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("modul ajar not found")
+	}
+
+	return nil
+}
+
+// DeleteModulAjar deletes a Modul Ajar
+func (r *LearningPlanningRepository) DeleteModulAjar(ctx context.Context, id string) error {
+	query := `DELETE FROM modul_ajar WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}

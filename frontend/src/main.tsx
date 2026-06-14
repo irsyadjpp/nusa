@@ -8,11 +8,20 @@ import { createRoot } from "react-dom/client";
 
 import App from "@/App";
 import { AuthProvider } from "@/features/auth";
+import { QueryClientProvider } from "@/shared/query-client";
+
+// Handle Vite preload errors - refresh page on dynamic import failures
+window.addEventListener('vite:preloadError', () => {
+  console.warn('Vite preload error detected, refreshing page...');
+  window.location.reload();
+});
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+    <QueryClientProvider>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </QueryClientProvider>
   </StrictMode>,
 );

@@ -1,82 +1,37 @@
 /**
  * Evaluation API Client
- * Handles all Evaluation-related API calls
+ * Handles all Evaluation-related API calls with proper types
  */
 
 import apiClient, { handleApiError } from './client';
+import {
+  Evaluation,
+  PerformanceScores,
+  MasteryLevel,
+  CreateEvaluationRequest,
+  PaginationParams,
+  FilterParams
+} from '@/shared/types/domain';
 
-// Types
-export interface Evaluation {
-  id: string;
-  student_id: string;
-  rubric_id: string;
-  evidence_id: string;
-  user_id: string;
-  performance_scores: any;
-  total_score: number;
-  max_score: number;
-  performance_level: string;
-  teacher_feedback?: string;
-  revision_no: number;
-  evaluated_at: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface EvaluationResponse {
-  id: string;
-  student_id: string;
-  student_name: string;
-  rubric_id: string;
-  rubric_type: string;
-  evidence_id: string;
-  evidence_type: string;
-  user_id: string;
-  user_name: string;
-  performance_scores: any;
-  total_score: number;
-  max_score: number;
-  performance_level: string;
-  teacher_feedback?: string;
-  revision_no: number;
-  evaluated_at: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface CreateEvaluationRequest {
-  student_id: string;
-  rubric_id: string;
-  evidence_id: string;
-  performance_scores: any;
-  total_score: number;
-  max_score: number;
-  performance_level: string;
-  teacher_feedback?: string;
-}
-
-export interface UpdateEvaluationRequest {
-  performance_scores?: any;
-  total_score?: number;
-  max_score?: number;
-  performance_level?: string;
+// API-specific request types
+export interface EvaluationUpdateRequest {
+  performance_scores?: PerformanceScores;
+  performance_level?: MasteryLevel;
   teacher_feedback?: string;
 }
 
 /**
  * Get all evaluations with optional filters
  */
-export const getEvaluations = async (params?: {
+export const getEvaluations = async (params?: PaginationParams & FilterParams & {
   student_id?: string;
   rubric_id?: string;
   evidence_id?: string;
   user_id?: string;
-  limit?: number;
-  offset?: number;
 }): Promise<Evaluation[]> => {
   try {
-    const response = await apiClient.get('/evaluations', { params });
-    return response.data.data || response.data;
+    const response = await apiClient.get('assessment/evaluations', { params });
+    return response.data.evaluations || response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -85,10 +40,10 @@ export const getEvaluations = async (params?: {
 /**
  * Get evaluation by ID
  */
-export const getEvaluationById = async (id: string): Promise<EvaluationResponse> => {
+export const getEvaluationById = async (id: string): Promise<Evaluation> => {
   try {
-    const response = await apiClient.get(`/evaluations/${id}`);
-    return response.data.data || response.data;
+    const response = await apiClient.get(`assessment/evaluations/${id}`);
+    return response.data || response.data.data;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -99,7 +54,7 @@ export const getEvaluationById = async (id: string): Promise<EvaluationResponse>
  */
 export const createEvaluation = async (data: CreateEvaluationRequest, userId: string): Promise<Evaluation> => {
   try {
-    const response = await apiClient.post('/evaluations', {
+    const response = await apiClient.post('assessment/evaluations', {
       ...data,
       user_id: userId,
     });
@@ -112,9 +67,9 @@ export const createEvaluation = async (data: CreateEvaluationRequest, userId: st
 /**
  * Update evaluation
  */
-export const updateEvaluation = async (id: string, data: UpdateEvaluationRequest): Promise<Evaluation> => {
+export const updateEvaluation = async (id: string, data: EvaluationUpdateRequest): Promise<Evaluation> => {
   try {
-    const response = await apiClient.put(`/evaluations/${id}`, data);
+    const response = await apiClient.put(`assessment/evaluations/${id}`, data);
     return response.data.data || response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -126,7 +81,7 @@ export const updateEvaluation = async (id: string, data: UpdateEvaluationRequest
  */
 export const deleteEvaluation = async (id: string): Promise<void> => {
   try {
-    await apiClient.delete(`/evaluations/${id}`);
+    await apiClient.delete(`assessment/evaluations/${id}`);
   } catch (error) {
     throw handleApiError(error);
   }
@@ -135,10 +90,8 @@ export const deleteEvaluation = async (id: string): Promise<void> => {
 /**
  * Get evaluations by student ID
  */
-export const getEvaluationsByStudent = async (studentId: string, params?: {
+export const getEvaluationsByStudent = async (studentId: string, params?: PaginationParams & FilterParams & {
   rubric_id?: string;
-  limit?: number;
-  offset?: number;
 }): Promise<Evaluation[]> => {
   try {
     const response = await apiClient.get(`/students/${studentId}/evaluations`, { params });
@@ -151,10 +104,7 @@ export const getEvaluationsByStudent = async (studentId: string, params?: {
 /**
  * Get evaluations by evidence ID
  */
-export const getEvaluationsByEvidence = async (evidenceId: string, params?: {
-  limit?: number;
-  offset?: number;
-}): Promise<Evaluation[]> => {
+export const getEvaluationsByEvidence = async (evidenceId: string, params?: PaginationParams): Promise<Evaluation[]> => {
   try {
     const response = await apiClient.get(`/evidences/${evidenceId}/evaluations`, { params });
     return response.data.data || response.data;

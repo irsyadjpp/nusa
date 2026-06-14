@@ -215,3 +215,62 @@ func (r *ReportingRepository) UpdateNarrativeReport(ctx context.Context, report 
 
 	return nil
 }
+
+// DeleteNarrativeReport deletes a narrative report
+func (r *ReportingRepository) DeleteNarrativeReport(ctx context.Context, id string) error {
+	query := `DELETE FROM narrative_reports WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("narrative report not found")
+	}
+
+	return nil
+}
+
+// UpdateAchievementData updates the achievement data for a narrative report
+func (r *ReportingRepository) UpdateAchievementData(ctx context.Context, reportID string, achievementData interface{}) error {
+	query := `
+		UPDATE narrative_reports 
+		SET achievement_data = $2, last_achievement_calculated_at = NOW()
+		WHERE id = $1
+	`
+
+	result, err := r.db.ExecContext(ctx, query, reportID, achievementData)
+	if err != nil {
+		return fmt.Errorf("failed to update achievement data: %w", err)
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("narrative report not found")
+	}
+
+	return nil
+}
+
+// UpdateClassID updates the class_id for a narrative report
+func (r *ReportingRepository) UpdateClassID(ctx context.Context, reportID, classID string) error {
+	query := `
+		UPDATE narrative_reports 
+		SET class_id = $1
+		WHERE id = $2
+	`
+
+	result, err := r.db.ExecContext(ctx, query, classID, reportID)
+	if err != nil {
+		return fmt.Errorf("failed to update class_id: %w", err)
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("narrative report not found")
+	}
+
+	return nil
+}
