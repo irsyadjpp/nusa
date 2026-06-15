@@ -191,7 +191,7 @@ jobs:
           echo "✅ Qdrant ready"
 
           # RabbitMQ
-          until podman exec $(podman ps -qf "name=rabbitmq") sh -c "rabbitmq-diagnostics -q ping"; do
+          until podman inspect --format='{{.State.Health.Status}}' $(podman ps -qf "name=rabbitmq") 2>/dev/null | grep -q "healthy"; do
             echo "Waiting for RabbitMQ..."; sleep 5
           done
           echo "✅ RabbitMQ ready"
