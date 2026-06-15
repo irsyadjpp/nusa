@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/nusa/backend/internal/domain"
+	"github.com/stretchr/testify/require"
 )
 
 // TestTPSetRepository_SchoolScopeFilter tests that school scope filtering works correctly
@@ -68,9 +69,8 @@ func TestTPSetRepository_MappingLayer(t *testing.T) {
 
 	domainModel := MapTPSetDBModelToDomain(dbModel)
 
-	if domainModel == nil {
-		t.Fatal("Expected non-nil domain model")
-	}
+	require.NotNil(t, domainModel, "Expected non-nil domain model")
+
 	if domainModel.ID != "test-id" {
 		t.Errorf("Expected ID test-id, got %s", domainModel.ID)
 	}
@@ -96,9 +96,8 @@ func TestTPSetRepository_MappingLayer(t *testing.T) {
 
 	dbModel2 := MapTPSetDomainToDBModel(domainModel2)
 
-	if dbModel2 == nil {
-		t.Fatal("Expected non-nil DB model")
-	}
+	require.NotNil(t, dbModel2, "Expected non-nil DB model")
+
 	if dbModel2.ID != "test-id-2" {
 		t.Errorf("Expected ID test-id-2, got %s", dbModel2.ID)
 	}
@@ -122,9 +121,8 @@ func TestTPRepository_MappingLayer(t *testing.T) {
 
 	domainModel := MapTPDBModelToDomain(dbModel)
 
-	if domainModel == nil {
-		t.Fatal("Expected non-nil domain model")
-	}
+	require.NotNil(t, domainModel, "Expected non-nil domain model")
+
 	if domainModel.ID != "tp-id" {
 		t.Errorf("Expected ID tp-id, got %s", domainModel.ID)
 	}

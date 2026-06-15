@@ -30,7 +30,7 @@ func NewTestDatabase(host, port, user, password, dbname, sslmode string) (*Datab
 // SetupTestDatabase creates and initializes the test database schema
 func SetupTestDatabase(db *Database) error {
 	ctx := context.Background()
-	
+
 	// Test database schema setup
 	schema := `
 	-- Enable UUID extension
@@ -115,7 +115,7 @@ func SetupTestDatabase(db *Database) error {
 // CleanupTestDatabase drops all tables in the test database
 func CleanupTestDatabase(db *Database) error {
 	ctx := context.Background()
-	
+
 	// Drop tables in correct order (reverse of creation due to foreign keys)
 	tables := []string{
 		"refresh_tokens",
@@ -137,7 +137,7 @@ func CleanupTestDatabase(db *Database) error {
 // TruncateTestDatabase truncates all tables in the test database
 func TruncateTestDatabase(db *Database) error {
 	ctx := context.Background()
-	
+
 	// Truncate tables in correct order (reverse of creation due to foreign keys)
 	tables := []string{
 		"refresh_tokens",
@@ -159,7 +159,7 @@ func TruncateTestDatabase(db *Database) error {
 // SeedTestDatabase seeds the test database with initial data
 func SeedTestDatabase(db *Database) error {
 	ctx := context.Background()
-	
+
 	// Insert system roles
 	roles := []struct {
 		id        string

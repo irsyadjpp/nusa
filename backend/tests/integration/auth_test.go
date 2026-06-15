@@ -203,10 +203,3 @@ func setupTestDB() *sqlx.DB {
 
 	return db.DB
 }
-
-// cleanupTestDB cleans up the test database
-func cleanupTestDB(db *sqlx.DB) {
-	if db != nil {
-		db.Close()
-	}
-}

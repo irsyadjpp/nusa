@@ -10,18 +10,18 @@ import (
 // SystemConfiguration represents system-wide configuration settings
 // Used for configurable business rules like CP alignment threshold
 type SystemConfiguration struct {
-	ID            string    `json:"id" db:"id"`
-	Key           string    `json:"key" db:"key"`
-	Value         string    `json:"value" db:"value"`
-	ValueType     string    `json:"value_type" db:"value_type"` // "string", "number", "boolean", "json"
-	Description   *string   `json:"description,omitempty" db:"description"`
-	Category      string    `json:"category" db:"category"`
-	IsSystem      bool      `json:"is_system" db:"is_system"` // System configs cannot be deleted by users
-	IsActive      bool      `json:"is_active" db:"is_active"`
-	CreatedBy     string    `json:"created_by" db:"created_by"`
-	CreatedAt     time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
-	UpdatedBy     *string   `json:"updated_by,omitempty" db:"updated_by"`
+	ID          string    `json:"id" db:"id"`
+	Key         string    `json:"key" db:"key"`
+	Value       string    `json:"value" db:"value"`
+	ValueType   string    `json:"value_type" db:"value_type"` // "string", "number", "boolean", "json"
+	Description *string   `json:"description,omitempty" db:"description"`
+	Category    string    `json:"category" db:"category"`
+	IsSystem    bool      `json:"is_system" db:"is_system"` // System configs cannot be deleted by users
+	IsActive    bool      `json:"is_active" db:"is_active"`
+	CreatedBy   string    `json:"created_by" db:"created_by"`
+	CreatedAt   time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
+	UpdatedBy   *string   `json:"updated_by,omitempty" db:"updated_by"`
 }
 
 // NewSystemConfiguration creates a new SystemConfiguration entity
@@ -67,7 +67,7 @@ func (sc *SystemConfiguration) Validate() error {
 	if sc.Category == "" {
 		return errors.New("configuration category is required")
 	}
-	
+
 	// Validate value type
 	validTypes := map[string]bool{
 		"string":  true,
@@ -78,7 +78,7 @@ func (sc *SystemConfiguration) Validate() error {
 	if !validTypes[sc.ValueType] {
 		return errors.New("invalid value type, must be string, number, boolean, or json")
 	}
-	
+
 	if len(sc.Key) > 100 {
 		return errors.New("key must be less than 100 characters")
 	}

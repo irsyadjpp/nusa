@@ -21,6 +21,9 @@ type MockTPSetApplicationService struct {
 	listTPSetsFunc   func(ctx context.Context, query *application.ListTPSetsQuery) (*application.ListTPSetsResponse, error)
 	getTPSetFunc     func(ctx context.Context, query *application.GetTPSetQuery) (*application.GetTPSetResponse, error)
 	approveTPSetFunc func(ctx context.Context, cmd *application.ApproveTPSetCommand) (*application.ApproveTPSetResponse, error)
+	createTPFunc     func(ctx context.Context, cmd *application.CreateTPCommand) (*application.CreateTPResponse, error)
+	listTPsFunc      func(ctx context.Context, query *application.ListTPsQuery) (*application.ListTPsResponse, error)
+	getTPFunc        func(ctx context.Context, query *application.GetTPQuery) (*application.GetTPResponse, error)
 }
 
 func (m *MockTPSetApplicationService) CreateTPSet(ctx context.Context, cmd *application.CreateTPSetCommand) (*application.CreateTPSetResponse, error) {
@@ -49,6 +52,27 @@ func (m *MockTPSetApplicationService) ApproveTPSet(ctx context.Context, cmd *app
 		return m.approveTPSetFunc(ctx, cmd)
 	}
 	return &application.ApproveTPSetResponse{TPSetID: "test-id", Status: domain.WorkflowStatusApproved, ApprovedBy: "approver-id", ApprovedAt: "2026-06-09T00:00:00Z"}, nil
+}
+
+func (m *MockTPSetApplicationService) CreateTP(ctx context.Context, cmd *application.CreateTPCommand) (*application.CreateTPResponse, error) {
+	if m.createTPFunc != nil {
+		return m.createTPFunc(ctx, cmd)
+	}
+	return &application.CreateTPResponse{TPID: "test-tp-id"}, nil
+}
+
+func (m *MockTPSetApplicationService) ListTPs(ctx context.Context, query *application.ListTPsQuery) (*application.ListTPsResponse, error) {
+	if m.listTPsFunc != nil {
+		return m.listTPsFunc(ctx, query)
+	}
+	return &application.ListTPsResponse{TPs: []*domain.TP{}, Total: 0, Page: 1, PageSize: 20}, nil
+}
+
+func (m *MockTPSetApplicationService) GetTP(ctx context.Context, query *application.GetTPQuery) (*application.GetTPResponse, error) {
+	if m.getTPFunc != nil {
+		return m.getTPFunc(ctx, query)
+	}
+	return &application.GetTPResponse{TP: &domain.TP{}}, nil
 }
 
 func NewTPSetHandlerWithInterface(service ITPSetApplicationService) *TPSetHandler {
@@ -336,60 +360,5 @@ func TestApproveTPSet_Forbidden(t *testing.T) {
 
 	if w.Code != http.StatusForbidden {
 		t.Errorf("Expected status 403, got %d", w.Code)
-	}
-}
-
-func TestCreateTP_NotImplemented(t *testing.T) {
-	mockService := &MockTPSetApplicationService{}
-	router := setupTestRouter(mockService)
-
-	reqBody := dto.CreateTPRequest{
-		TPSetID:        "tp-set-id",
-		SequenceNumber: 1,
-		CPID:           "cp-id",
-		SubjectID:      "subject-id",
-		PhaseID:        "phase-id",
-		ElementID:      "element-id",
-		SubelementID:   "subelement-id",
-		Status:         "DRAFT",
-	}
-
-	body, _ := json.Marshal(reqBody)
-	req, _ := http.NewRequest("POST", "/tps", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
-
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusNotImplemented {
-		t.Errorf("Expected status 501, got %d", w.Code)
-	}
-}
-
-func TestListTPs_NotImplemented(t *testing.T) {
-	mockService := &MockTPSetApplicationService{}
-	router := setupTestRouter(mockService)
-
-	req, _ := http.NewRequest("GET", "/tps", nil)
-
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusNotImplemented {
-		t.Errorf("Expected status 501, got %d", w.Code)
-	}
-}
-
-func TestGetTP_NotImplemented(t *testing.T) {
-	mockService := &MockTPSetApplicationService{}
-	router := setupTestRouter(mockService)
-
-	req, _ := http.NewRequest("GET", "/tps/test-id", nil)
-
-	w := httptest.NewRecorder()
-	router.ServeHTTP(w, req)
-
-	if w.Code != http.StatusNotImplemented {
-		t.Errorf("Expected status 501, got %d", w.Code)
 	}
 }

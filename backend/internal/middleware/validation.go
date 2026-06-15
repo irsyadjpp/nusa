@@ -25,7 +25,7 @@ func InputValidation() gin.HandlerFunc {
 		}
 
 		// Validate query parameters for SQL injection patterns
-		for key, values := range c.Request.URL.Query() {
+		for _, values := range c.Request.URL.Query() {
 			for _, value := range values {
 				if containsSQLInjection(value) {
 					c.JSON(http.StatusBadRequest, gin.H{
@@ -79,7 +79,7 @@ func ValidateEmail(email string) bool {
 	if email == "" {
 		return false
 	}
-	
+
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
 	return emailRegex.MatchString(email)
 }
@@ -89,12 +89,12 @@ func ValidatePassword(password string) error {
 	if len(password) < 8 {
 		return &ValidationError{Field: "password", Message: "Password must be at least 8 characters long"}
 	}
-	
+
 	hasUpper := false
 	hasLower := false
 	hasNumber := false
 	hasSpecial := false
-	
+
 	for _, char := range password {
 		switch {
 		case unicode.IsUpper(char):
@@ -107,7 +107,7 @@ func ValidatePassword(password string) error {
 			hasSpecial = true
 		}
 	}
-	
+
 	if !hasUpper {
 		return &ValidationError{Field: "password", Message: "Password must contain at least one uppercase letter"}
 	}
@@ -120,7 +120,7 @@ func ValidatePassword(password string) error {
 	if !hasSpecial {
 		return &ValidationError{Field: "password", Message: "Password must contain at least one special character"}
 	}
-	
+
 	return nil
 }
 
@@ -139,7 +139,7 @@ func (ve *ValidationError) Error() string {
 func SanitizeInput(input string) string {
 	// Remove null bytes
 	input = strings.ReplaceAll(input, "\x00", "")
-	
+
 	// Remove control characters except newline, tab, carriage return
 	var sanitized strings.Builder
 	for _, r := range input {
@@ -147,6 +147,6 @@ func SanitizeInput(input string) string {
 			sanitized.WriteRune(r)
 		}
 	}
-	
+
 	return sanitized.String()
 }

@@ -25,17 +25,17 @@ const (
 
 // Semester represents a semester within an academic year
 type Semester struct {
-	ID              string          `json:"id" db:"id"`
-	AcademicYearID  string          `json:"academic_year_id" db:"academic_year_id"`
-	Type            SemesterType    `json:"type" db:"type"`
-	Name            string          `json:"name" db:"name"`
-	StartDate       time.Time       `json:"start_date" db:"start_date"`
-	EndDate         time.Time       `json:"end_date" db:"end_date"`
-	Status          SemesterStatus  `json:"status" db:"status"`
-	SequenceNumber  int             `json:"sequence_number" db:"sequence_number"`
-	CreatedBy       string          `json:"created_by" db:"created_by"`
-	CreatedAt       time.Time       `json:"created_at" db:"created_at"`
-	UpdatedAt       time.Time       `json:"updated_at" db:"updated_at"`
+	ID             string         `json:"id" db:"id"`
+	AcademicYearID string         `json:"academic_year_id" db:"academic_year_id"`
+	Type           SemesterType   `json:"type" db:"type"`
+	Name           string         `json:"name" db:"name"`
+	StartDate      time.Time      `json:"start_date" db:"start_date"`
+	EndDate        time.Time      `json:"end_date" db:"end_date"`
+	Status         SemesterStatus `json:"status" db:"status"`
+	SequenceNumber int            `json:"sequence_number" db:"sequence_number"`
+	CreatedBy      string         `json:"created_by" db:"created_by"`
+	CreatedAt      time.Time      `json:"created_at" db:"created_at"`
+	UpdatedAt      time.Time      `json:"updated_at" db:"updated_at"`
 }
 
 // NewSemester creates a new Semester entity
@@ -49,7 +49,7 @@ func NewSemester(academicYearID, name string, semType SemesterType, startDate, e
 	if startDate.After(endDate) {
 		return nil, errors.New("start date must be before end date")
 	}
-	
+
 	// Validate semester type
 	if semType != SemesterTypeGanjil && semType != SemesterTypeGenap {
 		return nil, errors.New("invalid semester type, must be GANJIL or GENAP")
@@ -120,18 +120,18 @@ func (s *Semester) OverlapsWith(other *Semester) bool {
 	if s.AcademicYearID != other.AcademicYearID {
 		return false
 	}
-	
+
 	// Check date overlap
 	overlapStart := s.StartDate
 	if other.StartDate.After(s.StartDate) {
 		overlapStart = other.StartDate
 	}
-	
+
 	overlapEnd := s.EndDate
 	if other.EndDate.Before(s.EndDate) {
 		overlapEnd = other.EndDate
 	}
-	
+
 	return overlapStart.Before(overlapEnd)
 }
 
@@ -186,9 +186,9 @@ func (r *CreateSemesterRequest) Validate() error {
 
 // UpdateSemesterRequest represents the request to update a semester
 type UpdateSemesterRequest struct {
-	Name      *string    `json:"name,omitempty"`
-	StartDate *time.Time `json:"start_date,omitempty"`
-	EndDate   *time.Time `json:"end_date,omitempty"`
+	Name      *string         `json:"name,omitempty"`
+	StartDate *time.Time      `json:"start_date,omitempty"`
+	EndDate   *time.Time      `json:"end_date,omitempty"`
 	Status    *SemesterStatus `json:"status,omitempty"`
 }
 

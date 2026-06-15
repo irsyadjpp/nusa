@@ -39,10 +39,10 @@ func (h *MessageHandler) CreateMessage(c *gin.Context) {
 	}
 
 	domainReq := &domain.CreateMessageRequest{
-		SenderID:       req.SenderID,
-		ReceiverID:     req.ReceiverID,
-		Subject:        req.Subject,
-		Content:        req.Content,
+		SenderID:        req.SenderID,
+		ReceiverID:      req.ReceiverID,
+		Subject:         req.Subject,
+		Content:         req.Content,
 		ParentMessageID: req.ParentMessageID,
 	}
 
@@ -54,17 +54,17 @@ func (h *MessageHandler) CreateMessage(c *gin.Context) {
 
 	domainResponse := message.ToMessageResponse("", "")
 	response := &dto.MessageResponse{
-		ID:             domainResponse.ID,
-		SenderID:       domainResponse.SenderID,
-		SenderName:     domainResponse.SenderName,
-		ReceiverID:     domainResponse.ReceiverID,
-		ReceiverName:   domainResponse.ReceiverName,
-		Subject:        domainResponse.Subject,
-		Content:        domainResponse.Content,
-		IsRead:         domainResponse.IsRead,
-		ReadAt:         domainResponse.ReadAt,
+		ID:              domainResponse.ID,
+		SenderID:        domainResponse.SenderID,
+		SenderName:      domainResponse.SenderName,
+		ReceiverID:      domainResponse.ReceiverID,
+		ReceiverName:    domainResponse.ReceiverName,
+		Subject:         domainResponse.Subject,
+		Content:         domainResponse.Content,
+		IsRead:          domainResponse.IsRead,
+		ReadAt:          domainResponse.ReadAt,
 		ParentMessageID: domainResponse.ParentMessageID,
-		CreatedAt:      domainResponse.CreatedAt,
+		CreatedAt:       domainResponse.CreatedAt,
 	}
 
 	c.JSON(http.StatusCreated, response)
@@ -89,17 +89,17 @@ func (h *MessageHandler) GetMessage(c *gin.Context) {
 
 	domainResponse := message.ToMessageResponse("", "")
 	response := &dto.MessageResponse{
-		ID:             domainResponse.ID,
-		SenderID:       domainResponse.SenderID,
-		SenderName:     domainResponse.SenderName,
-		ReceiverID:     domainResponse.ReceiverID,
-		ReceiverName:   domainResponse.ReceiverName,
-		Subject:        domainResponse.Subject,
-		Content:        domainResponse.Content,
-		IsRead:         domainResponse.IsRead,
-		ReadAt:         domainResponse.ReadAt,
+		ID:              domainResponse.ID,
+		SenderID:        domainResponse.SenderID,
+		SenderName:      domainResponse.SenderName,
+		ReceiverID:      domainResponse.ReceiverID,
+		ReceiverName:    domainResponse.ReceiverName,
+		Subject:         domainResponse.Subject,
+		Content:         domainResponse.Content,
+		IsRead:          domainResponse.IsRead,
+		ReadAt:          domainResponse.ReadAt,
 		ParentMessageID: domainResponse.ParentMessageID,
-		CreatedAt:      domainResponse.CreatedAt,
+		CreatedAt:       domainResponse.CreatedAt,
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -152,17 +152,17 @@ func (h *MessageHandler) ListMessages(c *gin.Context) {
 	for i, message := range messages {
 		domainResponse := message.ToMessageResponse("", "")
 		messageResponses[i] = &dto.MessageResponse{
-			ID:             domainResponse.ID,
-			SenderID:       domainResponse.SenderID,
-			SenderName:     domainResponse.SenderName,
-			ReceiverID:     domainResponse.ReceiverID,
-			ReceiverName:   domainResponse.ReceiverName,
-			Subject:        domainResponse.Subject,
-			Content:        domainResponse.Content,
-			IsRead:         domainResponse.IsRead,
-			ReadAt:         domainResponse.ReadAt,
+			ID:              domainResponse.ID,
+			SenderID:        domainResponse.SenderID,
+			SenderName:      domainResponse.SenderName,
+			ReceiverID:      domainResponse.ReceiverID,
+			ReceiverName:    domainResponse.ReceiverName,
+			Subject:         domainResponse.Subject,
+			Content:         domainResponse.Content,
+			IsRead:          domainResponse.IsRead,
+			ReadAt:          domainResponse.ReadAt,
 			ParentMessageID: domainResponse.ParentMessageID,
-			CreatedAt:      domainResponse.CreatedAt,
+			CreatedAt:       domainResponse.CreatedAt,
 		}
 	}
 
@@ -244,17 +244,17 @@ func (h *MessageHandler) GetConversation(c *gin.Context) {
 	for i, message := range messages {
 		domainResponse := message.ToMessageResponse("", "")
 		messageResponses[i] = &dto.MessageResponse{
-			ID:             domainResponse.ID,
-			SenderID:       domainResponse.SenderID,
-			SenderName:     domainResponse.SenderName,
-			ReceiverID:     domainResponse.ReceiverID,
-			ReceiverName:   domainResponse.ReceiverName,
-			Subject:        domainResponse.Subject,
-			Content:        domainResponse.Content,
-			IsRead:         domainResponse.IsRead,
-			ReadAt:         domainResponse.ReadAt,
+			ID:              domainResponse.ID,
+			SenderID:        domainResponse.SenderID,
+			SenderName:      domainResponse.SenderName,
+			ReceiverID:      domainResponse.ReceiverID,
+			ReceiverName:    domainResponse.ReceiverName,
+			Subject:         domainResponse.Subject,
+			Content:         domainResponse.Content,
+			IsRead:          domainResponse.IsRead,
+			ReadAt:          domainResponse.ReadAt,
 			ParentMessageID: domainResponse.ParentMessageID,
-			CreatedAt:      domainResponse.CreatedAt,
+			CreatedAt:       domainResponse.CreatedAt,
 		}
 	}
 

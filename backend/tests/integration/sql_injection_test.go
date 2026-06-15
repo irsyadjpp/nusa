@@ -1,7 +1,6 @@
 package integration
 
 import (
-	"database/sql"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -115,21 +114,4 @@ func TestParameterizedQueryValidation(t *testing.T) {
 	// GOOD: "SELECT * FROM users WHERE email = $1"
 
 	assert.True(t, true, "Parameterized query test placeholder - requires code scanning")
-}
-
-// setupTestDBForSQLInjection creates a test database for SQL injection tests
-func setupTestDBForSQLInjection(t *testing.T) *sql.DB {
-	// This would set up a test database
-	// For now, return nil as placeholder
-	t.Log("Setup test database for SQL injection tests")
-	return nil
-}
-
-// cleanupTestDBForSQLInjection cleans up the test database
-func cleanupTestDBForSQLInjection(t *testing.T, db *sql.DB) {
-	// This would clean up the test database
-	t.Log("Cleanup test database for SQL injection tests")
-	if db != nil {
-		db.Close()
-	}
 }

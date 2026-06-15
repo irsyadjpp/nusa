@@ -168,7 +168,7 @@ func (s *SystemConfigurationApplicationService) UpdateSystemConfiguration(ctx co
 // DeleteSystemConfigurationCommand represents the command to delete a system configuration
 type DeleteSystemConfigurationCommand struct {
 	SystemConfigurationID string
-	UserID                 string
+	UserID                string
 }
 
 // DeleteSystemConfigurationResponse represents the response for deleting a system configuration

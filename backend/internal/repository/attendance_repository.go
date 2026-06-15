@@ -230,7 +230,6 @@ func (r *AttendanceRepository) Count(ctx context.Context, classID, studentID *st
 	if endDate != nil {
 		query += fmt.Sprintf(" AND date <= $%d", argCount)
 		args = append(args, *endDate)
-		argCount++
 	}
 
 	var count int

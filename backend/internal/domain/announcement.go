@@ -45,40 +45,40 @@ const (
 
 // CreateAnnouncementRequest represents the request to create an announcement
 type CreateAnnouncementRequest struct {
-	SchoolID       string             `json:"school_id" binding:"required"`
-	Title          string             `json:"title" binding:"required,max=255"`
-	Content        string             `json:"content" binding:"required"`
+	SchoolID       string               `json:"school_id" binding:"required"`
+	Title          string               `json:"title" binding:"required,max=255"`
+	Content        string               `json:"content" binding:"required"`
 	Priority       AnnouncementPriority `json:"priority" binding:"required,oneof=LOW NORMAL HIGH URGENT"`
-	TargetAudience TargetAudience     `json:"target_audience" binding:"required,oneof=ALL TEACHERS STUDENTS PARENTS ADMIN"`
-	ExpiresAt      *time.Time         `json:"expires_at,omitempty"`
+	TargetAudience TargetAudience       `json:"target_audience" binding:"required,oneof=ALL TEACHERS STUDENTS PARENTS ADMIN"`
+	ExpiresAt      *time.Time           `json:"expires_at,omitempty"`
 }
 
 // UpdateAnnouncementRequest represents the request to update an announcement
 type UpdateAnnouncementRequest struct {
-	Title          *string             `json:"title,omitempty" binding:"omitempty,max=255"`
-	Content        *string             `json:"content,omitempty"`
+	Title          *string               `json:"title,omitempty" binding:"omitempty,max=255"`
+	Content        *string               `json:"content,omitempty"`
 	Priority       *AnnouncementPriority `json:"priority,omitempty" binding:"omitempty,oneof=LOW NORMAL HIGH URGENT"`
-	TargetAudience *TargetAudience     `json:"target_audience,omitempty" binding:"omitempty,oneof=ALL TEACHERS STUDENTS PARENTS ADMIN"`
-	ExpiresAt      *time.Time          `json:"expires_at,omitempty"`
-	IsActive       *bool               `json:"is_active,omitempty"`
+	TargetAudience *TargetAudience       `json:"target_audience,omitempty" binding:"omitempty,oneof=ALL TEACHERS STUDENTS PARENTS ADMIN"`
+	ExpiresAt      *time.Time            `json:"expires_at,omitempty"`
+	IsActive       *bool                 `json:"is_active,omitempty"`
 }
 
 // AnnouncementResponse represents the announcement data returned to clients
 type AnnouncementResponse struct {
-	ID             string             `json:"id"`
-	SchoolID       string             `json:"school_id"`
-	SchoolName     *string            `json:"school_name,omitempty"`
-	Title          string             `json:"title"`
-	Content        string             `json:"content"`
-	Priority       AnnouncementPriority `json:"priority"`
-	TargetAudience TargetAudience     `json:"target_audience"`
-	PublishedBy    string             `json:"published_by"`
-	PublishedByName *string           `json:"published_by_name,omitempty"`
-	PublishedAt    string             `json:"published_at"`
-	ExpiresAt      *string            `json:"expires_at,omitempty"`
-	IsActive       bool               `json:"is_active"`
-	CreatedAt      string             `json:"created_at"`
-	UpdatedAt      string             `json:"updated_at"`
+	ID              string               `json:"id"`
+	SchoolID        string               `json:"school_id"`
+	SchoolName      *string              `json:"school_name,omitempty"`
+	Title           string               `json:"title"`
+	Content         string               `json:"content"`
+	Priority        AnnouncementPriority `json:"priority"`
+	TargetAudience  TargetAudience       `json:"target_audience"`
+	PublishedBy     string               `json:"published_by"`
+	PublishedByName *string              `json:"published_by_name,omitempty"`
+	PublishedAt     string               `json:"published_at"`
+	ExpiresAt       *string              `json:"expires_at,omitempty"`
+	IsActive        bool                 `json:"is_active"`
+	CreatedAt       string               `json:"created_at"`
+	UpdatedAt       string               `json:"updated_at"`
 }
 
 // ToAnnouncementResponse converts Announcement to AnnouncementResponse

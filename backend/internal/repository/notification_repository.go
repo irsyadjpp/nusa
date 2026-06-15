@@ -174,7 +174,6 @@ func (r *NotificationRepository) Count(ctx context.Context, userID *string, noti
 	if isRead != nil {
 		query += fmt.Sprintf(" AND is_read = $%d", argCount)
 		args = append(args, *isRead)
-		argCount++
 	}
 
 	var count int

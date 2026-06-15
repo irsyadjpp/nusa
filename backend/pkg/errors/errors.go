@@ -38,7 +38,7 @@ func Wrap(err error, code int, message string) *AppError {
 }
 
 var (
-	ErrValidation      = errors.New("validation error")
+	ErrValidation     = errors.New("validation error")
 	ErrNotFound       = errors.New("not found")
 	ErrUnauthorized   = errors.New("unauthorized")
 	ErrForbidden      = errors.New("forbidden")

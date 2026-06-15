@@ -181,7 +181,6 @@ func (r *AssignmentRepository) Count(ctx context.Context, classID, assessmentID,
 	if status != nil {
 		query += fmt.Sprintf(" AND status = $%d", argCount)
 		args = append(args, *status)
-		argCount++
 	}
 
 	var count int

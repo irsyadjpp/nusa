@@ -31,33 +31,33 @@ const (
 
 // CreateAttendanceRequest represents the request to create an attendance record
 type CreateAttendanceRequest struct {
-	ClassID    string           `json:"class_id" binding:"required"`
-	StudentID  string           `json:"student_id" binding:"required"`
-	Date       time.Time        `json:"date" binding:"required"`
-	Status     AttendanceStatus `json:"status" binding:"required,oneof=PRESENT ABSENT LATE EXCUSED"`
-	Notes      *string          `json:"notes,omitempty"`
+	ClassID   string           `json:"class_id" binding:"required"`
+	StudentID string           `json:"student_id" binding:"required"`
+	Date      time.Time        `json:"date" binding:"required"`
+	Status    AttendanceStatus `json:"status" binding:"required,oneof=PRESENT ABSENT LATE EXCUSED"`
+	Notes     *string          `json:"notes,omitempty"`
 }
 
 // UpdateAttendanceRequest represents the request to update an attendance record
 type UpdateAttendanceRequest struct {
 	Status AttendanceStatus `json:"status" binding:"required,oneof=PRESENT ABSENT LATE EXCUSED"`
-	Notes  *string         `json:"notes,omitempty"`
+	Notes  *string          `json:"notes,omitempty"`
 }
 
 // AttendanceResponse represents the attendance data returned to clients
 type AttendanceResponse struct {
-	ID           string           `json:"id"`
-	ClassID      string           `json:"class_id"`
-	ClassName    *string          `json:"class_name,omitempty"`
-	StudentID    string           `json:"student_id"`
-	StudentName  *string          `json:"student_name,omitempty"`
-	Date         string           `json:"date"`
-	Status       AttendanceStatus `json:"status"`
-	Notes        *string          `json:"notes,omitempty"`
-	RecordedBy   string           `json:"recorded_by"`
-	RecordedByName *string       `json:"recorded_by_name,omitempty"`
-	CreatedAt    string           `json:"created_at"`
-	UpdatedAt    string           `json:"updated_at"`
+	ID             string           `json:"id"`
+	ClassID        string           `json:"class_id"`
+	ClassName      *string          `json:"class_name,omitempty"`
+	StudentID      string           `json:"student_id"`
+	StudentName    *string          `json:"student_name,omitempty"`
+	Date           string           `json:"date"`
+	Status         AttendanceStatus `json:"status"`
+	Notes          *string          `json:"notes,omitempty"`
+	RecordedBy     string           `json:"recorded_by"`
+	RecordedByName *string          `json:"recorded_by_name,omitempty"`
+	CreatedAt      string           `json:"created_at"`
+	UpdatedAt      string           `json:"updated_at"`
 }
 
 // ToAttendanceResponse converts AttendanceRecord to AttendanceResponse
@@ -78,18 +78,18 @@ func (a *AttendanceRecord) ToAttendanceResponse(className, studentName, recorded
 	}
 
 	return &AttendanceResponse{
-		ID:            a.ID,
-		ClassID:       a.ClassID,
-		ClassName:     classNamePtr,
-		StudentID:     a.StudentID,
-		StudentName:   studentNamePtr,
-		Date:          a.Date.Format("2006-01-02"),
-		Status:        AttendanceStatus(a.Status),
-		Notes:         notesPtr,
-		RecordedBy:    a.RecordedBy,
+		ID:             a.ID,
+		ClassID:        a.ClassID,
+		ClassName:      classNamePtr,
+		StudentID:      a.StudentID,
+		StudentName:    studentNamePtr,
+		Date:           a.Date.Format("2006-01-02"),
+		Status:         AttendanceStatus(a.Status),
+		Notes:          notesPtr,
+		RecordedBy:     a.RecordedBy,
 		RecordedByName: recordedByNamePtr,
-		CreatedAt:     a.CreatedAt.Format(time.RFC3339),
-		UpdatedAt:     a.UpdatedAt.Format(time.RFC3339),
+		CreatedAt:      a.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:      a.UpdatedAt.Format(time.RFC3339),
 	}
 }
 

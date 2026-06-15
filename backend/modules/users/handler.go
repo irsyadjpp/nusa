@@ -117,9 +117,9 @@ func (h *Handler) GetUsers(c *gin.Context) {
 	}
 
 	response.Success(c, gin.H{
-		"users": users,
-		"total": total,
-		"page":  page,
+		"users":     users,
+		"total":     total,
+		"page":      page,
 		"page_size": pageSize,
 	})
 }

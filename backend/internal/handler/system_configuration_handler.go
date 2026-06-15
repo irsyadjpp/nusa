@@ -358,6 +358,6 @@ func (h *SystemConfigurationHandler) ListSystemConfigurations(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ListSystemConfigurationsResponse{
 		SystemConfigurations: configResponses,
-		Total:                 len(resp.SystemConfigurations),
+		Total:                len(resp.SystemConfigurations),
 	})
 }

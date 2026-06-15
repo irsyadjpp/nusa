@@ -193,7 +193,6 @@ func (r *AnnouncementRepository) Count(ctx context.Context, schoolID *string, pr
 	if isActive != nil {
 		query += fmt.Sprintf(" AND is_active = $%d", argCount)
 		args = append(args, *isActive)
-		argCount++
 	}
 
 	var count int

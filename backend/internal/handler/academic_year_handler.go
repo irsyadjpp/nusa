@@ -79,8 +79,8 @@ func (h *AcademicYearHandler) CreateAcademicYear(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, dto.AcademicYearResponse{
-		ID:        resp.AcademicYearID,
-		Status:    string(resp.Status),
+		ID:     resp.AcademicYearID,
+		Status: string(resp.Status),
 	})
 }
 

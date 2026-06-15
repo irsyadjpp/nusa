@@ -9,9 +9,9 @@ import (
 // TPSetAggregate represents the TPSet aggregate root
 // This is the aggregate root that enforces all invariants for TPSet
 type TPSetAggregate struct {
-	tpSet      *TPSet
-	versions   []*TPVersion
-	schoolID   string
+	tpSet    *TPSet
+	versions []*TPVersion
+	schoolID string
 }
 
 // NewTPSetAggregate creates a new TPSet aggregate
@@ -27,9 +27,9 @@ func NewTPSetAggregate(tpSet *TPSet, schoolID string) (*TPSetAggregate, error) {
 	}
 
 	return &TPSetAggregate{
-		tpSet:      tpSet,
-		versions:   []*TPVersion{},
-		schoolID:   schoolID,
+		tpSet:    tpSet,
+		versions: []*TPVersion{},
+		schoolID: schoolID,
 	}, nil
 }
 
@@ -153,14 +153,14 @@ func (a *TPSetAggregate) GetSchoolID() string {
 
 // TPVersion represents a TPSet version entity
 type TPVersion struct {
-	ID               string        `json:"id" db:"id"`
-	TPSetID          string        `json:"tp_set_id" db:"tp_set_id"`
-	VersionNo        int           `json:"version_no" db:"version_no"`
-	IsCurrentVersion bool          `json:"is_current_version" db:"is_current_version"`
+	ID               string         `json:"id" db:"id"`
+	TPSetID          string         `json:"tp_set_id" db:"tp_set_id"`
+	VersionNo        int            `json:"version_no" db:"version_no"`
+	IsCurrentVersion bool           `json:"is_current_version" db:"is_current_version"`
 	Status           WorkflowStatus `json:"status" db:"status"`
-	Content          interface{}   `json:"content" db:"content"`
-	CreatedAt        time.Time     `json:"created_at" db:"created_at"`
-	CreatedBy        string        `json:"created_by" db:"created_by"`
+	Content          interface{}    `json:"content" db:"content"`
+	CreatedAt        time.Time      `json:"created_at" db:"created_at"`
+	CreatedBy        string         `json:"created_by" db:"created_by"`
 }
 
 // Domain Exceptions for TPSet Aggregate

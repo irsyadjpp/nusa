@@ -84,9 +84,9 @@ func (h *Handler) GetSchools(c *gin.Context) {
 	}
 
 	response.Success(c, gin.H{
-		"schools": schools,
-		"total":   total,
-		"page":    page,
+		"schools":   schools,
+		"total":     total,
+		"page":      page,
 		"page_size": pageSize,
 	})
 }

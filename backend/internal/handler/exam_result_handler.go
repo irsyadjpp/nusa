@@ -171,9 +171,9 @@ func (h *ExamResultHandler) ListExamResults(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.ExamResultListResponse{
 		ExamResults: examResultResponses,
-		Total:        total,
-		Page:         page,
-		PageSize:     pageSize,
+		Total:       total,
+		Page:        page,
+		PageSize:    pageSize,
 	})
 }
 

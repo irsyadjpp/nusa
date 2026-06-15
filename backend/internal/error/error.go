@@ -93,12 +93,12 @@ func ValidationError(message string) *AppError {
 }
 
 const (
-	ErrCodeValidation    = "VALIDATION_ERROR"
-	ErrCodeNotFound      = "NOT_FOUND"
-	ErrCodeUnauthorized  = "UNAUTHORIZED"
-	ErrCodeForbidden     = "FORBIDDEN"
-	ErrCodeConflict      = "CONFLICT"
-	ErrCodeInternal      = "INTERNAL_ERROR"
-	ErrCodeDatabase      = "DATABASE_ERROR"
-	ErrCodeExternalAPI   = "EXTERNAL_API_ERROR"
+	ErrCodeValidation   = "VALIDATION_ERROR"
+	ErrCodeNotFound     = "NOT_FOUND"
+	ErrCodeUnauthorized = "UNAUTHORIZED"
+	ErrCodeForbidden    = "FORBIDDEN"
+	ErrCodeConflict     = "CONFLICT"
+	ErrCodeInternal     = "INTERNAL_ERROR"
+	ErrCodeDatabase     = "DATABASE_ERROR"
+	ErrCodeExternalAPI  = "EXTERNAL_API_ERROR"
 )

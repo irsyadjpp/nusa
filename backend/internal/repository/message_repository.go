@@ -171,7 +171,6 @@ func (r *MessageRepository) Count(ctx context.Context, senderID, receiverID *str
 	if isRead != nil {
 		query += fmt.Sprintf(" AND is_read = $%d", argCount)
 		args = append(args, *isRead)
-		argCount++
 	}
 
 	var count int

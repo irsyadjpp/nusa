@@ -178,7 +178,6 @@ func (r *ScheduleRepository) Count(ctx context.Context, classID *string, dayOfWe
 	if isActive != nil {
 		query += fmt.Sprintf(" AND is_active = $%d", argCount)
 		args = append(args, *isActive)
-		argCount++
 	}
 
 	var count int

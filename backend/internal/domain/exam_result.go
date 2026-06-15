@@ -39,20 +39,20 @@ type UpdateExamResultRequest struct {
 
 // ExamResultResponse represents the exam result data returned to clients
 type ExamResultResponse struct {
-	ID            string     `json:"id"`
-	ExamID        string     `json:"exam_id"`
-	ExamDate      *string    `json:"exam_date,omitempty"`
-	ExamTitle     *string    `json:"exam_title,omitempty"`
-	StudentID     string     `json:"student_id"`
-	StudentName   *string    `json:"student_name,omitempty"`
-	Score         *float64   `json:"score,omitempty"`
-	Grade         *string    `json:"grade,omitempty"`
-	Remarks       *string    `json:"remarks,omitempty"`
-	GradedAt      *string    `json:"graded_at,omitempty"`
-	GradedBy      *string    `json:"graded_by,omitempty"`
-	GradedByName  *string    `json:"graded_by_name,omitempty"`
-	CreatedAt     string     `json:"created_at"`
-	UpdatedAt     string     `json:"updated_at"`
+	ID           string   `json:"id"`
+	ExamID       string   `json:"exam_id"`
+	ExamDate     *string  `json:"exam_date,omitempty"`
+	ExamTitle    *string  `json:"exam_title,omitempty"`
+	StudentID    string   `json:"student_id"`
+	StudentName  *string  `json:"student_name,omitempty"`
+	Score        *float64 `json:"score,omitempty"`
+	Grade        *string  `json:"grade,omitempty"`
+	Remarks      *string  `json:"remarks,omitempty"`
+	GradedAt     *string  `json:"graded_at,omitempty"`
+	GradedBy     *string  `json:"graded_by,omitempty"`
+	GradedByName *string  `json:"graded_by_name,omitempty"`
+	CreatedAt    string   `json:"created_at"`
+	UpdatedAt    string   `json:"updated_at"`
 }
 
 // ToExamResultResponse converts ExamResult to ExamResultResponse

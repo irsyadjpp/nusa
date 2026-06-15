@@ -32,7 +32,7 @@ type AssessmentItem struct {
 	Options        []AssessmentItemOption `json:"options,omitempty"`
 	Points         float64                `json:"points"`
 	IsMandatory    bool                   `json:"is_mandatory"`
-	Metadata       interface{} `json:"metadata,omitempty"`
+	Metadata       interface{}            `json:"metadata,omitempty"`
 }
 
 // AssessmentItemOption represents a choice for multiple choice questions
@@ -61,9 +61,9 @@ type ScoringGuideline struct {
 
 // Assessment represents an assessment
 type Assessment struct {
-	ID                      string            `json:"id" db:"id"`
-	TPID                    string            `json:"tp_id" db:"tp_id"`                                         // References TP instead of ModulAjar
-	TPVersionNo             int               `json:"tp_version_no" db:"tp_version_no"`                         // Snapshot of TP version
+	ID                      string                    `json:"id" db:"id"`
+	TPID                    string                    `json:"tp_id" db:"tp_id"`                                         // References TP instead of ModulAjar
+	TPVersionNo             int                       `json:"tp_version_no" db:"tp_version_no"`                         // Snapshot of TP version
 	SuccessCriteriaSnapshot []SuccessCriteriaSnapshot `json:"success_criteria_snapshot" db:"success_criteria_snapshot"` // Snapshot of TP's SuccessCriteriaSnapshot
 	// Expanded TP Snapshot
 	TPTitleSnapshot              *string            `json:"tp_title_snapshot,omitempty" db:"tp_title_snapshot"`
@@ -89,10 +89,10 @@ type Assessment struct {
 
 // AssessmentResponse represents the response for assessment with related data
 type AssessmentResponse struct {
-	ID                      string            `json:"id"`
-	TPID                    string            `json:"tp_id"`
-	TPTitle                 string            `json:"tp_title"`
-	TPVersionNo             int               `json:"tp_version_no"`
+	ID                      string                    `json:"id"`
+	TPID                    string                    `json:"tp_id"`
+	TPTitle                 string                    `json:"tp_title"`
+	TPVersionNo             int                       `json:"tp_version_no"`
 	SuccessCriteriaSnapshot []SuccessCriteriaSnapshot `json:"success_criteria_snapshot"`
 	// Expanded TP Snapshot
 	TPLearningObjectivesSnapshot []string           `json:"tp_learning_objectives_snapshot,omitempty"`
@@ -119,16 +119,16 @@ type AssessmentResponse struct {
 
 // CreateAssessmentRequest represents the request to create an assessment
 type CreateAssessmentRequest struct {
-	TPID                         string             `json:"tp_id" binding:"required"`
-	TPVersionNo                  int                `json:"tp_version_no" binding:"required,min=1"`
-	SuccessCriteriaSnapshot      []SuccessCriteriaSnapshot  `json:"success_criteria_snapshot" binding:"required"`
-	TPTitleSnapshot              *string            `json:"tp_title_snapshot,omitempty"`
-	TPLearningObjectivesSnapshot []string           `json:"tp_learning_objectives_snapshot,omitempty"`
-	TPTimeAllocationSnapshot     map[string]int     `json:"tp_time_allocation_snapshot,omitempty"`
-	AssessmentType               AssessmentType     `json:"assessment_type" binding:"required,oneof=FORMATIVE SUMMATIVE"`
-	AssessmentItems              []AssessmentItem   `json:"assessment_items" binding:"required"`
-	AnswerKey                    []AnswerKey        `json:"answer_key" binding:"required"`
-	ScoringGuidelines            []ScoringGuideline `json:"scoring_guidelines" binding:"required"`
+	TPID                         string                    `json:"tp_id" binding:"required"`
+	TPVersionNo                  int                       `json:"tp_version_no" binding:"required,min=1"`
+	SuccessCriteriaSnapshot      []SuccessCriteriaSnapshot `json:"success_criteria_snapshot" binding:"required"`
+	TPTitleSnapshot              *string                   `json:"tp_title_snapshot,omitempty"`
+	TPLearningObjectivesSnapshot []string                  `json:"tp_learning_objectives_snapshot,omitempty"`
+	TPTimeAllocationSnapshot     map[string]int            `json:"tp_time_allocation_snapshot,omitempty"`
+	AssessmentType               AssessmentType            `json:"assessment_type" binding:"required,oneof=FORMATIVE SUMMATIVE"`
+	AssessmentItems              []AssessmentItem          `json:"assessment_items" binding:"required"`
+	AnswerKey                    []AnswerKey               `json:"answer_key" binding:"required"`
+	ScoringGuidelines            []ScoringGuideline        `json:"scoring_guidelines" binding:"required"`
 }
 
 // UpdateAssessmentRequest represents the request to update an assessment
@@ -317,65 +317,65 @@ const (
 
 // Evaluation represents student performance evaluation (Child Entity of Evidence)
 type Evaluation struct {
-	ID                string           `json:"id" db:"id"`
-	StudentID         string           `json:"student_id" db:"student_id"`
-	RubricID          string           `json:"rubric_id" db:"rubric_id"`
-	EvidenceID        string           `json:"evidence_id" db:"evidence_id"`
-	UserID            string           `json:"user_id" db:"user_id"`
-	PerformanceScores interface{}      `json:"performance_scores" db:"performance_scores"`
-	TotalScore        int              `json:"total_score" db:"total_score"`
-	MaxScore          int              `json:"max_score" db:"max_score"`
+	ID                string                     `json:"id" db:"id"`
+	StudentID         string                     `json:"student_id" db:"student_id"`
+	RubricID          string                     `json:"rubric_id" db:"rubric_id"`
+	EvidenceID        string                     `json:"evidence_id" db:"evidence_id"`
+	UserID            string                     `json:"user_id" db:"user_id"`
+	PerformanceScores interface{}                `json:"performance_scores" db:"performance_scores"`
+	TotalScore        int                        `json:"total_score" db:"total_score"`
+	MaxScore          int                        `json:"max_score" db:"max_score"`
 	PerformanceLevel  EvaluationPerformanceLevel `json:"performance_level" db:"performance_level"`
-	TeacherFeedback   *string          `json:"teacher_feedback,omitempty" db:"teacher_feedback"`
-	RevisionNo        int              `json:"revision_no" db:"revision_no"`
-	IsCurrentVersion  bool             `json:"is_current_version" db:"is_current_version"`
-	ParentRevisionID  *string          `json:"parent_revision_id,omitempty" db:"parent_revision_id"`
-	EvaluatedAt       time.Time        `json:"evaluated_at" db:"evaluated_at"`
-	CreatedAt         time.Time        `json:"created_at" db:"created_at"`
-	UpdatedAt         time.Time        `json:"updated_at" db:"updated_at"`
+	TeacherFeedback   *string                    `json:"teacher_feedback,omitempty" db:"teacher_feedback"`
+	RevisionNo        int                        `json:"revision_no" db:"revision_no"`
+	IsCurrentVersion  bool                       `json:"is_current_version" db:"is_current_version"`
+	ParentRevisionID  *string                    `json:"parent_revision_id,omitempty" db:"parent_revision_id"`
+	EvaluatedAt       time.Time                  `json:"evaluated_at" db:"evaluated_at"`
+	CreatedAt         time.Time                  `json:"created_at" db:"created_at"`
+	UpdatedAt         time.Time                  `json:"updated_at" db:"updated_at"`
 }
 
 // EvaluationResponse represents the response for evaluation with related data
 type EvaluationResponse struct {
-	ID                string           `json:"id"`
-	StudentID         string           `json:"student_id"`
-	StudentName       string           `json:"student_name"`
-	RubricID          string           `json:"rubric_id"`
-	RubricType        string           `json:"rubric_type"`
-	EvidenceID        string           `json:"evidence_id"`
-	EvidenceType      string           `json:"evidence_type"`
-	UserID            string           `json:"user_id"`
-	UserName          string           `json:"user_name"`
-	PerformanceScores interface{}      `json:"performance_scores"`
-	TotalScore        int              `json:"total_score"`
-	MaxScore          int              `json:"max_score"`
+	ID                string                     `json:"id"`
+	StudentID         string                     `json:"student_id"`
+	StudentName       string                     `json:"student_name"`
+	RubricID          string                     `json:"rubric_id"`
+	RubricType        string                     `json:"rubric_type"`
+	EvidenceID        string                     `json:"evidence_id"`
+	EvidenceType      string                     `json:"evidence_type"`
+	UserID            string                     `json:"user_id"`
+	UserName          string                     `json:"user_name"`
+	PerformanceScores interface{}                `json:"performance_scores"`
+	TotalScore        int                        `json:"total_score"`
+	MaxScore          int                        `json:"max_score"`
 	PerformanceLevel  EvaluationPerformanceLevel `json:"performance_level"`
-	TeacherFeedback   *string          `json:"teacher_feedback,omitempty"`
-	RevisionNo        int              `json:"revision_no"`
-	EvaluatedAt       time.Time        `json:"evaluated_at"`
-	CreatedAt         time.Time        `json:"created_at"`
-	UpdatedAt         time.Time        `json:"updated_at"`
+	TeacherFeedback   *string                    `json:"teacher_feedback,omitempty"`
+	RevisionNo        int                        `json:"revision_no"`
+	EvaluatedAt       time.Time                  `json:"evaluated_at"`
+	CreatedAt         time.Time                  `json:"created_at"`
+	UpdatedAt         time.Time                  `json:"updated_at"`
 }
 
 // CreateEvaluationRequest represents the request to create an evaluation
 type CreateEvaluationRequest struct {
-	StudentID         string           `json:"student_id" binding:"required"`
-	RubricID          string           `json:"rubric_id" binding:"required"`
-	EvidenceID        string           `json:"evidence_id" binding:"required"`
-	PerformanceScores interface{}      `json:"performance_scores" binding:"required"`
-	TotalScore        int              `json:"total_score" binding:"required,min=0"`
-	MaxScore          int              `json:"max_score" binding:"required,min=1"`
+	StudentID         string                     `json:"student_id" binding:"required"`
+	RubricID          string                     `json:"rubric_id" binding:"required"`
+	EvidenceID        string                     `json:"evidence_id" binding:"required"`
+	PerformanceScores interface{}                `json:"performance_scores" binding:"required"`
+	TotalScore        int                        `json:"total_score" binding:"required,min=0"`
+	MaxScore          int                        `json:"max_score" binding:"required,min=1"`
 	PerformanceLevel  EvaluationPerformanceLevel `json:"performance_level" binding:"required,oneof=EXCELLENT PROFICIENT DEVELOPING BEGINNING"`
-	TeacherFeedback   *string          `json:"teacher_feedback,omitempty"`
+	TeacherFeedback   *string                    `json:"teacher_feedback,omitempty"`
 }
 
 // UpdateEvaluationRequest represents the request to update an evaluation
 type UpdateEvaluationRequest struct {
-	PerformanceScores interface{}       `json:"performance_scores,omitempty"`
-	TotalScore        *int              `json:"total_score,omitempty"`
-	MaxScore          *int              `json:"max_score,omitempty"`
+	PerformanceScores interface{}                 `json:"performance_scores,omitempty"`
+	TotalScore        *int                        `json:"total_score,omitempty"`
+	MaxScore          *int                        `json:"max_score,omitempty"`
 	PerformanceLevel  *EvaluationPerformanceLevel `json:"performance_level,omitempty"`
-	TeacherFeedback   *string           `json:"teacher_feedback,omitempty"`
+	TeacherFeedback   *string                     `json:"teacher_feedback,omitempty"`
 }
 
 // EvaluationFeedbackHistory represents the history of teacher feedback changes for an evaluation

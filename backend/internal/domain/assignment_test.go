@@ -51,12 +51,12 @@ func TestAssignment_Validate(t *testing.T) {
 		{
 			name: "missing assessment_id",
 			assignment: &Assignment{
-				ID:      "assignment-123",
-				ClassID: "class-123",
-				Title:   "Math Homework",
-				DueDate: time.Now().Add(7 * 24 * time.Hour),
+				ID:       "assignment-123",
+				ClassID:  "class-123",
+				Title:    "Math Homework",
+				DueDate:  time.Now().Add(7 * 24 * time.Hour),
 				MaxScore: 100,
-				Status:  string(AssignmentStatusAssigned),
+				Status:   string(AssignmentStatusAssigned),
 			},
 			wantErr: true,
 		},

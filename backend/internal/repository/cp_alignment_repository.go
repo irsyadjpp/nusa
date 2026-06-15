@@ -223,7 +223,7 @@ func (r *CPAlignmentRepository) CheckAlignmentExists(ctx context.Context, curric
 		WHERE curriculum_subject_id = $1 AND graduate_profile_dimension_id = $2 AND is_active = true
 	`
 	args := []interface{}{curriculumSubjectID, graduateProfileDimensionID}
-	
+
 	if excludeID != "" {
 		query += ` AND id != $3`
 		args = append(args, excludeID)
@@ -313,7 +313,9 @@ func (r *CPAlignmentRepository) BulkCreateCPAlignments(ctx context.Context, alig
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() {
+		_ = tx.Rollback() // Ignore error, transaction might already be committed
+	}()
 
 	query := `
 		INSERT INTO cp_alignments (id, curriculum_subject_id, graduate_profile_dimension_id, alignment_description, is_active, created_by, created_at, updated_at)

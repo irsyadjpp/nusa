@@ -178,9 +178,9 @@ func (h *AssignmentHandler) ListAssignments(c *gin.Context) {
 
 	c.JSON(http.StatusOK, dto.AssignmentListResponse{
 		Assignments: assignmentResponses,
-		Total:        total,
-		Page:         page,
-		PageSize:     pageSize,
+		Total:       total,
+		Page:        page,
+		PageSize:    pageSize,
 	})
 }
 

@@ -138,9 +138,9 @@ func TestExamResult_IsGraded(t *testing.T) {
 			want: false,
 		},
 		{
-			name: "exam result is not graded (both missing)",
+			name:       "exam result is not graded (both missing)",
 			examResult: &ExamResult{},
-			want: false,
+			want:       false,
 		},
 	}
 

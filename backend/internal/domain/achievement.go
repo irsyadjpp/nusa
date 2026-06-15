@@ -7,27 +7,27 @@ import (
 // Achievement represents calculated student achievement (NOT a persistent entity)
 // This is calculated by AchievementService at runtime
 type Achievement struct {
-	StudentID           string                  `json:"student_id"`
-	StudentName         string                  `json:"student_name"`
-	TPID                string                  `json:"tp_id"`
-	TPTitle             string                  `json:"tp_title"`
-	CompetencyCode      string                  `json:"competency_code"`
-	OverallScore        float64                 `json:"overall_score"`
-	EvaluationPerformanceLevel    EvaluationPerformanceLevel        `json:"performance_level"`
-	MasteryStatus       MasteryStatus           `json:"mastery_status"`
-	CompetencyBreakdown []CompetencyAchievement `json:"competency_breakdown"`
-	EvidenceCount       int                     `json:"evidence_count"`
-	EvaluationCount     int                     `json:"evaluation_count"`
-	CalculatedAt        time.Time               `json:"calculated_at"`
+	StudentID                  string                     `json:"student_id"`
+	StudentName                string                     `json:"student_name"`
+	TPID                       string                     `json:"tp_id"`
+	TPTitle                    string                     `json:"tp_title"`
+	CompetencyCode             string                     `json:"competency_code"`
+	OverallScore               float64                    `json:"overall_score"`
+	EvaluationPerformanceLevel EvaluationPerformanceLevel `json:"performance_level"`
+	MasteryStatus              MasteryStatus              `json:"mastery_status"`
+	CompetencyBreakdown        []CompetencyAchievement    `json:"competency_breakdown"`
+	EvidenceCount              int                        `json:"evidence_count"`
+	EvaluationCount            int                        `json:"evaluation_count"`
+	CalculatedAt               time.Time                  `json:"calculated_at"`
 }
 
 // CompetencyAchievement represents achievement for a specific competency
 type CompetencyAchievement struct {
-	CompetencyName   string           `json:"competency_name"`
-	Score            float64          `json:"score"`
+	CompetencyName             string                     `json:"competency_name"`
+	Score                      float64                    `json:"score"`
 	EvaluationPerformanceLevel EvaluationPerformanceLevel `json:"performance_level"`
-	MasteryStatus    MasteryStatus    `json:"mastery_status"`
-	EvidenceCount    int              `json:"evidence_count"`
+	MasteryStatus              MasteryStatus              `json:"mastery_status"`
+	EvidenceCount              int                        `json:"evidence_count"`
 }
 
 // MasteryStatus represents the mastery status
@@ -81,36 +81,36 @@ type AchievementSummary struct {
 
 // SubjectAchievement represents achievement per subject
 type SubjectAchievement struct {
-	SubjectID        string           `json:"subject_id"`
-	SubjectName      string           `json:"subject_name"`
-	AverageScore     float64          `json:"average_score"`
+	SubjectID                  string                     `json:"subject_id"`
+	SubjectName                string                     `json:"subject_name"`
+	AverageScore               float64                    `json:"average_score"`
 	EvaluationPerformanceLevel EvaluationPerformanceLevel `json:"performance_level"`
-	CompetencyCount  int              `json:"competency_count"`
-	MasteredCount    int              `json:"mastered_count"`
+	CompetencyCount            int                        `json:"competency_count"`
+	MasteredCount              int                        `json:"mastered_count"`
 }
 
 // ClassAchievement represents achievement summary for a class
 type ClassAchievement struct {
-	ClassID                 string                    `json:"class_id"`
-	ClassName               string                    `json:"class_name"`
-	SubjectID               string                    `json:"subject_id"`
-	SubjectName             string                    `json:"subject_name"`
-	TotalStudents           int                       `json:"total_students"`
-	ClassAverage            float64                   `json:"class_average"`
-	PerformanceDistribution map[EvaluationPerformanceLevel]int  `json:"performance_distribution"`
-	MasteryDistribution     map[MasteryStatus]int     `json:"mastery_distribution"`
-	StudentAchievements     []StudentClassAchievement `json:"student_achievements"`
-	CalculatedAt            time.Time                 `json:"calculated_at"`
+	ClassID                 string                             `json:"class_id"`
+	ClassName               string                             `json:"class_name"`
+	SubjectID               string                             `json:"subject_id"`
+	SubjectName             string                             `json:"subject_name"`
+	TotalStudents           int                                `json:"total_students"`
+	ClassAverage            float64                            `json:"class_average"`
+	PerformanceDistribution map[EvaluationPerformanceLevel]int `json:"performance_distribution"`
+	MasteryDistribution     map[MasteryStatus]int              `json:"mastery_distribution"`
+	StudentAchievements     []StudentClassAchievement          `json:"student_achievements"`
+	CalculatedAt            time.Time                          `json:"calculated_at"`
 }
 
 // StudentClassAchievement represents a student's achievement within a class
 type StudentClassAchievement struct {
-	StudentID        string           `json:"student_id"`
-	StudentName      string           `json:"student_name"`
-	AverageScore     float64          `json:"average_score"`
+	StudentID                  string                     `json:"student_id"`
+	StudentName                string                     `json:"student_name"`
+	AverageScore               float64                    `json:"average_score"`
 	EvaluationPerformanceLevel EvaluationPerformanceLevel `json:"performance_level"`
-	MasteryStatus    MasteryStatus    `json:"mastery_status"`
-	Rank             int              `json:"rank"`
+	MasteryStatus              MasteryStatus              `json:"mastery_status"`
+	Rank                       int                        `json:"rank"`
 }
 
 // AchievementService is a domain service for calculating achievements at runtime
@@ -154,15 +154,15 @@ func (s *AchievementService) CalculateStudentAchievement(
 	competencyBreakdown := s.buildCompetencyBreakdown(evaluations)
 
 	return &Achievement{
-		StudentID:           studentID,
-		TPID:                tpID,
-		OverallScore:        overallScore,
-		EvaluationPerformanceLevel:    performanceLevel,
-		MasteryStatus:       masteryStatus,
-		CompetencyBreakdown: competencyBreakdown,
-		EvidenceCount:       len(evaluations),
-		EvaluationCount:     len(evaluations),
-		CalculatedAt:        time.Now(),
+		StudentID:                  studentID,
+		TPID:                       tpID,
+		OverallScore:               overallScore,
+		EvaluationPerformanceLevel: performanceLevel,
+		MasteryStatus:              masteryStatus,
+		CompetencyBreakdown:        competencyBreakdown,
+		EvidenceCount:              len(evaluations),
+		EvaluationCount:            len(evaluations),
+		CalculatedAt:               time.Now(),
 	}, nil
 }
 

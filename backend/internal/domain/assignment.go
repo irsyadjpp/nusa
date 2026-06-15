@@ -35,20 +35,20 @@ type Assignment struct {
 
 // CreateAssignmentRequest represents the request to create an assignment
 type CreateAssignmentRequest struct {
-	ClassID      string     `json:"class_id" binding:"required"`
-	AssessmentID string     `json:"assessment_id" binding:"required"`
-	Title        string     `json:"title" binding:"required,max=255"`
-	Description  *string    `json:"description,omitempty"`
-	DueDate      time.Time  `json:"due_date" binding:"required"`
-	MaxScore     int        `json:"max_score" binding:"required,min=1"`
+	ClassID      string    `json:"class_id" binding:"required"`
+	AssessmentID string    `json:"assessment_id" binding:"required"`
+	Title        string    `json:"title" binding:"required,max=255"`
+	Description  *string   `json:"description,omitempty"`
+	DueDate      time.Time `json:"due_date" binding:"required"`
+	MaxScore     int       `json:"max_score" binding:"required,min=1"`
 }
 
 // UpdateAssignmentRequest represents the request to update an assignment
 type UpdateAssignmentRequest struct {
-	Title       *string          `json:"title,omitempty" binding:"omitempty,max=255"`
-	Description *string          `json:"description,omitempty"`
-	DueDate     *time.Time       `json:"due_date,omitempty"`
-	MaxScore    *int             `json:"max_score,omitempty" binding:"omitempty,min=1"`
+	Title       *string           `json:"title,omitempty" binding:"omitempty,max=255"`
+	Description *string           `json:"description,omitempty"`
+	DueDate     *time.Time        `json:"due_date,omitempty"`
+	MaxScore    *int              `json:"max_score,omitempty" binding:"omitempty,min=1"`
 	Status      *AssignmentStatus `json:"status,omitempty" binding:"omitempty,oneof=ASSIGNED IN_PROGRESS SUBMITTED GRADED CANCELLED"`
 }
 

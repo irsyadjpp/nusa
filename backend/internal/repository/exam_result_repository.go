@@ -207,7 +207,6 @@ func (r *ExamResultRepository) Count(ctx context.Context, examID, studentID, gra
 	if grade != nil {
 		query += fmt.Sprintf(" AND grade = $%d", argCount)
 		args = append(args, *grade)
-		argCount++
 	}
 
 	var count int

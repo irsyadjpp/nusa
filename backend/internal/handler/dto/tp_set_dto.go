@@ -33,10 +33,10 @@ type TPSetResponse struct {
 // ListTPSetsResponse represents the response body for listing TP Sets
 // Matches OpenAPI schema for GET /tp-sets
 type ListTPSetsResponse struct {
-	TPSets  []TPSetResponse `json:"tp_sets"`
-	Total   int             `json:"total"`
-	Page    int             `json:"page"`
-	PageSize int            `json:"page_size"`
+	TPSets   []TPSetResponse `json:"tp_sets"`
+	Total    int             `json:"total"`
+	Page     int             `json:"page"`
+	PageSize int             `json:"page_size"`
 }
 
 // ApproveTPSetRequest represents the request body for approving a TP Set
@@ -107,10 +107,10 @@ type TPResponse struct {
 // ListTPsResponse represents the response body for listing TPs
 // Matches OpenAPI schema for GET /tps
 type ListTPsResponse struct {
-	TPs     []TPResponse `json:"tps"`
-	Total   int          `json:"total"`
-	Page    int          `json:"page"`
-	PageSize int         `json:"page_size"`
+	TPs      []TPResponse `json:"tps"`
+	Total    int          `json:"total"`
+	Page     int          `json:"page"`
+	PageSize int          `json:"page_size"`
 }
 
 // ErrorResponse represents the standard error response

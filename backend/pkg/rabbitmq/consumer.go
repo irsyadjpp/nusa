@@ -82,13 +82,17 @@ func (c *Consumer) consume(ctx context.Context, handler MessageHandler) error {
 					time.Sleep(c.retryInterval)
 					continue
 				}
-				msg.Ack(false)
+				if err := msg.Ack(false); err != nil {
+					log.Printf("Error sending ACK: %v", err)
+				}
 				break
 			}
 
 			if retryCount >= c.maxRetries {
 				log.Printf("Max retries reached, sending to DLQ")
-				msg.Nack(false, false)
+				if err := msg.Nack(false, false); err != nil {
+					log.Printf("Error sending NACK: %v", err)
+				}
 			}
 		}
 	}

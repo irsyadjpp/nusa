@@ -39,12 +39,12 @@ func (h *ExamHandler) CreateExam(c *gin.Context) {
 	}
 
 	domainReq := &domain.CreateExamRequest{
-		ClassID:        req.ClassID,
-		AssessmentID:   req.AssessmentID,
-		ExamDate:       req.ExamDate,
-		StartTime:      req.StartTime,
+		ClassID:         req.ClassID,
+		AssessmentID:    req.AssessmentID,
+		ExamDate:        req.ExamDate,
+		StartTime:       req.StartTime,
 		DurationMinutes: req.DurationMinutes,
-		Room:           req.Room,
+		Room:            req.Room,
 	}
 
 	exam, err := h.examService.CreateExam(c.Request.Context(), domainReq, authCtx.UserID)
@@ -55,22 +55,22 @@ func (h *ExamHandler) CreateExam(c *gin.Context) {
 
 	domainResponse := exam.ToExamResponse("", "", "", "")
 	response := &dto.ExamResponse{
-		ID:             domainResponse.ID,
-		ClassID:        domainResponse.ClassID,
-		ClassName:      domainResponse.ClassName,
-		AssessmentID:   domainResponse.AssessmentID,
-		AssessmentType: domainResponse.AssessmentType,
-		ExamDate:       domainResponse.ExamDate,
-		StartTime:      domainResponse.StartTime,
+		ID:              domainResponse.ID,
+		ClassID:         domainResponse.ClassID,
+		ClassName:       domainResponse.ClassName,
+		AssessmentID:    domainResponse.AssessmentID,
+		AssessmentType:  domainResponse.AssessmentType,
+		ExamDate:        domainResponse.ExamDate,
+		StartTime:       domainResponse.StartTime,
 		DurationMinutes: domainResponse.DurationMinutes,
-		Room:           domainResponse.Room,
-		Status:         dto.ExamStatus(domainResponse.Status),
-		CreatedAt:      domainResponse.CreatedAt,
-		UpdatedAt:      domainResponse.UpdatedAt,
-		CreatedBy:      domainResponse.CreatedBy,
-		CreatedByName:  domainResponse.CreatedByName,
-		UpdatedBy:      domainResponse.UpdatedBy,
-		UpdatedByName:  domainResponse.UpdatedByName,
+		Room:            domainResponse.Room,
+		Status:          dto.ExamStatus(domainResponse.Status),
+		CreatedAt:       domainResponse.CreatedAt,
+		UpdatedAt:       domainResponse.UpdatedAt,
+		CreatedBy:       domainResponse.CreatedBy,
+		CreatedByName:   domainResponse.CreatedByName,
+		UpdatedBy:       domainResponse.UpdatedBy,
+		UpdatedByName:   domainResponse.UpdatedByName,
 	}
 
 	c.JSON(http.StatusCreated, response)
@@ -95,22 +95,22 @@ func (h *ExamHandler) GetExam(c *gin.Context) {
 
 	domainResponse := exam.ToExamResponse("", "", "", "")
 	response := &dto.ExamResponse{
-		ID:             domainResponse.ID,
-		ClassID:        domainResponse.ClassID,
-		ClassName:      domainResponse.ClassName,
-		AssessmentID:   domainResponse.AssessmentID,
-		AssessmentType: domainResponse.AssessmentType,
-		ExamDate:       domainResponse.ExamDate,
-		StartTime:      domainResponse.StartTime,
+		ID:              domainResponse.ID,
+		ClassID:         domainResponse.ClassID,
+		ClassName:       domainResponse.ClassName,
+		AssessmentID:    domainResponse.AssessmentID,
+		AssessmentType:  domainResponse.AssessmentType,
+		ExamDate:        domainResponse.ExamDate,
+		StartTime:       domainResponse.StartTime,
 		DurationMinutes: domainResponse.DurationMinutes,
-		Room:           domainResponse.Room,
-		Status:         dto.ExamStatus(domainResponse.Status),
-		CreatedAt:      domainResponse.CreatedAt,
-		UpdatedAt:      domainResponse.UpdatedAt,
-		CreatedBy:      domainResponse.CreatedBy,
-		CreatedByName:  domainResponse.CreatedByName,
-		UpdatedBy:      domainResponse.UpdatedBy,
-		UpdatedByName:  domainResponse.UpdatedByName,
+		Room:            domainResponse.Room,
+		Status:          dto.ExamStatus(domainResponse.Status),
+		CreatedAt:       domainResponse.CreatedAt,
+		UpdatedAt:       domainResponse.UpdatedAt,
+		CreatedBy:       domainResponse.CreatedBy,
+		CreatedByName:   domainResponse.CreatedByName,
+		UpdatedBy:       domainResponse.UpdatedBy,
+		UpdatedByName:   domainResponse.UpdatedByName,
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -157,22 +157,22 @@ func (h *ExamHandler) ListExams(c *gin.Context) {
 	for i, exam := range exams {
 		domainResponse := exam.ToExamResponse("", "", "", "")
 		examResponses[i] = &dto.ExamResponse{
-			ID:             domainResponse.ID,
-			ClassID:        domainResponse.ClassID,
-			ClassName:      domainResponse.ClassName,
-			AssessmentID:   domainResponse.AssessmentID,
-			AssessmentType: domainResponse.AssessmentType,
-			ExamDate:       domainResponse.ExamDate,
-			StartTime:      domainResponse.StartTime,
+			ID:              domainResponse.ID,
+			ClassID:         domainResponse.ClassID,
+			ClassName:       domainResponse.ClassName,
+			AssessmentID:    domainResponse.AssessmentID,
+			AssessmentType:  domainResponse.AssessmentType,
+			ExamDate:        domainResponse.ExamDate,
+			StartTime:       domainResponse.StartTime,
 			DurationMinutes: domainResponse.DurationMinutes,
-			Room:           domainResponse.Room,
-			Status:         dto.ExamStatus(domainResponse.Status),
-			CreatedAt:      domainResponse.CreatedAt,
-			UpdatedAt:      domainResponse.UpdatedAt,
-			CreatedBy:      domainResponse.CreatedBy,
-			CreatedByName:  domainResponse.CreatedByName,
-			UpdatedBy:      domainResponse.UpdatedBy,
-			UpdatedByName:  domainResponse.UpdatedByName,
+			Room:            domainResponse.Room,
+			Status:          dto.ExamStatus(domainResponse.Status),
+			CreatedAt:       domainResponse.CreatedAt,
+			UpdatedAt:       domainResponse.UpdatedAt,
+			CreatedBy:       domainResponse.CreatedBy,
+			CreatedByName:   domainResponse.CreatedByName,
+			UpdatedBy:       domainResponse.UpdatedBy,
+			UpdatedByName:   domainResponse.UpdatedByName,
 		}
 	}
 
@@ -202,11 +202,11 @@ func (h *ExamHandler) UpdateExam(c *gin.Context) {
 	}
 
 	domainReq := &domain.UpdateExamRequest{
-		ExamDate:       req.ExamDate,
-		StartTime:      req.StartTime,
+		ExamDate:        req.ExamDate,
+		StartTime:       req.StartTime,
 		DurationMinutes: req.DurationMinutes,
-		Room:           req.Room,
-		Status:         (*domain.ExamStatus)(req.Status),
+		Room:            req.Room,
+		Status:          (*domain.ExamStatus)(req.Status),
 	}
 
 	exam, err := h.examService.UpdateExam(c.Request.Context(), id, domainReq, authCtx.UserID)
@@ -217,22 +217,22 @@ func (h *ExamHandler) UpdateExam(c *gin.Context) {
 
 	domainResponse := exam.ToExamResponse("", "", "", "")
 	response := &dto.ExamResponse{
-		ID:             domainResponse.ID,
-		ClassID:        domainResponse.ClassID,
-		ClassName:      domainResponse.ClassName,
-		AssessmentID:   domainResponse.AssessmentID,
-		AssessmentType: domainResponse.AssessmentType,
-		ExamDate:       domainResponse.ExamDate,
-		StartTime:      domainResponse.StartTime,
+		ID:              domainResponse.ID,
+		ClassID:         domainResponse.ClassID,
+		ClassName:       domainResponse.ClassName,
+		AssessmentID:    domainResponse.AssessmentID,
+		AssessmentType:  domainResponse.AssessmentType,
+		ExamDate:        domainResponse.ExamDate,
+		StartTime:       domainResponse.StartTime,
 		DurationMinutes: domainResponse.DurationMinutes,
-		Room:           domainResponse.Room,
-		Status:         dto.ExamStatus(domainResponse.Status),
-		CreatedAt:      domainResponse.CreatedAt,
-		UpdatedAt:      domainResponse.UpdatedAt,
-		CreatedBy:      domainResponse.CreatedBy,
-		CreatedByName:  domainResponse.CreatedByName,
-		UpdatedBy:      domainResponse.UpdatedBy,
-		UpdatedByName:  domainResponse.UpdatedByName,
+		Room:            domainResponse.Room,
+		Status:          dto.ExamStatus(domainResponse.Status),
+		CreatedAt:       domainResponse.CreatedAt,
+		UpdatedAt:       domainResponse.UpdatedAt,
+		CreatedBy:       domainResponse.CreatedBy,
+		CreatedByName:   domainResponse.CreatedByName,
+		UpdatedBy:       domainResponse.UpdatedBy,
+		UpdatedByName:   domainResponse.UpdatedByName,
 	}
 
 	c.JSON(http.StatusOK, response)
@@ -278,22 +278,22 @@ func (h *ExamHandler) GetClassExams(c *gin.Context) {
 	for i, exam := range exams {
 		domainResponse := exam.ToExamResponse("", "", "", "")
 		examResponses[i] = &dto.ExamResponse{
-			ID:             domainResponse.ID,
-			ClassID:        domainResponse.ClassID,
-			ClassName:      domainResponse.ClassName,
-			AssessmentID:   domainResponse.AssessmentID,
-			AssessmentType: domainResponse.AssessmentType,
-			ExamDate:       domainResponse.ExamDate,
-			StartTime:      domainResponse.StartTime,
+			ID:              domainResponse.ID,
+			ClassID:         domainResponse.ClassID,
+			ClassName:       domainResponse.ClassName,
+			AssessmentID:    domainResponse.AssessmentID,
+			AssessmentType:  domainResponse.AssessmentType,
+			ExamDate:        domainResponse.ExamDate,
+			StartTime:       domainResponse.StartTime,
 			DurationMinutes: domainResponse.DurationMinutes,
-			Room:           domainResponse.Room,
-			Status:         dto.ExamStatus(domainResponse.Status),
-			CreatedAt:      domainResponse.CreatedAt,
-			UpdatedAt:      domainResponse.UpdatedAt,
-			CreatedBy:      domainResponse.CreatedBy,
-			CreatedByName:  domainResponse.CreatedByName,
-			UpdatedBy:      domainResponse.UpdatedBy,
-			UpdatedByName:  domainResponse.UpdatedByName,
+			Room:            domainResponse.Room,
+			Status:          dto.ExamStatus(domainResponse.Status),
+			CreatedAt:       domainResponse.CreatedAt,
+			UpdatedAt:       domainResponse.UpdatedAt,
+			CreatedBy:       domainResponse.CreatedBy,
+			CreatedByName:   domainResponse.CreatedByName,
+			UpdatedBy:       domainResponse.UpdatedBy,
+			UpdatedByName:   domainResponse.UpdatedByName,
 		}
 	}
 

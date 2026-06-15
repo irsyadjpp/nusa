@@ -133,7 +133,7 @@ func AuditLogging() gin.HandlerFunc {
 		go func() {
 			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 			defer cancel()
-			globalAuditLogger.LogAudit(ctx, auditLog)
+			_ = globalAuditLogger.LogAudit(ctx, auditLog) // Ignore error in async context
 		}()
 
 		c.Next()

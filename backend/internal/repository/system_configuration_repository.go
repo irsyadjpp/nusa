@@ -249,7 +249,7 @@ func (r *SystemConfigurationRepository) DeleteSystemConfiguration(ctx context.Co
 func (r *SystemConfigurationRepository) CheckKeyExists(ctx context.Context, key string, excludeID string) (bool, error) {
 	query := `SELECT COUNT(*) FROM system_configurations WHERE key = $1`
 	args := []interface{}{key}
-	
+
 	if excludeID != "" {
 		query += ` AND id != $2`
 		args = append(args, excludeID)

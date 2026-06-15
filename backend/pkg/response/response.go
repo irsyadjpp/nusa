@@ -23,16 +23,16 @@ type ValidationErrorResponse struct {
 }
 
 type PaginationResponse struct {
-	Success bool        `json:"success"`
-	Data    interface{} `json:"data"`
+	Success bool           `json:"success"`
+	Data    interface{}    `json:"data"`
 	Meta    PaginationMeta `json:"meta"`
 }
 
 type PaginationMeta struct {
-	Page      int   `json:"page"`
-	PerPage   int   `json:"per_page"`
-	Total     int64 `json:"total"`
-	TotalPages int  `json:"total_pages"`
+	Page       int   `json:"page"`
+	PerPage    int   `json:"per_page"`
+	Total      int64 `json:"total"`
+	TotalPages int   `json:"total_pages"`
 }
 
 func Success(c *gin.Context, data interface{}) {

@@ -173,7 +173,9 @@ func (r *AcademicYearRepository) ActivateAcademicYear(ctx context.Context, id st
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() {
+		_ = tx.Rollback() // Ignore error, transaction might already be committed
+	}()
 
 	// Deactivate all active academic years in the same school
 	deactivateQuery := `

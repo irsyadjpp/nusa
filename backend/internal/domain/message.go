@@ -7,24 +7,24 @@ import (
 
 // Message represents a user message
 type Message struct {
-	ID             string     `json:"id" db:"id"`
-	SenderID       string     `json:"sender_id" db:"sender_id"`
-	ReceiverID     string     `json:"receiver_id" db:"receiver_id"`
-	Subject        *string    `json:"subject,omitempty" db:"subject"`
-	Content        string     `json:"content" db:"content"`
-	IsRead         bool       `json:"is_read" db:"is_read"`
-	ReadAt         *time.Time `json:"read_at,omitempty" db:"read_at"`
-	ParentMessageID *string   `json:"parent_message_id,omitempty" db:"parent_message_id"`
-	CreatedAt      time.Time  `json:"created_at" db:"created_at"`
-	DeletedAt      *time.Time `json:"deleted_at,omitempty" db:"deleted_at"`
+	ID              string     `json:"id" db:"id"`
+	SenderID        string     `json:"sender_id" db:"sender_id"`
+	ReceiverID      string     `json:"receiver_id" db:"receiver_id"`
+	Subject         *string    `json:"subject,omitempty" db:"subject"`
+	Content         string     `json:"content" db:"content"`
+	IsRead          bool       `json:"is_read" db:"is_read"`
+	ReadAt          *time.Time `json:"read_at,omitempty" db:"read_at"`
+	ParentMessageID *string    `json:"parent_message_id,omitempty" db:"parent_message_id"`
+	CreatedAt       time.Time  `json:"created_at" db:"created_at"`
+	DeletedAt       *time.Time `json:"deleted_at,omitempty" db:"deleted_at"`
 }
 
 // CreateMessageRequest represents the request to create a message
 type CreateMessageRequest struct {
-	SenderID       string  `json:"sender_id" binding:"required"`
-	ReceiverID     string  `json:"receiver_id" binding:"required"`
-	Subject        *string `json:"subject,omitempty" binding:"omitempty,max=255"`
-	Content        string  `json:"content" binding:"required"`
+	SenderID        string  `json:"sender_id" binding:"required"`
+	ReceiverID      string  `json:"receiver_id" binding:"required"`
+	Subject         *string `json:"subject,omitempty" binding:"omitempty,max=255"`
+	Content         string  `json:"content" binding:"required"`
 	ParentMessageID *string `json:"parent_message_id,omitempty"`
 }
 
@@ -35,17 +35,17 @@ type UpdateMessageRequest struct {
 
 // MessageResponse represents the message data returned to clients
 type MessageResponse struct {
-	ID             string  `json:"id"`
-	SenderID       string  `json:"sender_id"`
-	SenderName     *string `json:"sender_name,omitempty"`
-	ReceiverID     string  `json:"receiver_id"`
-	ReceiverName   *string `json:"receiver_name,omitempty"`
-	Subject        *string `json:"subject,omitempty"`
-	Content        string  `json:"content"`
-	IsRead         bool    `json:"is_read"`
-	ReadAt         *string `json:"read_at,omitempty"`
+	ID              string  `json:"id"`
+	SenderID        string  `json:"sender_id"`
+	SenderName      *string `json:"sender_name,omitempty"`
+	ReceiverID      string  `json:"receiver_id"`
+	ReceiverName    *string `json:"receiver_name,omitempty"`
+	Subject         *string `json:"subject,omitempty"`
+	Content         string  `json:"content"`
+	IsRead          bool    `json:"is_read"`
+	ReadAt          *string `json:"read_at,omitempty"`
 	ParentMessageID *string `json:"parent_message_id,omitempty"`
-	CreatedAt      string  `json:"created_at"`
+	CreatedAt       string  `json:"created_at"`
 }
 
 // ToMessageResponse converts Message to MessageResponse
@@ -70,17 +70,17 @@ func (m *Message) ToMessageResponse(senderName, receiverName string) *MessageRes
 	}
 
 	return &MessageResponse{
-		ID:             m.ID,
-		SenderID:       m.SenderID,
-		SenderName:     senderNamePtr,
-		ReceiverID:     m.ReceiverID,
-		ReceiverName:   receiverNamePtr,
-		Subject:        subjectPtr,
-		Content:        m.Content,
-		IsRead:         m.IsRead,
-		ReadAt:         readAtPtr,
+		ID:              m.ID,
+		SenderID:        m.SenderID,
+		SenderName:      senderNamePtr,
+		ReceiverID:      m.ReceiverID,
+		ReceiverName:    receiverNamePtr,
+		Subject:         subjectPtr,
+		Content:         m.Content,
+		IsRead:          m.IsRead,
+		ReadAt:          readAtPtr,
 		ParentMessageID: parentMessageIDPtr,
-		CreatedAt:      m.CreatedAt.Format(time.RFC3339),
+		CreatedAt:       m.CreatedAt.Format(time.RFC3339),
 	}
 }
 

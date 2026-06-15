@@ -7,18 +7,18 @@ import (
 
 // Schedule represents a class schedule
 type Schedule struct {
-	ID         string     `json:"id" db:"id"`
-	ClassID    string     `json:"class_id" db:"class_id"`
-	DayOfWeek  int        `json:"day_of_week" db:"day_of_week"`
-	StartTime  string     `json:"start_time" db:"start_time"`
-	EndTime    string     `json:"end_time" db:"end_time"`
-	Room       *string    `json:"room,omitempty" db:"room"`
-	IsActive   bool       `json:"is_active" db:"is_active"`
-	CreatedAt  time.Time  `json:"created_at" db:"created_at"`
-	UpdatedAt  time.Time  `json:"updated_at" db:"updated_at"`
-	CreatedBy  *string    `json:"created_by,omitempty" db:"created_by"`
-	UpdatedBy  *string    `json:"updated_by,omitempty" db:"updated_by"`
-	DeletedAt  *time.Time `json:"deleted_at,omitempty" db:"deleted_at"`
+	ID        string     `json:"id" db:"id"`
+	ClassID   string     `json:"class_id" db:"class_id"`
+	DayOfWeek int        `json:"day_of_week" db:"day_of_week"`
+	StartTime string     `json:"start_time" db:"start_time"`
+	EndTime   string     `json:"end_time" db:"end_time"`
+	Room      *string    `json:"room,omitempty" db:"room"`
+	IsActive  bool       `json:"is_active" db:"is_active"`
+	CreatedAt time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at" db:"updated_at"`
+	CreatedBy *string    `json:"created_by,omitempty" db:"created_by"`
+	UpdatedBy *string    `json:"updated_by,omitempty" db:"updated_by"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty" db:"deleted_at"`
 }
 
 // CreateScheduleRequest represents the request to create a schedule
@@ -41,17 +41,17 @@ type UpdateScheduleRequest struct {
 
 // ScheduleResponse represents the schedule data returned to clients
 type ScheduleResponse struct {
-	ID         string  `json:"id"`
-	ClassID    string  `json:"class_id"`
-	ClassName  *string `json:"class_name,omitempty"`
-	DayOfWeek  int     `json:"day_of_week"`
-	DayName    string  `json:"day_name"`
-	StartTime  string  `json:"start_time"`
-	EndTime    string  `json:"end_time"`
-	Room       *string `json:"room,omitempty"`
-	IsActive   bool    `json:"is_active"`
-	CreatedAt  string  `json:"created_at"`
-	UpdatedAt  string  `json:"updated_at"`
+	ID        string  `json:"id"`
+	ClassID   string  `json:"class_id"`
+	ClassName *string `json:"class_name,omitempty"`
+	DayOfWeek int     `json:"day_of_week"`
+	DayName   string  `json:"day_name"`
+	StartTime string  `json:"start_time"`
+	EndTime   string  `json:"end_time"`
+	Room      *string `json:"room,omitempty"`
+	IsActive  bool    `json:"is_active"`
+	CreatedAt string  `json:"created_at"`
+	UpdatedAt string  `json:"updated_at"`
 }
 
 // ToScheduleResponse converts Schedule to ScheduleResponse

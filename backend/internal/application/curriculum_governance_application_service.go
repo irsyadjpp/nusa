@@ -744,9 +744,9 @@ func (s *CurriculumGovernanceApplicationService) GenerateCPAlignmentReport(ctx c
 	threshold := domain.GetDefaultCPAlignmentThreshold()
 	config, err := s.systemConfigRepo.GetSystemConfigurationByKey(ctx, domain.ConfigCPAlignmentThreshold)
 	if err == nil && config != nil {
-		// Parse the value (assuming it's stored as a string representation of a number)
-		// In a real implementation, you'd parse based on value_type
-		// For now, use the default
+		// TODO: Parse the value based on value_type when implemented
+		// For now, use the default threshold
+		_ = config // Avoid unused variable warning
 	}
 
 	// 3. Generate report

@@ -33,12 +33,12 @@ const (
 
 // CreateNotificationRequest represents the request to create a notification
 type CreateNotificationRequest struct {
-	UserID    string          `json:"user_id" binding:"required"`
-	Title     string          `json:"title" binding:"required,max=255"`
-	Message   string          `json:"message" binding:"required"`
+	UserID    string           `json:"user_id" binding:"required"`
+	Title     string           `json:"title" binding:"required,max=255"`
+	Message   string           `json:"message" binding:"required"`
 	Type      NotificationType `json:"type" binding:"required,oneof=INFO WARNING ERROR SUCCESS"`
-	ActionURL *string         `json:"action_url,omitempty" binding:"omitempty,max=500"`
-	Metadata  json.RawMessage `json:"metadata,omitempty"`
+	ActionURL *string          `json:"action_url,omitempty" binding:"omitempty,max=500"`
+	Metadata  json.RawMessage  `json:"metadata,omitempty"`
 }
 
 // UpdateNotificationRequest represents the request to update a notification
@@ -48,17 +48,17 @@ type UpdateNotificationRequest struct {
 
 // NotificationResponse represents the notification data returned to clients
 type NotificationResponse struct {
-	ID        string          `json:"id"`
-	UserID    string          `json:"user_id"`
-	UserName  *string         `json:"user_name,omitempty"`
-	Title     string          `json:"title"`
-	Message   string          `json:"message"`
+	ID        string           `json:"id"`
+	UserID    string           `json:"user_id"`
+	UserName  *string          `json:"user_name,omitempty"`
+	Title     string           `json:"title"`
+	Message   string           `json:"message"`
 	Type      NotificationType `json:"type"`
-	IsRead    bool            `json:"is_read"`
-	ReadAt    *string         `json:"read_at,omitempty"`
-	ActionURL *string         `json:"action_url,omitempty"`
-	Metadata  json.RawMessage `json:"metadata,omitempty"`
-	CreatedAt string          `json:"created_at"`
+	IsRead    bool             `json:"is_read"`
+	ReadAt    *string          `json:"read_at,omitempty"`
+	ActionURL *string          `json:"action_url,omitempty"`
+	Metadata  json.RawMessage  `json:"metadata,omitempty"`
+	CreatedAt string           `json:"created_at"`
 }
 
 // ToNotificationResponse converts Notification to NotificationResponse

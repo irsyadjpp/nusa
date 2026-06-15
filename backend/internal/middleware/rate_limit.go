@@ -13,8 +13,8 @@ import (
 type RateLimiter struct {
 	visitors map[string]*visitor
 	mu       sync.RWMutex
-	rate     int           // requests per minute
-	burst    int           // burst size
+	rate     int // requests per minute
+	burst    int // burst size
 }
 
 type visitor struct {
@@ -29,10 +29,10 @@ func NewRateLimiter(rate, burst int) *RateLimiter {
 		rate:     rate,
 		burst:    burst,
 	}
-	
+
 	// Start cleanup goroutine
 	go rl.cleanup()
-	
+
 	return rl
 }
 
@@ -40,7 +40,7 @@ func NewRateLimiter(rate, burst int) *RateLimiter {
 func (rl *RateLimiter) cleanup() {
 	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
-	
+
 	for range ticker.C {
 		rl.mu.Lock()
 		for ip, v := range rl.visitors {
@@ -56,10 +56,10 @@ func (rl *RateLimiter) cleanup() {
 func (rl *RateLimiter) Allow(ip string) bool {
 	rl.mu.Lock()
 	defer rl.mu.Unlock()
-	
+
 	now := time.Now()
 	v, exists := rl.visitors[ip]
-	
+
 	if !exists {
 		rl.visitors[ip] = &visitor{
 			requests:  []time.Time{now},
@@ -67,24 +67,24 @@ func (rl *RateLimiter) Allow(ip string) bool {
 		}
 		return true
 	}
-	
+
 	// Reset if minute has passed
 	if now.Sub(v.lastReset) >= time.Minute {
 		v.requests = []time.Time{now}
 		v.lastReset = now
 		return true
 	}
-	
+
 	// Check burst limit
 	if len(v.requests) >= rl.burst {
 		return false
 	}
-	
+
 	// Check rate limit
 	if len(v.requests) >= rl.rate {
 		return false
 	}
-	
+
 	v.requests = append(v.requests, now)
 	return true
 }
@@ -93,17 +93,17 @@ func (rl *RateLimiter) Allow(ip string) bool {
 func (rl *RateLimiter) GetRateLimit(ip string) (remaining, reset int) {
 	rl.mu.RLock()
 	defer rl.mu.RUnlock()
-	
+
 	v, exists := rl.visitors[ip]
 	if !exists {
 		return rl.rate, int(time.Now().Add(time.Minute).Unix())
 	}
-	
+
 	remaining = rl.rate - len(v.requests)
 	if remaining < 0 {
 		remaining = 0
 	}
-	
+
 	reset = int(v.lastReset.Add(time.Minute).Unix())
 	return
 }
@@ -122,30 +122,30 @@ func RateLimit() gin.HandlerFunc {
 		// Default rate limit if not initialized
 		InitRateLimiter(100, 20)
 	}
-	
+
 	return func(c *gin.Context) {
 		ip := c.ClientIP()
-		
+
 		if !globalRateLimiter.Allow(ip) {
 			remaining, reset := globalRateLimiter.GetRateLimit(ip)
-			
+
 			c.Header("X-RateLimit-Limit", fmt.Sprintf("%d", globalRateLimiter.rate))
 			c.Header("X-RateLimit-Remaining", fmt.Sprintf("%d", remaining))
 			c.Header("X-RateLimit-Reset", fmt.Sprintf("%d", reset))
 			c.Header("Retry-After", "60")
-			
+
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"error": "Rate limit exceeded. Please try again later.",
 			})
 			c.Abort()
 			return
 		}
-		
+
 		remaining, reset := globalRateLimiter.GetRateLimit(ip)
 		c.Header("X-RateLimit-Limit", fmt.Sprintf("%d", globalRateLimiter.rate))
 		c.Header("X-RateLimit-Remaining", fmt.Sprintf("%d", remaining))
 		c.Header("X-RateLimit-Reset", fmt.Sprintf("%d", reset))
-		
+
 		c.Next()
 	}
 }

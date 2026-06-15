@@ -151,7 +151,7 @@ type CreateAcademicYearRequest struct {
 	Name        string    `json:"name" binding:"required,min=1,max=100"`
 	StartDate   time.Time `json:"start_date" binding:"required"`
 	EndDate     time.Time `json:"end_date" binding:"required"`
-	Description string    `json:"description,omitempty,max=500"`
+	Description string    `json:"description,omitempty" binding:"max=500"`
 }
 
 // Validate performs validation on the request

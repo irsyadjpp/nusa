@@ -357,20 +357,20 @@ func (s *TPSetApplicationService) ListTPSets(ctx context.Context, query *ListTPS
 
 // CreateTPCommand represents the command to create a TP
 type CreateTPCommand struct {
-	TPSetID           string
-	SequenceNumber    int
-	CPID              string
-	SubjectID         string
-	PhaseID           string
-	ElementID         *string
-	SubelementID      *string
-	Title             *string
+	TPSetID            string
+	SequenceNumber     int
+	CPID               string
+	SubjectID          string
+	PhaseID            string
+	ElementID          *string
+	SubelementID       *string
+	Title              *string
 	LearningObjectives map[string]interface{}
-	TimeAllocation    map[string]interface{}
-	Prerequisites     string
-	EstimatedWeeks    *int
-	SuccessCriteria  map[string]interface{}
-	UserID            string // Authenticated user ID
+	TimeAllocation     map[string]interface{}
+	Prerequisites      string
+	EstimatedWeeks     *int
+	SuccessCriteria    map[string]interface{}
+	UserID             string // Authenticated user ID
 }
 
 // CreateTPResponse represents the response for creating a TP
@@ -410,24 +410,24 @@ func (s *TPSetApplicationService) CreateTP(ctx context.Context, cmd *CreateTPCom
 
 	// 5. Create domain TP
 	tp := &domain.TP{
-		ID:                generateTPID(),
-		TPSetID:           cmd.TPSetID,
-		SequenceNumber:    cmd.SequenceNumber,
-		CPID:              cmd.CPID,
-		SubjectID:         cmd.SubjectID,
-		PhaseID:           cmd.PhaseID,
-		ElementID:         cmd.ElementID,
-		SubelementID:      cmd.SubelementID,
-		UserID:            cmd.UserID,
-		Status:            domain.WorkflowStatusDraft,
-		Title:             cmd.Title,
+		ID:                 generateTPID(),
+		TPSetID:            cmd.TPSetID,
+		SequenceNumber:     cmd.SequenceNumber,
+		CPID:               cmd.CPID,
+		SubjectID:          cmd.SubjectID,
+		PhaseID:            cmd.PhaseID,
+		ElementID:          getStringValue(cmd.ElementID),
+		SubelementID:       getStringValue(cmd.SubelementID),
+		UserID:             cmd.UserID,
+		Status:             domain.WorkflowStatusDraft,
+		Title:              cmd.Title,
 		LearningObjectives: cmd.LearningObjectives,
-		TimeAllocation:    cmd.TimeAllocation,
-		Prerequisites:     cmd.Prerequisites,
-		EstimatedWeeks:    cmd.EstimatedWeeks,
-		SuccessCriteria:   cmd.SuccessCriteria,
-		VersionNo:         1,
-		IsCurrentVersion:  true,
+		TimeAllocation:     cmd.TimeAllocation,
+		Prerequisites:      cmd.Prerequisites,
+		EstimatedWeeks:     cmd.EstimatedWeeks,
+		SuccessCriteria:    cmd.SuccessCriteria,
+		VersionNo:          1,
+		IsCurrentVersion:   true,
 	}
 
 	// 6. Transaction boundary: Persist TP
@@ -443,19 +443,19 @@ func (s *TPSetApplicationService) CreateTP(ctx context.Context, cmd *CreateTPCom
 
 // ListTPsQuery represents the query to list TPs
 type ListTPsQuery struct {
-	TPSetID *string
-	CPID    *string
-	Status  *domain.WorkflowStatus
-	UserID  string // Authenticated user ID
-	Page    int
+	TPSetID  *string
+	CPID     *string
+	Status   *domain.WorkflowStatus
+	UserID   string // Authenticated user ID
+	Page     int
 	PageSize int
 }
 
 // ListTPsResponse represents the response for listing TPs
 type ListTPsResponse struct {
-	TPs     []*domain.TP
-	Total   int
-	Page    int
+	TPs      []*domain.TP
+	Total    int
+	Page     int
 	PageSize int
 }
 
@@ -483,9 +483,9 @@ func (s *TPSetApplicationService) ListTPs(ctx context.Context, query *ListTPsQue
 	}
 
 	return &ListTPsResponse{
-		TPs:     tps,
-		Total:   len(tps),
-		Page:    query.Page,
+		TPs:      tps,
+		Total:    len(tps),
+		Page:     query.Page,
 		PageSize: query.PageSize,
 	}, nil
 }
@@ -544,4 +544,12 @@ func generateTPID() string {
 
 func now() time.Time {
 	return time.Now().UTC()
+}
+
+// getStringValue safely converts a string pointer to string value
+func getStringValue(ptr *string) string {
+	if ptr == nil {
+		return ""
+	}
+	return *ptr
 }

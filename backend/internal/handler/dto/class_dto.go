@@ -362,49 +362,49 @@ const (
 
 // CreateExamRequest represents the request to create an exam
 type CreateExamRequest struct {
-	ClassID        string     `json:"class_id" binding:"required"`
-	AssessmentID   string     `json:"assessment_id" binding:"required"`
-	ExamDate       time.Time  `json:"exam_date" binding:"required"`
-	StartTime      string     `json:"start_time" binding:"required"`
-	DurationMinutes int        `json:"duration_minutes" binding:"required,min=1"`
-	Room           *string    `json:"room,omitempty" binding:"omitempty,max=100"`
+	ClassID         string    `json:"class_id" binding:"required"`
+	AssessmentID    string    `json:"assessment_id" binding:"required"`
+	ExamDate        time.Time `json:"exam_date" binding:"required"`
+	StartTime       string    `json:"start_time" binding:"required"`
+	DurationMinutes int       `json:"duration_minutes" binding:"required,min=1"`
+	Room            *string   `json:"room,omitempty" binding:"omitempty,max=100"`
 }
 
 // UpdateExamRequest represents the request to update an exam
 type UpdateExamRequest struct {
-	ExamDate       *time.Time  `json:"exam_date,omitempty"`
-	StartTime      *string    `json:"start_time,omitempty" binding:"omitempty"`
-	DurationMinutes *int      `json:"duration_minutes,omitempty" binding:"omitempty,min=1"`
-	Room           *string    `json:"room,omitempty" binding:"omitempty,max=100"`
-	Status         *ExamStatus `json:"status,omitempty" binding:"omitempty,oneof=SCHEDULED IN_PROGRESS COMPLETED CANCELLED"`
+	ExamDate        *time.Time  `json:"exam_date,omitempty"`
+	StartTime       *string     `json:"start_time,omitempty" binding:"omitempty"`
+	DurationMinutes *int        `json:"duration_minutes,omitempty" binding:"omitempty,min=1"`
+	Room            *string     `json:"room,omitempty" binding:"omitempty,max=100"`
+	Status          *ExamStatus `json:"status,omitempty" binding:"omitempty,oneof=SCHEDULED IN_PROGRESS COMPLETED CANCELLED"`
 }
 
 // ExamResponse represents the exam response
 type ExamResponse struct {
-	ID             string     `json:"id"`
-	ClassID        string     `json:"class_id"`
-	ClassName      *string    `json:"class_name,omitempty"`
-	AssessmentID   string     `json:"assessment_id"`
-	AssessmentType *string    `json:"assessment_type,omitempty"`
-	ExamDate       string     `json:"exam_date"`
-	StartTime      string     `json:"start_time"`
+	ID              string     `json:"id"`
+	ClassID         string     `json:"class_id"`
+	ClassName       *string    `json:"class_name,omitempty"`
+	AssessmentID    string     `json:"assessment_id"`
+	AssessmentType  *string    `json:"assessment_type,omitempty"`
+	ExamDate        string     `json:"exam_date"`
+	StartTime       string     `json:"start_time"`
 	DurationMinutes int        `json:"duration_minutes"`
-	Room           *string    `json:"room,omitempty"`
-	Status         ExamStatus `json:"status"`
-	CreatedAt      string     `json:"created_at"`
-	UpdatedAt      string     `json:"updated_at"`
-	CreatedBy      *string    `json:"created_by,omitempty"`
-	CreatedByName  *string    `json:"created_by_name,omitempty"`
-	UpdatedBy      *string    `json:"updated_by,omitempty"`
-	UpdatedByName  *string    `json:"updated_by_name,omitempty"`
+	Room            *string    `json:"room,omitempty"`
+	Status          ExamStatus `json:"status"`
+	CreatedAt       string     `json:"created_at"`
+	UpdatedAt       string     `json:"updated_at"`
+	CreatedBy       *string    `json:"created_by,omitempty"`
+	CreatedByName   *string    `json:"created_by_name,omitempty"`
+	UpdatedBy       *string    `json:"updated_by,omitempty"`
+	UpdatedByName   *string    `json:"updated_by_name,omitempty"`
 }
 
 // ExamListResponse represents the paginated exam list response
 type ExamListResponse struct {
-	Exams []*ExamResponse `json:"exams"`
-	Total int             `json:"total"`
-	Page  int             `json:"page"`
-	PageSize int          `json:"page_size"`
+	Exams    []*ExamResponse `json:"exams"`
+	Total    int             `json:"total"`
+	Page     int             `json:"page"`
+	PageSize int             `json:"page_size"`
 }
 
 // AssignmentStatus represents the status of an assignment
@@ -420,20 +420,20 @@ const (
 
 // CreateAssignmentRequest represents the request to create an assignment
 type CreateAssignmentRequest struct {
-	ClassID      string     `json:"class_id" binding:"required"`
-	AssessmentID string     `json:"assessment_id" binding:"required"`
-	Title        string     `json:"title" binding:"required,max=255"`
-	Description  *string    `json:"description,omitempty"`
-	DueDate      time.Time  `json:"due_date" binding:"required"`
-	MaxScore     int        `json:"max_score" binding:"required,min=1"`
+	ClassID      string    `json:"class_id" binding:"required"`
+	AssessmentID string    `json:"assessment_id" binding:"required"`
+	Title        string    `json:"title" binding:"required,max=255"`
+	Description  *string   `json:"description,omitempty"`
+	DueDate      time.Time `json:"due_date" binding:"required"`
+	MaxScore     int       `json:"max_score" binding:"required,min=1"`
 }
 
 // UpdateAssignmentRequest represents the request to update an assignment
 type UpdateAssignmentRequest struct {
-	Title       *string          `json:"title,omitempty" binding:"omitempty,max=255"`
-	Description *string          `json:"description,omitempty"`
-	DueDate     *time.Time       `json:"due_date,omitempty"`
-	MaxScore    *int             `json:"max_score,omitempty" binding:"omitempty,min=1"`
+	Title       *string           `json:"title,omitempty" binding:"omitempty,max=255"`
+	Description *string           `json:"description,omitempty"`
+	DueDate     *time.Time        `json:"due_date,omitempty"`
+	MaxScore    *int              `json:"max_score,omitempty" binding:"omitempty,min=1"`
 	Status      *AssignmentStatus `json:"status,omitempty" binding:"omitempty,oneof=ASSIGNED IN_PROGRESS SUBMITTED GRADED CANCELLED"`
 }
 
@@ -484,20 +484,20 @@ type UpdateExamResultRequest struct {
 
 // ExamResultResponse represents the exam result response
 type ExamResultResponse struct {
-	ID            string     `json:"id"`
-	ExamID        string     `json:"exam_id"`
-	ExamDate      *string    `json:"exam_date,omitempty"`
-	ExamTitle     *string    `json:"exam_title,omitempty"`
-	StudentID     string     `json:"student_id"`
-	StudentName   *string    `json:"student_name,omitempty"`
-	Score         *float64   `json:"score,omitempty"`
-	Grade         *string    `json:"grade,omitempty"`
-	Remarks       *string    `json:"remarks,omitempty"`
-	GradedAt      *string    `json:"graded_at,omitempty"`
-	GradedBy      *string    `json:"graded_by,omitempty"`
-	GradedByName  *string    `json:"graded_by_name,omitempty"`
-	CreatedAt     string     `json:"created_at"`
-	UpdatedAt     string     `json:"updated_at"`
+	ID           string   `json:"id"`
+	ExamID       string   `json:"exam_id"`
+	ExamDate     *string  `json:"exam_date,omitempty"`
+	ExamTitle    *string  `json:"exam_title,omitempty"`
+	StudentID    string   `json:"student_id"`
+	StudentName  *string  `json:"student_name,omitempty"`
+	Score        *float64 `json:"score,omitempty"`
+	Grade        *string  `json:"grade,omitempty"`
+	Remarks      *string  `json:"remarks,omitempty"`
+	GradedAt     *string  `json:"graded_at,omitempty"`
+	GradedBy     *string  `json:"graded_by,omitempty"`
+	GradedByName *string  `json:"graded_by_name,omitempty"`
+	CreatedAt    string   `json:"created_at"`
+	UpdatedAt    string   `json:"updated_at"`
 }
 
 // ExamResultListResponse represents the paginated exam result list response
@@ -505,5 +505,5 @@ type ExamResultListResponse struct {
 	ExamResults []*ExamResultResponse `json:"exam_results"`
 	Total       int                   `json:"total"`
 	Page        int                   `json:"page"`
-	PageSize    int                   `json:"page_size"
+	PageSize    int                   `json:"page_size"`
 }

@@ -12,7 +12,7 @@ import (
 // MessageService handles business logic for message operations
 type MessageService struct {
 	messageRepo *repository.MessageRepository
-	userRepo   *repository.UserRepository
+	userRepo    *repository.UserRepository
 }
 
 // NewMessageService creates a new message service
@@ -22,7 +22,7 @@ func NewMessageService(
 ) *MessageService {
 	return &MessageService{
 		messageRepo: messageRepo,
-		userRepo:   userRepo,
+		userRepo:    userRepo,
 	}
 }
 
@@ -52,14 +52,14 @@ func (s *MessageService) CreateMessage(ctx context.Context, req *domain.CreateMe
 	}
 
 	message := &domain.Message{
-		ID:             domain.NewID(),
-		SenderID:       req.SenderID,
-		ReceiverID:     req.ReceiverID,
-		Subject:        req.Subject,
-		Content:        req.Content,
-		IsRead:         false,
+		ID:              domain.NewID(),
+		SenderID:        req.SenderID,
+		ReceiverID:      req.ReceiverID,
+		Subject:         req.Subject,
+		Content:         req.Content,
+		IsRead:          false,
 		ParentMessageID: req.ParentMessageID,
-		CreatedAt:      time.Now(),
+		CreatedAt:       time.Now(),
 	}
 
 	if err := s.messageRepo.Create(ctx, message); err != nil {
