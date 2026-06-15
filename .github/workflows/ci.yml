@@ -8,6 +8,9 @@ on:
     branches: [main, develop]
   workflow_dispatch: # Allow manual trigger for debugging
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # ========================================
   # JOB 1: DISCOVER
