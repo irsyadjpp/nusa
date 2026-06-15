@@ -94,7 +94,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Go
-        uses: actions/setup-go@v5.0.2
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ needs.discover.outputs.go-version }}
           cache: true
@@ -124,7 +124,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Go
-        uses: actions/setup-go@v5.0.2
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ needs.discover.outputs.go-version }}
           cache: true
@@ -135,7 +135,7 @@ jobs:
           go test -v -race -coverprofile=coverage.out -short $(go list ./... | grep -v integration)
 
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v4.4.0
+        uses: actions/upload-artifact@v7
         with:
           name: unit-coverage
           path: backend/coverage.out
@@ -197,7 +197,7 @@ jobs:
           echo "✅ RabbitMQ ready"
 
       - name: Setup Go
-        uses: actions/setup-go@v5.0.2
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ needs.discover.outputs.go-version }}
           cache: true
@@ -263,7 +263,7 @@ jobs:
           go tool cover -html=integration-coverage.out -o coverage.html
 
       - name: Upload integration coverage
-        uses: actions/upload-artifact@v4.4.0
+        uses: actions/upload-artifact@v7
         with:
           name: integration-coverage
           path: |
@@ -290,7 +290,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Go
-        uses: actions/setup-go@v5.0.2
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ needs.discover.outputs.go-version }}
           cache: true
@@ -317,7 +317,7 @@ jobs:
           npm run build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4.4.0
+        uses: actions/upload-artifact@v7
         with:
           name: build-artifacts
           path: |
@@ -386,7 +386,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Go
-        uses: actions/setup-go@v5.0.2
+        uses: actions/setup-go@v6
         with:
           go-version: ${{ needs.discover.outputs.go-version }}
           cache: true
