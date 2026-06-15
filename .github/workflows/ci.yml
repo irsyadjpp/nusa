@@ -185,7 +185,7 @@ jobs:
           echo "✅ MinIO ready"
 
           # Qdrant
-          until curl -sf http://localhost:6333/health; do
+          until curl -sf http://localhost:6333/; do
             echo "Waiting for Qdrant..."; sleep 5
           done
           echo "✅ Qdrant ready"
