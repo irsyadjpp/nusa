@@ -106,7 +106,7 @@ jobs:
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6.1.0
         with:
-          version: v1.65.0
+          version: v1.62.0
           working-directory: ./backend
           args: --timeout=5m
 
@@ -156,9 +156,13 @@ jobs:
 
       - name: Start services via Podman Compose
         run: |
-          podman-compose -f docker-compose.dev.yml up -d
+          podman-compose -f docker-compose.dev.yml up -d || {
+            echo "❌ Service startup failed, checking logs..."
+            podman-compose -f docker-compose.dev.yml logs
+            exit 1
+          }
           echo "⏳ Waiting for services to be ready..."
-          sleep 20
+          sleep 30  # Increased wait time to ensure all services start
 
       - name: Verify services health
         run: |
@@ -268,7 +272,9 @@ jobs:
 
       - name: Stop services
         if: always() # Tetap stop meski test gagal
-        run: podman-compose -f docker-compose.dev.yml down
+        run: |
+          podman-compose -f docker-compose.dev.yml down -v || true
+          podman ps -a  # Show remaining containers for debugging
 
   # ========================================
   # JOB 5: BUILD
