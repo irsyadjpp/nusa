@@ -191,7 +191,7 @@ jobs:
           echo "✅ Qdrant ready"
 
           # RabbitMQ
-          until curl -sf http://guest:guest@localhost:15672/api/overview > /dev/null; do
+          until podman exec $(podman ps -qf "name=rabbitmq") rabbitmq-diagnostics -q ping; do
             echo "Waiting for RabbitMQ..."; sleep 5
           done
           echo "✅ RabbitMQ ready"
