@@ -64,7 +64,7 @@ jobs:
               "env_prefix": "MINIO"
             },
             "rabbitmq": {
-              "image": "rabbitmq:4-management-alpine",
+              "image": "rabbitmq:3-management-alpine",
               "port": 5672,
               "env_prefix": "RABBITMQ"
             }
@@ -191,7 +191,7 @@ jobs:
           echo "✅ Qdrant ready"
 
           # RabbitMQ
-          until podman inspect --format='{{.State.Health.Status}}' $(podman ps -qf "name=rabbitmq") 2>/dev/null | grep -q "healthy"; do
+          until nc -z localhost 5672; do
             echo "Waiting for RabbitMQ..."; sleep 5
           done
           echo "✅ RabbitMQ ready"
