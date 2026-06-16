@@ -11,14 +11,14 @@ import (
 
 // MessageService handles business logic for message operations
 type MessageService struct {
-	messageRepo *repository.MessageRepository
-	userRepo    *repository.UserRepository
+	messageRepo repository.MessageRepositoryInterface
+	userRepo    repository.UserRepositoryInterface
 }
 
 // NewMessageService creates a new message service
 func NewMessageService(
-	messageRepo *repository.MessageRepository,
-	userRepo *repository.UserRepository,
+	messageRepo repository.MessageRepositoryInterface,
+	userRepo repository.UserRepositoryInterface,
 ) *MessageService {
 	return &MessageService{
 		messageRepo: messageRepo,

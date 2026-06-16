@@ -11,16 +11,16 @@ import (
 
 // ExamResultService handles business logic for exam result operations
 type ExamResultService struct {
-	examResultRepo *repository.ExamResultRepository
-	examRepo       *repository.ExamRepository
-	userRepo       *repository.UserRepository
+	examResultRepo repository.ExamResultRepositoryInterface
+	examRepo       repository.ExamRepositoryInterface
+	userRepo       repository.UserRepositoryInterface
 }
 
 // NewExamResultService creates a new exam result service
 func NewExamResultService(
-	examResultRepo *repository.ExamResultRepository,
-	examRepo *repository.ExamRepository,
-	userRepo *repository.UserRepository,
+	examResultRepo repository.ExamResultRepositoryInterface,
+	examRepo repository.ExamRepositoryInterface,
+	userRepo repository.UserRepositoryInterface,
 ) *ExamResultService {
 	return &ExamResultService{
 		examResultRepo: examResultRepo,

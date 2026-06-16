@@ -882,3 +882,62 @@ func TestTPResponseStructure(t *testing.T) {
 		t.Error("UserID should not be empty")
 	}
 }
+
+// TestKKTPCriteria_ToJSON_ResultVerification tests ToJSON returns valid result
+func TestKKTPCriteria_ToJSON_ResultVerification(t *testing.T) {
+	criteria := KKTPCriteria{
+		MasteryThresholds: MasteryThresholds{
+			ExcellentThreshold:  90,
+			ProficientThreshold: 80,
+			DevelopingThreshold: 70,
+			BeginningThreshold:  60,
+		},
+		PerformanceIndicators: PerformanceIndicators{
+			Cognitive: []string{"Analyze", "Evaluate"},
+		},
+		MinimumRequirements: MinimumRequirements{
+			CoreCompetencies: []string{"Critical thinking"},
+		},
+	}
+
+	result, err := criteria.ToJSON()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result == nil {
+		t.Fatal("expected result, got nil")
+	}
+}
+
+// TestFromJSONToKKTPCriteria_ComplexStructure tests complex JSON structure
+func TestFromJSONToKKTPCriteria_ComplexStructure(t *testing.T) {
+	data := map[string]interface{}{
+		"mastery_thresholds": map[string]interface{}{
+			"excellent_threshold":  float64(90),
+			"proficient_threshold": float64(80),
+			"developing_threshold": float64(70),
+			"beginning_threshold":  float64(60),
+		},
+		"performance_indicators": map[string]interface{}{
+			"cognitive":   []interface{}{"Analyze", "Evaluate", "Create"},
+			"psychomotor": []interface{}{"Demonstrate", "Perform"},
+			"affective":   []interface{}{"Appreciate", "Value"},
+		},
+		"minimum_requirements": map[string]interface{}{
+			"core_competencies": []interface{}{"Critical thinking", "Problem solving"},
+			"essential_skills":  []interface{}{"Communication", "Collaboration"},
+			"required_evidence": []interface{}{"Project", "Presentation", "Exam"},
+		},
+	}
+
+	criteria, err := FromJSONToKKTPCriteria(data)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if criteria == nil {
+		t.Fatal("expected criteria, got nil")
+	}
+	if len(criteria.MinimumRequirements.CoreCompetencies) != 2 {
+		t.Errorf("expected 2 core competencies, got %d", len(criteria.MinimumRequirements.CoreCompetencies))
+	}
+}

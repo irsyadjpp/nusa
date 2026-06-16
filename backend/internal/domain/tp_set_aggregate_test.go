@@ -552,3 +552,358 @@ func TestUserID_Creation(t *testing.T) {
 		t.Errorf("Expected 'user-123', got %s", id.String())
 	}
 }
+
+func TestTPSetAggregate_ModifyCurrentVersion_NoCurrentVersion(t *testing.T) {
+	tpSet := &TPSet{
+		ID:        "test-id",
+		CPID:      "cp-123",
+		VersionNo: 1,
+	}
+
+	aggregate, err := NewTPSetAggregate(tpSet, "school-123")
+	if err != nil {
+		t.Fatalf("Failed to create aggregate: %v", err)
+	}
+
+	// Try to modify when there's no current version
+	err = aggregate.ModifyCurrentVersion(func(v *TPVersion) error {
+		v.Content = "modified content"
+		return nil
+	})
+
+	if err == nil {
+		t.Error("Expected error when no current version exists")
+	}
+}
+
+func TestTPSetAggregate_ModifyCurrentVersion_ModificationError(t *testing.T) {
+	tpSet := &TPSet{
+		ID:        "test-id",
+		CPID:      "cp-123",
+		VersionNo: 1,
+	}
+
+	aggregate, err := NewTPSetAggregate(tpSet, "school-123")
+	if err != nil {
+		t.Fatalf("Failed to create aggregate: %v", err)
+	}
+
+	// Add current version
+	version := &TPVersion{
+		ID:               "version-1",
+		TPSetID:          "test-id",
+		VersionNo:        1,
+		IsCurrentVersion: true,
+		Status:           WorkflowStatusDraft,
+	}
+
+	err = aggregate.AddVersion(version)
+	if err != nil {
+		t.Fatalf("Failed to add version: %v", err)
+	}
+
+	// Try to modify with an error in the modification function
+	err = aggregate.ModifyCurrentVersion(func(v *TPVersion) error {
+		return errors.New("modification error")
+	})
+
+	if err == nil {
+		t.Error("Expected error from modification function")
+	}
+}
+
+func TestTPSetAggregate_AddVersion_WrongVersionNumber(t *testing.T) {
+	tpSet := &TPSet{
+		ID:        "test-id",
+		CPID:      "cp-123",
+		VersionNo: 1,
+	}
+
+	aggregate, err := NewTPSetAggregate(tpSet, "school-123")
+	if err != nil {
+		t.Fatalf("Failed to create aggregate: %v", err)
+	}
+
+	// Add first version
+	version1 := &TPVersion{
+		ID:               "version-1",
+		TPSetID:          "test-id",
+		VersionNo:        1,
+		IsCurrentVersion: true,
+		Status:           WorkflowStatusDraft,
+	}
+
+	err = aggregate.AddVersion(version1)
+	if err != nil {
+		t.Fatalf("Failed to add version: %v", err)
+	}
+
+	// Try to add version with wrong version number (should be 2)
+	version2 := &TPVersion{
+		ID:               "version-2",
+		TPSetID:          "test-id",
+		VersionNo:        1, // Wrong - should be 2
+		IsCurrentVersion: false,
+		Status:           WorkflowStatusDraft,
+	}
+
+	err = aggregate.AddVersion(version2)
+	if err == nil {
+		t.Error("Expected error for wrong version number")
+	}
+}
+
+func TestTPSetAggregate_Getters(t *testing.T) {
+	tpSet := &TPSet{
+		ID:        "test-id",
+		CPID:      "cp-123",
+		VersionNo: 1,
+	}
+
+	aggregate, err := NewTPSetAggregate(tpSet, "school-123")
+	if err != nil {
+		t.Fatalf("Failed to create aggregate: %v", err)
+	}
+
+	// Test GetTPSet
+	retrievedTPSet := aggregate.GetTPSet()
+	if retrievedTPSet.ID != tpSet.ID {
+		t.Errorf("Expected TPSet ID %s, got %s", tpSet.ID, retrievedTPSet.ID)
+	}
+
+	// Test GetVersions
+	versions := aggregate.GetVersions()
+	if versions == nil {
+		t.Error("Expected versions to be initialized")
+	}
+
+	// Test GetSchoolID
+	schoolID := aggregate.GetSchoolID()
+	if schoolID != "school-123" {
+		t.Errorf("Expected school ID school-123, got %s", schoolID)
+	}
+}
+
+func TestTPSetAggregate_ErrorMethods(t *testing.T) {
+	// Test SchoolOwnershipRequiredException
+	err1 := &SchoolOwnershipRequiredException{}
+	if err1.Error() == "" {
+		t.Error("Expected error message, got empty string")
+	}
+
+	// Test CPReferenceRequiredException
+	err2 := &CPReferenceRequiredException{}
+	if err2.Error() == "" {
+		t.Error("Expected error message, got empty string")
+	}
+
+	// Test AtLeastOneVersionRequiredException
+	err3 := &AtLeastOneVersionRequiredException{}
+	if err3.Error() == "" {
+		t.Error("Expected error message, got empty string")
+	}
+
+	// Test MultipleCurrentVersionException
+	err4 := &MultipleCurrentVersionException{}
+	if err4.Error() == "" {
+		t.Error("Expected error message, got empty string")
+	}
+
+	// Test NonSequentialVersionNumberException
+	err5 := &NonSequentialVersionNumberException{}
+	if err5.Error() == "" {
+		t.Error("Expected error message, got empty string")
+	}
+
+	// Test ImmutableVersionException
+	err6 := &ImmutableVersionException{}
+	if err6.Error() == "" {
+		t.Error("Expected error message, got empty string")
+	}
+
+	// Test InvalidWorkflowStatusException
+	err7 := &InvalidWorkflowStatusException{
+		Status: "invalid",
+	}
+	if err7.Error() == "" {
+		t.Error("Expected error message, got empty string")
+	}
+
+	// Test NonSequentialVersionNumberException with fields
+	err8 := &NonSequentialVersionNumberException{
+		Expected: 2,
+		Actual:   3,
+	}
+	if err8.Error() == "" {
+		t.Error("Expected error message, got empty string")
+	}
+
+	// Test OwnerModificationException
+	err9 := &OwnerModificationException{}
+	if err9.Error() == "" {
+		t.Error("Expected error message, got empty string")
+	}
+}
+
+func TestValueObject_Equals(t *testing.T) {
+	// Test CPCode Equals
+	cpCode1, _ := NewCPCode("CP-123")
+	cpCode2, _ := NewCPCode("CP-123")
+	cpCode3, _ := NewCPCode("CP-456")
+
+	if !cpCode1.Equals(cpCode2) {
+		t.Error("Expected CPCode1 to equal CPCode2")
+	}
+	if cpCode1.Equals(cpCode3) {
+		t.Error("Expected CPCode1 to not equal CPCode3")
+	}
+	if cpCode1.Equals(nil) {
+		t.Error("Expected CPCode1 to not equal nil")
+	}
+	var nilCPCode *CPCode
+	if nilCPCode.Equals(cpCode1) {
+		t.Error("Expected nil CPCode to not equal CPCode1")
+	}
+
+	// Test CPText Equals
+	cpText1, _ := NewCPText("Sample CP text")
+	cpText2, _ := NewCPText("Sample CP text")
+	cpText3, _ := NewCPText("Different text")
+
+	if !cpText1.Equals(cpText2) {
+		t.Error("Expected CPText1 to equal CPText2")
+	}
+	if cpText1.Equals(cpText3) {
+		t.Error("Expected CPText1 to not equal CPText3")
+	}
+
+	// Test LearningObjective Equals
+	lo1, _ := NewLearningObjective("Students will understand...")
+	lo2, _ := NewLearningObjective("Students will understand...")
+	lo3, _ := NewLearningObjective("Different objective")
+
+	if !lo1.Equals(lo2) {
+		t.Error("Expected LO1 to equal LO2")
+	}
+	if lo1.Equals(lo3) {
+		t.Error("Expected LO1 to not equal LO3")
+	}
+
+	// Test TimeAllocation Equals
+	ta1, _ := NewTimeAllocation(2, 3, 30)
+	ta2, _ := NewTimeAllocation(2, 3, 30)
+	ta3, _ := NewTimeAllocation(2, 3, 45)
+
+	if !ta1.Equals(ta2) {
+		t.Error("Expected TA1 to equal TA2")
+	}
+	if ta1.Equals(ta3) {
+		t.Error("Expected TA1 to not equal TA3")
+	}
+
+	// Test SuccessCriteria Equals
+	sc1, _ := NewSuccessCriteria("criteria1")
+	sc2, _ := NewSuccessCriteria("criteria1")
+	sc3, _ := NewSuccessCriteria("criteria2")
+
+	if !sc1.Equals(sc2) {
+		t.Error("Expected SC1 to equal SC2")
+	}
+	if sc1.Equals(sc3) {
+		t.Error("Expected SC1 to not equal SC3")
+	}
+
+	// Test GenerationReason Equals
+	gr1, _ := NewGenerationReason("Initial generation")
+	gr2, _ := NewGenerationReason("Initial generation")
+	gr3, _ := NewGenerationReason("Updated generation")
+
+	if !gr1.Equals(gr2) {
+		t.Error("Expected GR1 to equal GR2")
+	}
+	if gr1.Equals(gr3) {
+		t.Error("Expected GR1 to not equal GR3")
+	}
+
+	// Test TPSetID Equals
+	tpSetID1, _ := NewTPSetID("tpset-123")
+	tpSetID2, _ := NewTPSetID("tpset-123")
+	tpSetID3, _ := NewTPSetID("tpset-456")
+
+	if !tpSetID1.Equals(tpSetID2) {
+		t.Error("Expected TPSetID1 to equal TPSetID2")
+	}
+	if tpSetID1.Equals(tpSetID3) {
+		t.Error("Expected TPSetID1 to not equal TPSetID3")
+	}
+
+	// Test SchoolID Equals
+	schoolID1, _ := NewSchoolID("school-123")
+	schoolID2, _ := NewSchoolID("school-123")
+	schoolID3, _ := NewSchoolID("school-456")
+
+	if !schoolID1.Equals(schoolID2) {
+		t.Error("Expected SchoolID1 to equal SchoolID2")
+	}
+	if schoolID1.Equals(schoolID3) {
+		t.Error("Expected SchoolID1 to not equal SchoolID3")
+	}
+
+	// Test UserID Equals
+	userID1, _ := NewUserID("user-123")
+	userID2, _ := NewUserID("user-123")
+	userID3, _ := NewUserID("user-456")
+
+	if !userID1.Equals(userID2) {
+		t.Error("Expected UserID1 to equal UserID2")
+	}
+	if userID1.Equals(userID3) {
+		t.Error("Expected UserID1 to not equal UserID3")
+	}
+
+	// Test Equals with nil receiver for all value objects
+	var nilCPCodeReceiver *CPCode
+	if nilCPCodeReceiver.Equals(cpCode1) {
+		t.Error("Expected nil CPCode to not equal CPCode1")
+	}
+
+	var nilCPTextReceiver *CPText
+	if nilCPTextReceiver.Equals(cpText1) {
+		t.Error("Expected nil CPText to not equal CPText1")
+	}
+
+	var nilLOReceiver *LearningObjective
+	if nilLOReceiver.Equals(lo1) {
+		t.Error("Expected nil LO to not equal LO1")
+	}
+
+	var nilTAReceiver *TimeAllocation
+	if nilTAReceiver.Equals(ta1) {
+		t.Error("Expected nil TA to not equal TA1")
+	}
+
+	var nilSCReceiver *SuccessCriteria
+	if nilSCReceiver.Equals(sc1) {
+		t.Error("Expected nil SC to not equal SC1")
+	}
+
+	var nilGRReceiver *GenerationReason
+	if nilGRReceiver.Equals(gr1) {
+		t.Error("Expected nil GR to not equal GR1")
+	}
+
+	var nilTPSetIDReceiver *TPSetID
+	if nilTPSetIDReceiver.Equals(tpSetID1) {
+		t.Error("Expected nil TPSetID to not equal TPSetID1")
+	}
+
+	var nilSchoolIDReceiver *SchoolID
+	if nilSchoolIDReceiver.Equals(schoolID1) {
+		t.Error("Expected nil SchoolID to not equal SchoolID1")
+	}
+
+	var nilUserIDReceiver *UserID
+	if nilUserIDReceiver.Equals(userID1) {
+		t.Error("Expected nil UserID to not equal UserID1")
+	}
+}

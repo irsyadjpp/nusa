@@ -10,11 +10,11 @@ import (
 
 // SchoolService handles business logic for school operations
 type SchoolService struct {
-	schoolRepo *repository.SchoolRepository
+	schoolRepo repository.SchoolRepositoryInterface
 }
 
 // NewSchoolService creates a new school service
-func NewSchoolService(schoolRepo *repository.SchoolRepository) *SchoolService {
+func NewSchoolService(schoolRepo repository.SchoolRepositoryInterface) *SchoolService {
 	return &SchoolService{
 		schoolRepo: schoolRepo,
 	}

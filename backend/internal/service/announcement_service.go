@@ -11,16 +11,16 @@ import (
 
 // AnnouncementService handles business logic for announcement operations
 type AnnouncementService struct {
-	announcementRepo *repository.AnnouncementRepository
-	schoolRepo       *repository.SchoolRepository
-	userRepo         *repository.UserRepository
+	announcementRepo repository.AnnouncementRepositoryInterface
+	schoolRepo       repository.SchoolRepositoryInterface
+	userRepo         repository.UserRepositoryInterface
 }
 
 // NewAnnouncementService creates a new announcement service
 func NewAnnouncementService(
-	announcementRepo *repository.AnnouncementRepository,
-	schoolRepo *repository.SchoolRepository,
-	userRepo *repository.UserRepository,
+	announcementRepo repository.AnnouncementRepositoryInterface,
+	schoolRepo repository.SchoolRepositoryInterface,
+	userRepo repository.UserRepositoryInterface,
 ) *AnnouncementService {
 	return &AnnouncementService{
 		announcementRepo: announcementRepo,

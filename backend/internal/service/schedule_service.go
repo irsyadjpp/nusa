@@ -11,16 +11,16 @@ import (
 
 // ScheduleService handles business logic for schedule operations
 type ScheduleService struct {
-	scheduleRepo *repository.ScheduleRepository
-	classRepo    *repository.ClassRepository
-	userRepo     *repository.UserRepository
+	scheduleRepo repository.ScheduleRepositoryInterface
+	classRepo    repository.ClassRepositoryInterface
+	userRepo     repository.UserRepositoryInterface
 }
 
 // NewScheduleService creates a new schedule service
 func NewScheduleService(
-	scheduleRepo *repository.ScheduleRepository,
-	classRepo *repository.ClassRepository,
-	userRepo *repository.UserRepository,
+	scheduleRepo repository.ScheduleRepositoryInterface,
+	classRepo repository.ClassRepositoryInterface,
+	userRepo repository.UserRepositoryInterface,
 ) *ScheduleService {
 	return &ScheduleService{
 		scheduleRepo: scheduleRepo,

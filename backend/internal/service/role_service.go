@@ -10,11 +10,11 @@ import (
 
 // RoleService handles business logic for role operations
 type RoleService struct {
-	roleRepo *repository.RoleRepository
+	roleRepo repository.RoleRepositoryInterface
 }
 
 // NewRoleService creates a new role service
-func NewRoleService(roleRepo *repository.RoleRepository) *RoleService {
+func NewRoleService(roleRepo repository.RoleRepositoryInterface) *RoleService {
 	return &RoleService{
 		roleRepo: roleRepo,
 	}

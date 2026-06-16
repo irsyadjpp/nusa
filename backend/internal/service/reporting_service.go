@@ -12,13 +12,13 @@ import (
 
 // ReportingService handles business logic for reporting operations
 type ReportingService struct {
-	reportingRepo      *repository.ReportingRepository
+	reportingRepo      repository.ReportingRepositoryInterface
 	achievementService *AchievementService
 }
 
 // NewReportingService creates a new reporting service
 func NewReportingService(
-	reportingRepo *repository.ReportingRepository,
+	reportingRepo repository.ReportingRepositoryInterface,
 	achievementService *AchievementService,
 ) *ReportingService {
 	return &ReportingService{

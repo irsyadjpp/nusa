@@ -13,12 +13,12 @@ import (
 
 // UserService handles business logic for user operations
 type UserService struct {
-	userRepo *repository.UserRepository
-	roleRepo *repository.RoleRepository
+	userRepo repository.UserRepositoryInterface
+	roleRepo repository.RoleRepositoryInterface
 }
 
 // NewUserService creates a new user service
-func NewUserService(userRepo *repository.UserRepository, roleRepo *repository.RoleRepository) *UserService {
+func NewUserService(userRepo repository.UserRepositoryInterface, roleRepo repository.RoleRepositoryInterface) *UserService {
 	return &UserService{
 		userRepo: userRepo,
 		roleRepo: roleRepo,

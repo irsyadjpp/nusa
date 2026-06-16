@@ -11,16 +11,16 @@ import (
 
 // AttendanceService handles business logic for attendance operations
 type AttendanceService struct {
-	attendanceRepo *repository.AttendanceRepository
-	classRepo      *repository.ClassRepository
-	userRepo       *repository.UserRepository
+	attendanceRepo repository.AttendanceRepositoryInterface
+	classRepo      repository.ClassRepositoryInterface
+	userRepo       repository.UserRepositoryInterface
 }
 
 // NewAttendanceService creates a new attendance service
 func NewAttendanceService(
-	attendanceRepo *repository.AttendanceRepository,
-	classRepo *repository.ClassRepository,
-	userRepo *repository.UserRepository,
+	attendanceRepo repository.AttendanceRepositoryInterface,
+	classRepo repository.ClassRepositoryInterface,
+	userRepo repository.UserRepositoryInterface,
 ) *AttendanceService {
 	return &AttendanceService{
 		attendanceRepo: attendanceRepo,

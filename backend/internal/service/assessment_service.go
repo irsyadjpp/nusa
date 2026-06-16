@@ -12,11 +12,11 @@ import (
 
 // AssessmentService handles business logic for assessment operations
 type AssessmentService struct {
-	assessmentRepo *repository.AssessmentRepository
+	assessmentRepo repository.AssessmentRepositoryInterface
 }
 
 // NewAssessmentService creates a new assessment service
-func NewAssessmentService(assessmentRepo *repository.AssessmentRepository) *AssessmentService {
+func NewAssessmentService(assessmentRepo repository.AssessmentRepositoryInterface) *AssessmentService {
 	return &AssessmentService{assessmentRepo: assessmentRepo}
 }
 
@@ -273,10 +273,10 @@ func (s *AssessmentService) GetEvaluation(ctx context.Context, id string) (*doma
 }
 
 // ListEvaluations retrieves evaluations with optional filters
-func (s *AssessmentService) ListEvaluations(ctx context.Context, studentID, rubricID, evidenceID *string, performanceLevel *domain.PerformanceLevel, page, pageSize int) ([]*domain.Evaluation, int, error) {
+func (s *AssessmentService) ListEvaluations(ctx context.Context, studentID, evidenceID *string, performanceLevel *domain.PerformanceLevel, page, pageSize int) ([]*domain.Evaluation, int, error) {
 	limit := pageSize
 	offset := (page - 1) * pageSize
-	evaluations, err := s.assessmentRepo.ListEvaluations(ctx, studentID, rubricID, evidenceID, performanceLevel, limit, offset)
+	evaluations, err := s.assessmentRepo.ListEvaluations(ctx, evidenceID, studentID, performanceLevel, limit, offset)
 	return evaluations, len(evaluations), fmt.Errorf("failed to list evaluations: %w", err)
 }
 

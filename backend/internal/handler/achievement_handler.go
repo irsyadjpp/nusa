@@ -1,19 +1,28 @@
 package handler
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nusa/backend/internal/service"
+	"github.com/nusa/backend/internal/domain"
 )
+
+// IAchievementService defines the interface for achievement service
+type IAchievementService interface {
+	CalculateStudentAchievement(ctx context.Context, studentID string, studentName string, tpID string) (*domain.Achievement, error)
+	CalculateCompetencyProgress(ctx context.Context, studentID string, studentName string, subjectID string, subjectName string, phaseID string, phaseName string) (*domain.CompetencyProgress, error)
+	GenerateClassAchievement(ctx context.Context, classID string, className string, subjectID string, subjectName string) (*domain.ClassAchievement, error)
+	GenerateAchievementSummary(ctx context.Context, studentID string, studentName string, classID string, className string, reportPeriod interface{}) (*domain.AchievementSummary, error)
+}
 
 // AchievementHandler handles HTTP requests for achievement endpoints
 type AchievementHandler struct {
-	achievementService *service.AchievementService
+	achievementService IAchievementService
 }
 
 // NewAchievementHandler creates a new achievement handler
-func NewAchievementHandler(achievementService *service.AchievementService) *AchievementHandler {
+func NewAchievementHandler(achievementService IAchievementService) *AchievementHandler {
 	return &AchievementHandler{
 		achievementService: achievementService,
 	}

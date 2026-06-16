@@ -11,14 +11,14 @@ import (
 // AchievementService handles business logic for achievement calculations
 type AchievementService struct {
 	achievementDomainService *domain.AchievementService
-	assessmentRepo           *repository.AssessmentRepository
-	tpRepo                   *repository.TPRepository
+	assessmentRepo           repository.AssessmentRepositoryInterface
+	tpRepo                   repository.TPRepositoryInterface
 }
 
 // NewAchievementService creates a new achievement service
 func NewAchievementService(
-	assessmentRepo *repository.AssessmentRepository,
-	tpRepo *repository.TPRepository,
+	assessmentRepo repository.AssessmentRepositoryInterface,
+	tpRepo repository.TPRepositoryInterface,
 ) *AchievementService {
 	return &AchievementService{
 		achievementDomainService: domain.NewAchievementService(),

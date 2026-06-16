@@ -10,20 +10,20 @@ import (
 
 // ResourceAuthorizationService handles resource-level authorization checks
 type ResourceAuthorizationService struct {
-	userRepo             *repository.UserRepository
-	tpRepo               *repository.TPRepository
-	learningPlanningRepo *repository.LearningPlanningRepository
-	assessmentRepo       *repository.AssessmentRepository
-	reportRepo           *repository.ReportingRepository
+	userRepo             repository.UserRepositoryInterface
+	tpRepo               repository.TPRepositoryInterface
+	learningPlanningRepo repository.LearningPlanningRepositoryInterface
+	assessmentRepo       repository.AssessmentRepositoryInterface
+	reportRepo           repository.ReportingRepositoryInterface
 }
 
 // NewResourceAuthorizationService creates a new resource authorization service
 func NewResourceAuthorizationService(
-	userRepo *repository.UserRepository,
-	tpRepo *repository.TPRepository,
-	learningPlanningRepo *repository.LearningPlanningRepository,
-	assessmentRepo *repository.AssessmentRepository,
-	reportRepo *repository.ReportingRepository,
+	userRepo repository.UserRepositoryInterface,
+	tpRepo repository.TPRepositoryInterface,
+	learningPlanningRepo repository.LearningPlanningRepositoryInterface,
+	assessmentRepo repository.AssessmentRepositoryInterface,
+	reportRepo repository.ReportingRepositoryInterface,
 ) *ResourceAuthorizationService {
 	return &ResourceAuthorizationService{
 		userRepo:             userRepo,

@@ -11,14 +11,14 @@ import (
 
 // NotificationService handles business logic for notification operations
 type NotificationService struct {
-	notificationRepo *repository.NotificationRepository
-	userRepo         *repository.UserRepository
+	notificationRepo repository.NotificationRepositoryInterface
+	userRepo         repository.UserRepositoryInterface
 }
 
 // NewNotificationService creates a new notification service
 func NewNotificationService(
-	notificationRepo *repository.NotificationRepository,
-	userRepo *repository.UserRepository,
+	notificationRepo repository.NotificationRepositoryInterface,
+	userRepo repository.UserRepositoryInterface,
 ) *NotificationService {
 	return &NotificationService{
 		notificationRepo: notificationRepo,

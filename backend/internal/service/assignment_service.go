@@ -11,18 +11,18 @@ import (
 
 // AssignmentService handles business logic for assignment operations
 type AssignmentService struct {
-	assignmentRepo *repository.AssignmentRepository
-	classRepo      *repository.ClassRepository
-	assessmentRepo *repository.AssessmentRepository
-	userRepo       *repository.UserRepository
+	assignmentRepo repository.AssignmentRepositoryInterface
+	classRepo      repository.ClassRepositoryInterface
+	assessmentRepo repository.AssessmentRepositoryInterface
+	userRepo       repository.UserRepositoryInterface
 }
 
 // NewAssignmentService creates a new assignment service
 func NewAssignmentService(
-	assignmentRepo *repository.AssignmentRepository,
-	classRepo *repository.ClassRepository,
-	assessmentRepo *repository.AssessmentRepository,
-	userRepo *repository.UserRepository,
+	assignmentRepo repository.AssignmentRepositoryInterface,
+	classRepo repository.ClassRepositoryInterface,
+	assessmentRepo repository.AssessmentRepositoryInterface,
+	userRepo repository.UserRepositoryInterface,
 ) *AssignmentService {
 	return &AssignmentService{
 		assignmentRepo: assignmentRepo,

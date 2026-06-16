@@ -11,20 +11,20 @@ import (
 
 // ClassService handles business logic for class operations
 type ClassService struct {
-	classRepo        *repository.ClassRepository
-	enrollmentRepo   *repository.ClassEnrollmentRepository
-	userRepo         *repository.UserRepository
-	academicYearRepo *repository.AcademicYearRepository
-	semesterRepo     *repository.SemesterRepository
+	classRepo        repository.ClassRepositoryInterface
+	enrollmentRepo   repository.ClassEnrollmentRepositoryInterface
+	userRepo         repository.UserRepositoryInterface
+	academicYearRepo repository.AcademicYearRepositoryInterface
+	semesterRepo     repository.SemesterRepositoryInterface
 }
 
 // NewClassService creates a new class service
 func NewClassService(
-	classRepo *repository.ClassRepository,
-	enrollmentRepo *repository.ClassEnrollmentRepository,
-	userRepo *repository.UserRepository,
-	academicYearRepo *repository.AcademicYearRepository,
-	semesterRepo *repository.SemesterRepository,
+	classRepo repository.ClassRepositoryInterface,
+	enrollmentRepo repository.ClassEnrollmentRepositoryInterface,
+	userRepo repository.UserRepositoryInterface,
+	academicYearRepo repository.AcademicYearRepositoryInterface,
+	semesterRepo repository.SemesterRepositoryInterface,
 ) *ClassService {
 	return &ClassService{
 		classRepo:        classRepo,

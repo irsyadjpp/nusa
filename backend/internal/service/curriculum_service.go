@@ -13,11 +13,11 @@ import (
 
 // CurriculumService handles business logic for curriculum operations
 type CurriculumService struct {
-	curriculumRepo *repository.CurriculumRepository
+	curriculumRepo repository.CurriculumRepositoryInterface
 }
 
 // NewCurriculumService creates a new curriculum service
-func NewCurriculumService(curriculumRepo *repository.CurriculumRepository) *CurriculumService {
+func NewCurriculumService(curriculumRepo repository.CurriculumRepositoryInterface) *CurriculumService {
 	return &CurriculumService{curriculumRepo: curriculumRepo}
 }
 
@@ -366,10 +366,10 @@ func (s *CurriculumService) GetCP(ctx context.Context, id string) (*domain.CP, e
 }
 
 // ListCPs retrieves CPs with optional filters
-func (s *CurriculumService) ListCPs(ctx context.Context, subjectID, phaseID, elementID *string, version *string, isActive *bool, page, pageSize int) ([]*domain.CP, int, error) {
+func (s *CurriculumService) ListCPs(ctx context.Context, subjectID, phaseID *string, page, pageSize int) ([]*domain.CP, int, error) {
 	limit := pageSize
 	offset := (page - 1) * pageSize
-	cps, err := s.curriculumRepo.ListCPs(ctx, subjectID, phaseID, elementID, version, isActive, limit, offset)
+	cps, err := s.curriculumRepo.ListCPs(ctx, subjectID, phaseID, limit, offset)
 	return cps, len(cps), fmt.Errorf("failed to list CPs: %w", err)
 }
 

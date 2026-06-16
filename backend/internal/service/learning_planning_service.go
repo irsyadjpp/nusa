@@ -11,12 +11,12 @@ import (
 
 // LearningPlanningService handles business logic for ATP and Modul Ajar operations
 type LearningPlanningService struct {
-	atpRepo       *repository.LearningPlanningRepository
-	modulAjarRepo *repository.LearningPlanningRepository
+	atpRepo       repository.LearningPlanningRepositoryInterface
+	modulAjarRepo repository.LearningPlanningRepositoryInterface
 }
 
 // NewLearningPlanningService creates a new learning planning service
-func NewLearningPlanningService(atpRepo, modulAjarRepo *repository.LearningPlanningRepository) *LearningPlanningService {
+func NewLearningPlanningService(atpRepo, modulAjarRepo repository.LearningPlanningRepositoryInterface) *LearningPlanningService {
 	return &LearningPlanningService{
 		atpRepo:       atpRepo,
 		modulAjarRepo: modulAjarRepo,

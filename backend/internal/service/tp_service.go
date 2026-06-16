@@ -11,11 +11,11 @@ import (
 
 // TPService handles business logic for TP operations
 type TPService struct {
-	tpRepo *repository.TPRepository
+	tpRepo repository.TPRepositoryInterface
 }
 
 // NewTPService creates a new TP service
-func NewTPService(tpRepo *repository.TPRepository) *TPService {
+func NewTPService(tpRepo repository.TPRepositoryInterface) *TPService {
 	return &TPService{tpRepo: tpRepo}
 }
 
@@ -139,7 +139,11 @@ func (s *TPService) ListTPs(ctx context.Context, tpSetID, cpID *string, status *
 	limit := pageSize
 	offset := (page - 1) * pageSize
 
-	tps, err := s.tpRepo.ListTPs(ctx, tpSetID, cpID, status, nil, limit, offset)
+	statusStr := ""
+	if status != nil {
+		statusStr = string(*status)
+	}
+	tps, err := s.tpRepo.ListTPs(ctx, tpSetID, cpID, nil, &statusStr, limit, offset)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list TPs: %w", err)
 	}
