@@ -296,18 +296,15 @@ func (h *Handler) UpdateEvaluation(c *gin.Context) {
 func (h *Handler) ListEvaluations(c *gin.Context) {
 	ctx := context.Background()
 
-	var studentID, rubricID *string
+	var studentID *string
 	if id := c.Query("student_id"); id != "" {
 		studentID = &id
-	}
-	if id := c.Query("rubric_id"); id != "" {
-		rubricID = &id
 	}
 
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 
-	evaluations, total, err := h.assessmentService.ListEvaluations(ctx, studentID, rubricID, nil, nil, page, pageSize)
+	evaluations, total, err := h.assessmentService.ListEvaluations(ctx, studentID, nil, nil, page, pageSize)
 	if err != nil {
 		response.Error(c, 500, err.Error())
 		return

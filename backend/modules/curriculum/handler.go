@@ -390,21 +390,18 @@ func (h *Handler) ImportCP(c *gin.Context) {
 func (h *Handler) ListCPs(c *gin.Context) {
 	ctx := context.Background()
 
-	var subjectID, phaseID, elementID *string
+	var subjectID, phaseID *string
 	if s := c.Query("subject_id"); s != "" {
 		subjectID = &s
 	}
 	if p := c.Query("phase_id"); p != "" {
 		phaseID = &p
 	}
-	if e := c.Query("element_id"); e != "" {
-		elementID = &e
-	}
 
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 
-	cps, total, err := h.curriculumService.ListCPs(ctx, subjectID, phaseID, elementID, nil, nil, page, pageSize)
+	cps, total, err := h.curriculumService.ListCPs(ctx, subjectID, phaseID, page, pageSize)
 	if err != nil {
 		response.Error(c, 500, err.Error())
 		return
@@ -478,20 +475,17 @@ func (h *Handler) DeleteCP(c *gin.Context) {
 func (h *Handler) ExportCPs(c *gin.Context) {
 	ctx := context.Background()
 
-	var subjectID, phaseID, elementID *string
+	var subjectID, phaseID *string
 	if s := c.Query("subject_id"); s != "" {
 		subjectID = &s
 	}
 	if p := c.Query("phase_id"); p != "" {
 		phaseID = &p
 	}
-	if e := c.Query("element_id"); e != "" {
-		elementID = &e
-	}
 
 	format := c.DefaultQuery("format", "csv")
 
-	cps, _, err := h.curriculumService.ListCPs(ctx, subjectID, phaseID, elementID, nil, nil, 1, 10000)
+	cps, _, err := h.curriculumService.ListCPs(ctx, subjectID, phaseID, 1, 10000)
 	if err != nil {
 		response.Error(c, 500, err.Error())
 		return
