@@ -74,7 +74,7 @@ func (s *ExamService) CreateExam(ctx context.Context, req *domain.CreateExamRequ
 	}
 
 	if err := s.examRepo.Create(ctx, exam); err != nil {
-		return nil, fmt.Errorf("failed to create exam: %w", err)
+		return nil, fmt.Errorf("failed to create exam: %v", err)
 	}
 
 	return exam, nil
@@ -96,12 +96,12 @@ func (s *ExamService) ListExams(ctx context.Context, classID, assessmentID, stat
 
 	exams, err := s.examRepo.List(ctx, classID, assessmentID, status, limit, offset)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to list exams: %w", err)
+		return nil, 0, fmt.Errorf("failed to list exams: %v", err)
 	}
 
 	total, err := s.examRepo.Count(ctx, classID, assessmentID, status)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to count exams: %w", err)
+		return nil, 0, fmt.Errorf("failed to count exams: %v", err)
 	}
 
 	return exams, total, nil
@@ -133,7 +133,7 @@ func (s *ExamService) UpdateExam(ctx context.Context, id string, req *domain.Upd
 	exam.UpdatedBy = &updaterID
 
 	if err := s.examRepo.Update(ctx, exam); err != nil {
-		return nil, fmt.Errorf("failed to update exam: %w", err)
+		return nil, fmt.Errorf("failed to update exam: %v", err)
 	}
 
 	return exam, nil
@@ -154,7 +154,7 @@ func (s *ExamService) GetClassExams(ctx context.Context, classID string) ([]*dom
 
 	exams, err := s.examRepo.GetByClassID(ctx, classID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get class exams: %w", err)
+		return nil, fmt.Errorf("failed to get class exams: %v", err)
 	}
 
 	return exams, nil

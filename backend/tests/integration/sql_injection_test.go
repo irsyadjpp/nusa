@@ -1,10 +1,11 @@
 package integration
 
 import (
+	"context"
 	"testing"
 
-	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // TestSQLInjectionInEmail validates that SQL injection in email parameter is prevented
@@ -13,13 +14,14 @@ func TestSQLInjectionInEmail(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	// This test requires a test database connection
-	// For now, we'll create a placeholder that documents the test requirements
-	// In a real implementation, this would:
-	// 1. Connect to test database
-	// 2. Attempt to insert user with SQL injection in email
-	// 3. Verify that the injection is prevented (parameterized queries)
-	// 4. Verify that the email is stored as-is, not as SQL code
+	testDB := SetupTestDB(t)
+	if testDB == nil {
+		return
+	}
+	defer TeardownTestDB(t, testDB)
+
+	ctx := context.Background()
+	roleID := "00000000-0000-0000-0000-000000000001"
 
 	// SQL injection payloads to test
 	injectionPayloads := []string{
@@ -28,20 +30,33 @@ func TestSQLInjectionInEmail(t *testing.T) {
 		"test@example.com' UNION SELECT * FROM users --",
 		"test@example.com'; INSERT INTO users (email) VALUES ('hacked@evil.com'); --",
 		"test@example.com' AND 1=1 --",
+		"test@example.com'; SELECT pg_sleep(10); --",
+		"test@example.com' OR 1=1 #",
+		"test@example.com' OR 1=1 /*",
 	}
 
-	// Document test requirements
-	t.Log("SQL Injection Test Requirements:")
-	t.Log("1. Connect to test database")
-	t.Log("2. For each injection payload:")
-	for _, payload := range injectionPayloads {
-		t.Logf("   - Test payload: %s", payload)
-	}
-	t.Log("3. Verify parameterized queries prevent injection")
-	t.Log("4. Verify data is stored as-is, not executed as SQL")
+	for i, payload := range injectionPayloads {
+		t.Run("SQL injection payload "+string(rune('0'+i)), func(t *testing.T) {
+			// Attempt to create user with SQL injection in email
+			// This should either fail validation or be stored as-is (not executed)
+			user := CreateTestUser(t, ctx, testDB.UserRepo, payload, "password123", "Injection User", roleID, nil)
 
-	// Placeholder assertion - in real implementation, this would be actual test
-	assert.True(t, true, "SQL injection test placeholder - requires database setup")
+			if user == nil {
+				// Creation failed (validation prevented it)
+				return
+			}
+
+			// If creation succeeded, verify the email is stored as-is
+			retrieved, err := testDB.UserRepo.GetByID(ctx, user.ID)
+			require.NoError(t, err)
+			assert.Equal(t, payload, retrieved.Email, "Email should be stored as-is, not executed as SQL")
+
+			// Verify no tables were dropped by attempting to query users
+			users, err := testDB.UserRepo.List(ctx, nil, nil, nil, 10, 0)
+			require.NoError(t, err, "Users table should still exist if injection was prevented")
+			assert.Greater(t, len(users), 0, "Users should still exist in database")
+		})
+	}
 }
 
 // TestSQLInjectionInName validates that SQL injection in name parameter is prevented
@@ -50,6 +65,15 @@ func TestSQLInjectionInName(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
+	testDB := SetupTestDB(t)
+	if testDB == nil {
+		return
+	}
+	defer TeardownTestDB(t, testDB)
+
+	ctx := context.Background()
+	roleID := "00000000-0000-0000-0000-000000000001"
+
 	// SQL injection payloads to test in name field
 	injectionPayloads := []string{
 		"John'; DROP TABLE users; --",
@@ -57,61 +81,248 @@ func TestSQLInjectionInName(t *testing.T) {
 		"John' UNION SELECT * FROM users --",
 		"<script>alert('xss')</script>",
 		"'; EXEC xp_cmdshell('dir'); --",
+		"Robert'); DROP TABLE students; --",
 	}
 
-	t.Log("SQL Injection in Name Test Requirements:")
-	for _, payload := range injectionPayloads {
-		t.Logf("   - Test payload: %s", payload)
-	}
-	t.Log("Verify parameterized queries prevent injection in name field")
+	for i, payload := range injectionPayloads {
+		t.Run("SQL injection in name payload "+string(rune('0'+i)), func(t *testing.T) {
+			email := "injection" + string(rune('0'+i)) + "@example.com"
 
-	assert.True(t, true, "SQL injection test placeholder - requires database setup")
+			// Attempt to create user with SQL injection in name
+			user := CreateTestUser(t, ctx, testDB.UserRepo, email, "password123", payload, roleID, nil)
+
+			if user == nil {
+				// Creation failed (validation prevented it)
+				return
+			}
+
+			// If creation succeeded, verify the name is stored as-is
+			retrieved, err := testDB.UserRepo.GetByID(ctx, user.ID)
+			require.NoError(t, err)
+			assert.Equal(t, payload, retrieved.Name, "Name should be stored as-is, not executed as SQL")
+		})
+	}
 }
 
-// TestSQLInjectionInSearch validates that SQL injection in search parameters is prevented
-func TestSQLInjectionInSearch(t *testing.T) {
+// TestSQLInjectionInSchoolCode validates that SQL injection in school code parameter is prevented
+func TestSQLInjectionInSchoolCode(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	// SQL injection payloads to test in search/filter parameters
+	testDB := SetupTestDB(t)
+	if testDB == nil {
+		return
+	}
+	defer TeardownTestDB(t, testDB)
+
+	ctx := context.Background()
+
+	// SQL injection payloads to test in school code
 	injectionPayloads := []string{
-		"test' OR '1'='1",
-		"test' UNION SELECT * FROM users --",
-		"test'; DROP TABLE users; --",
-		"%' OR '%'='",
-		"admin'--",
+		"SCH001'; DROP TABLE schools; --",
+		"SCH001' OR '1'='1",
+		"SCH001' UNION SELECT * FROM schools --",
 	}
 
-	t.Log("SQL Injection in Search Test Requirements:")
-	for _, payload := range injectionPayloads {
-		t.Logf("   - Test payload: %s", payload)
-	}
-	t.Log("Verify parameterized queries prevent injection in search/filter")
-	t.Log("Verify search results are not affected by injection attempts")
+	for i, payload := range injectionPayloads {
+		t.Run("SQL injection in school code payload "+string(rune('0'+i)), func(t *testing.T) {
+			// Attempt to create school with SQL injection in code
+			school := CreateTestSchool(t, ctx, testDB.SchoolRepo, "Injection School", payload)
 
-	assert.True(t, true, "SQL injection test placeholder - requires database setup")
+			if school == nil {
+				// Creation failed (validation prevented it)
+				return
+			}
+
+			// If creation succeeded, verify the code is stored as-is
+			retrieved, err := testDB.SchoolRepo.GetByID(ctx, school.ID)
+			require.NoError(t, err)
+			assert.Equal(t, payload, retrieved.Code, "Code should be stored as-is, not executed as SQL")
+		})
+	}
 }
 
-// TestParameterizedQueryValidation validates that all queries use parameterized queries
+// TestParameterizedQueryValidation validates that all repository methods use parameterized queries
 func TestParameterizedQueryValidation(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	// This test would scan the codebase for SQL queries
-	// and verify they use parameterized queries instead of string concatenation
+	testDB := SetupTestDB(t)
+	if testDB == nil {
+		return
+	}
+	defer TeardownTestDB(t, testDB)
 
-	t.Log("Parameterized Query Validation Requirements:")
-	t.Log("1. Scan all repository files")
-	t.Log("2. Identify all SQL queries")
-	t.Log("3. Verify queries use $1, $2, etc. parameters")
-	t.Log("4. Verify no string concatenation in SQL queries")
-	t.Log("5. Verify no fmt.Sprintf in SQL queries")
+	ctx := context.Background()
+	roleID := "00000000-0000-0000-0000-000000000001"
 
-	// Example of what to check:
-	// BAD: "SELECT * FROM users WHERE email = '" + email + "'"
-	// GOOD: "SELECT * FROM users WHERE email = $1"
+	t.Run("User repository uses parameterized queries", func(t *testing.T) {
+		// Test that special characters are handled correctly
+		specialEmail := "test'special@example.com"
+		user := CreateTestUser(t, ctx, testDB.UserRepo, specialEmail, "password123", "Special User", roleID, nil)
 
-	assert.True(t, true, "Parameterized query test placeholder - requires code scanning")
+		if user != nil {
+			// Verify special characters are stored correctly
+			retrieved, err := testDB.UserRepo.GetByEmail(ctx, specialEmail)
+			require.NoError(t, err)
+			assert.Equal(t, specialEmail, retrieved.Email)
+		}
+	})
+
+	t.Run("School repository uses parameterized queries", func(t *testing.T) {
+		// Test that special characters are handled correctly
+		specialName := "O'Reilly School"
+		specialCode := "O'REILLY"
+
+		school := CreateTestSchool(t, ctx, testDB.SchoolRepo, specialName, specialCode)
+
+		if school != nil {
+			// Verify special characters are stored correctly
+			retrieved, err := testDB.SchoolRepo.GetByCode(ctx, specialCode)
+			require.NoError(t, err)
+			assert.Equal(t, specialName, retrieved.Name)
+			assert.Equal(t, specialCode, retrieved.Code)
+		}
+	})
+
+	t.Run("Role repository uses parameterized queries", func(t *testing.T) {
+		// Test that special characters are handled correctly
+		specialName := "ADMIN'S ROLE"
+
+		role := CreateTestRole(t, ctx, testDB.RoleRepo, specialName, nil)
+
+		if role != nil {
+			// Verify special characters are stored correctly
+			retrieved, err := testDB.RoleRepo.GetByName(ctx, specialName)
+			require.NoError(t, err)
+			assert.Equal(t, specialName, retrieved.Name)
+		}
+	})
+}
+
+// TestLongStringInjection validates that very long strings are handled correctly
+func TestLongStringInjection(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+
+	testDB := SetupTestDB(t)
+	if testDB == nil {
+		return
+	}
+	defer TeardownTestDB(t, testDB)
+
+	ctx := context.Background()
+	roleID := "00000000-0000-0000-0000-000000000001"
+
+	t.Run("Long email string", func(t *testing.T) {
+		// Create a very long email (exceeds typical limits)
+		longEmail := "a" + string(make([]byte, 1000)) + "@example.com"
+
+		user := CreateTestUser(t, ctx, testDB.UserRepo, longEmail, "password123", "Long Email User", roleID, nil)
+
+		// Should fail due to validation or database constraint
+		if user != nil {
+			// If it succeeded, database should handle it gracefully
+			assert.NotEmpty(t, user.Email)
+		}
+	})
+
+	t.Run("Long name string", func(t *testing.T) {
+		// Create a very long name
+		longName := string(make([]byte, 1000))
+		email := "longname@example.com"
+
+		user := CreateTestUser(t, ctx, testDB.UserRepo, email, "password123", longName, roleID, nil)
+
+		// Should fail due to validation or database constraint
+		if user != nil {
+			// If it succeeded, database should handle it gracefully
+			assert.NotEmpty(t, user.Name)
+		}
+	})
+}
+
+// TestNullByteInjection validates that null bytes are handled correctly
+func TestNullByteInjection(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+
+	testDB := SetupTestDB(t)
+	if testDB == nil {
+		return
+	}
+	defer TeardownTestDB(t, testDB)
+
+	ctx := context.Background()
+	roleID := "00000000-0000-0000-0000-000000000001"
+
+	t.Run("Null byte in email", func(t *testing.T) {
+		// Email with null byte
+		email := "test\000@example.com"
+
+		user := CreateTestUser(t, ctx, testDB.UserRepo, email, "password123", "Null Byte User", roleID, nil)
+
+		// Should fail due to validation
+		assert.Nil(t, user, "User creation with null byte should fail")
+	})
+
+	t.Run("Null byte in name", func(t *testing.T) {
+		// Name with null byte
+		name := "Test\000User"
+		email := "nullbyte@example.com"
+
+		user := CreateTestUser(t, ctx, testDB.UserRepo, email, "password123", name, roleID, nil)
+
+		// Should fail due to validation
+		assert.Nil(t, user, "User creation with null byte should fail")
+	})
+}
+
+// TestUnicodeInjection validates that unicode characters are handled correctly
+func TestUnicodeInjection(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping integration test in short mode")
+	}
+
+	testDB := SetupTestDB(t)
+	if testDB == nil {
+		return
+	}
+	defer TeardownTestDB(t, testDB)
+
+	ctx := context.Background()
+	roleID := "00000000-0000-0000-0000-000000000001"
+
+	t.Run("Unicode in email", func(t *testing.T) {
+		// Email with unicode characters
+		email := "tëst@example.com"
+
+		user := CreateTestUser(t, ctx, testDB.UserRepo, email, "password123", "Unicode User", roleID, nil)
+
+		if user != nil {
+			// Verify unicode is stored correctly
+			retrieved, err := testDB.UserRepo.GetByEmail(ctx, email)
+			require.NoError(t, err)
+			assert.Equal(t, email, retrieved.Email)
+		}
+	})
+
+	t.Run("Unicode in name", func(t *testing.T) {
+		// Name with unicode characters
+		name := "Tëst Üser"
+		email := "unicode@example.com"
+
+		user := CreateTestUser(t, ctx, testDB.UserRepo, email, "password123", name, roleID, nil)
+
+		if user != nil {
+			// Verify unicode is stored correctly
+			retrieved, err := testDB.UserRepo.GetByID(ctx, user.ID)
+			require.NoError(t, err)
+			assert.Equal(t, name, retrieved.Name)
+		}
+	})
 }

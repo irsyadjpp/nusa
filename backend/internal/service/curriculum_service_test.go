@@ -421,10 +421,10 @@ func TestCurriculumService_ListCurriculumElements_Success(t *testing.T) {
 
 	result, total, err := service.ListCurriculumElements(context.Background(), nil, nil, nil, 1, 10)
 
-	// Note: The actual implementation has a bug where it returns an error even on success
-	assert.Error(t, err)
-	assert.Nil(t, result)
-	assert.Equal(t, 0, total)
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Len(t, result, 1)
+	assert.Equal(t, 1, total)
 
 	mockCurriculumRepo.AssertExpectations(t)
 }

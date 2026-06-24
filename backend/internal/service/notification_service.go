@@ -50,7 +50,7 @@ func (s *NotificationService) CreateNotification(ctx context.Context, req *domai
 	}
 
 	if err := s.notificationRepo.Create(ctx, notification); err != nil {
-		return nil, fmt.Errorf("failed to create notification: %w", err)
+		return nil, fmt.Errorf("failed to create notification: %v", err)
 	}
 
 	return notification, nil
@@ -72,12 +72,12 @@ func (s *NotificationService) ListNotifications(ctx context.Context, userID *str
 
 	notifications, err := s.notificationRepo.List(ctx, userID, notificationType, isRead, limit, offset)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to list notifications: %w", err)
+		return nil, 0, fmt.Errorf("failed to list notifications: %v", err)
 	}
 
 	total, err := s.notificationRepo.Count(ctx, userID, notificationType, isRead)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to count notifications: %w", err)
+		return nil, 0, fmt.Errorf("failed to count notifications: %v", err)
 	}
 
 	return notifications, total, nil
@@ -93,7 +93,7 @@ func (s *NotificationService) MarkAsRead(ctx context.Context, id string) error {
 	notification.MarkAsRead()
 
 	if err := s.notificationRepo.Update(ctx, notification); err != nil {
-		return fmt.Errorf("failed to mark notification as read: %w", err)
+		return fmt.Errorf("failed to mark notification as read: %v", err)
 	}
 
 	return nil
@@ -114,7 +114,7 @@ func (s *NotificationService) GetUnreadCount(ctx context.Context, userID string)
 
 	count, err := s.notificationRepo.GetUnreadCount(ctx, userID)
 	if err != nil {
-		return 0, fmt.Errorf("failed to get unread count: %w", err)
+		return 0, fmt.Errorf("failed to get unread count: %v", err)
 	}
 
 	return count, nil

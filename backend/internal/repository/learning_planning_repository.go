@@ -301,6 +301,67 @@ func (r *LearningPlanningRepository) ListATPsBySet(ctx context.Context, atpSetID
 	return atps, nil
 }
 
+// ListATPs retrieves ATPs with optional filters and pagination
+func (r *LearningPlanningRepository) ListATPs(ctx context.Context, atpSetID *string, limit, offset int) ([]*domain.ATP, error) {
+	query := `
+		SELECT id, atp_set_id, tp_id, user_id, status, academic_calendar,
+		       class_schedule, weekly_sequence, assessment_schedule, created_at, updated_at
+		FROM atp
+		WHERE 1=1
+	`
+
+	args := []interface{}{}
+	argIndex := 1
+
+	if atpSetID != nil {
+		query += fmt.Sprintf(" AND atp_set_id = $%d", argIndex)
+		args = append(args, *atpSetID)
+		argIndex++
+	}
+
+	query += " ORDER BY created_at DESC"
+
+	if limit > 0 {
+		query += fmt.Sprintf(" LIMIT $%d", argIndex)
+		args = append(args, limit)
+		argIndex++
+	}
+
+	if offset > 0 {
+		query += fmt.Sprintf(" OFFSET $%d", argIndex)
+		args = append(args, offset)
+	}
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var atps []*domain.ATP
+	for rows.Next() {
+		var atp domain.ATP
+		var assessmentSchedule sql.NullString
+
+		err := rows.Scan(
+			&atp.ID, &atp.ATPSetID, &atp.TPID, &atp.UserID, &atp.Status,
+			&atp.AcademicCalendar, &atp.ClassSchedule, &atp.WeeklySequence, &assessmentSchedule,
+			&atp.CreatedAt, &atp.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if assessmentSchedule.Valid {
+			atp.AssessmentSchedule = assessmentSchedule.String
+		}
+
+		atps = append(atps, &atp)
+	}
+
+	return atps, nil
+}
+
 // UpdateATP updates an ATP
 func (r *LearningPlanningRepository) UpdateATP(ctx context.Context, atp *domain.ATP) error {
 	query := `
@@ -629,6 +690,60 @@ func (r *LearningPlanningRepository) GetModulAjarByID(ctx context.Context, id st
 	}
 
 	return &modulAjar, nil
+}
+
+// ListModulAjars retrieves Modul Ajars with optional filters and pagination
+func (r *LearningPlanningRepository) ListModulAjars(ctx context.Context, modulAjarSetID, atpID *string, limit, offset int) ([]*domain.ModulAjar, error) {
+	query := `
+		SELECT id, modul_ajar_set_id, atp_id, week, topic, resources, 
+		       class_characteristics, learning_activities, resource_requirements, assessment_methods, 
+		       status, created_at, updated_at
+		FROM modul_ajar WHERE 1=1
+	`
+
+	args := []interface{}{}
+	argIndex := 1
+
+	if modulAjarSetID != nil {
+		query += fmt.Sprintf(" AND modul_ajar_set_id = $%d", argIndex)
+		args = append(args, *modulAjarSetID)
+		argIndex++
+	}
+
+	if atpID != nil {
+		query += fmt.Sprintf(" AND atp_id = $%d", argIndex)
+		args = append(args, *atpID)
+		argIndex++
+	}
+
+	query += fmt.Sprintf(" ORDER BY week ASC LIMIT $%d OFFSET $%d", argIndex, argIndex+1)
+	args = append(args, limit, offset)
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var modulAjars []*domain.ModulAjar
+	for rows.Next() {
+		var modulAjar domain.ModulAjar
+		if err := rows.Scan(
+			&modulAjar.ID, &modulAjar.ModulAjarSetID, &modulAjar.ATPID, &modulAjar.Week,
+			&modulAjar.Topic, &modulAjar.Resources, &modulAjar.ClassCharacteristics,
+			&modulAjar.LearningActivities, &modulAjar.ResourceRequirements, &modulAjar.AssessmentMethods,
+			&modulAjar.Status, &modulAjar.CreatedAt, &modulAjar.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		modulAjars = append(modulAjars, &modulAjar)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return modulAjars, nil
 }
 
 // ListModulAjarsBySet retrieves Modul Ajars by Modul Ajar Set ID

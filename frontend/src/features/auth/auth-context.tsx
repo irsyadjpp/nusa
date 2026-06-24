@@ -63,9 +63,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       AuthStorage.setUser(data.user);
     } catch (error: any) {
       console.error('Failed to load current user:', error);
-      // If we can't load user, clear auth state
-      AuthStorage.clear();
-      setAuthState(initialState);
+      // Don't clear auth state if /me fails - use cached data
+      // This allows users to stay logged in even if /me endpoint is temporarily unavailable
+      setAuthState(prev => ({ ...prev, loading: false, error: 'Failed to load current user data' }));
     }
   };
 

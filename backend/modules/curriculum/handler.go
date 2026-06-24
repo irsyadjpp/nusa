@@ -209,11 +209,20 @@ func (h *Handler) CreateCurriculumElement(c *gin.Context) {
 func (h *Handler) ListCurriculumElements(c *gin.Context) {
 	ctx := context.Background()
 
+	// Log all query parameters for debugging
+	fmt.Printf("DEBUG: All query params: %v\n", c.Request.URL.Query())
+
 	var subjectID, phaseID *string
-	if s := c.Query("subject_id"); s != "" {
+	if s := c.Query("subject_id"); s != "" && s != " " {
 		subjectID = &s
 	}
-	if p := c.Query("phase_id"); p != "" {
+	if p := c.Query("phase_id"); p != "" && p != " " {
+		// Validate that phase_id is not malformed
+		if strings.Contains(p, "[") || strings.Contains(p, "{") {
+			fmt.Printf("DEBUG: Malformed phase_id detected: %s\n", p)
+			response.Error(c, 400, "Invalid phase_id format")
+			return
+		}
 		phaseID = &p
 	}
 
@@ -226,8 +235,13 @@ func (h *Handler) ListCurriculumElements(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "20"))
 
+	// Log the parameters being passed to service
+	fmt.Printf("DEBUG: Calling service with subjectID=%v, phaseID=%v, isActive=%v, page=%d, pageSize=%d\n",
+		subjectID, phaseID, isActive, page, pageSize)
+
 	elements, total, err := h.curriculumService.ListCurriculumElements(ctx, subjectID, phaseID, isActive, page, pageSize)
 	if err != nil {
+		fmt.Printf("DEBUG: Service returned error: %v\n", err)
 		response.Error(c, 500, err.Error())
 		return
 	}

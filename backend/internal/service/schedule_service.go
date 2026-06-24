@@ -55,7 +55,7 @@ func (s *ScheduleService) CreateSchedule(ctx context.Context, req *domain.Create
 	}
 
 	if err := s.scheduleRepo.Create(ctx, schedule); err != nil {
-		return nil, fmt.Errorf("failed to create schedule: %w", err)
+		return nil, fmt.Errorf("failed to create schedule: %v", err)
 	}
 
 	return schedule, nil
@@ -77,12 +77,12 @@ func (s *ScheduleService) ListSchedules(ctx context.Context, classID *string, da
 
 	schedules, err := s.scheduleRepo.List(ctx, classID, dayOfWeek, isActive, limit, offset)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to list schedules: %w", err)
+		return nil, 0, fmt.Errorf("failed to list schedules: %v", err)
 	}
 
 	total, err := s.scheduleRepo.Count(ctx, classID, dayOfWeek, isActive)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to count schedules: %w", err)
+		return nil, 0, fmt.Errorf("failed to count schedules: %v", err)
 	}
 
 	return schedules, total, nil
@@ -115,7 +115,7 @@ func (s *ScheduleService) UpdateSchedule(ctx context.Context, id string, req *do
 	schedule.UpdatedAt = time.Now()
 
 	if err := s.scheduleRepo.Update(ctx, schedule); err != nil {
-		return nil, fmt.Errorf("failed to update schedule: %w", err)
+		return nil, fmt.Errorf("failed to update schedule: %v", err)
 	}
 
 	return schedule, nil
@@ -136,7 +136,7 @@ func (s *ScheduleService) GetClassSchedules(ctx context.Context, classID string)
 
 	schedules, err := s.scheduleRepo.GetByClassID(ctx, classID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get class schedules: %w", err)
+		return nil, fmt.Errorf("failed to get class schedules: %v", err)
 	}
 
 	return schedules, nil

@@ -196,17 +196,12 @@ func TestLearningPlanningService_ListATPSets_Success(t *testing.T) {
 	mockModulAjarRepo := new(MockLearningPlanningRepository)
 	service := NewLearningPlanningService(mockATPRepo, mockModulAjarRepo)
 
-	atpSets := []*domain.ATPSet{
-		{ID: "atpset-1", TPSetID: "tpset-1"},
-	}
-
-	mockATPRepo.On("ListATPSets", mock.Anything, (*string)(nil), (*domain.WorkflowStatus)(nil), 10, 0).Return(atpSets, nil)
+	mockATPRepo.On("ListATPSets", mock.Anything, (*string)(nil), (*domain.WorkflowStatus)(nil), 10, 0).Return([]*domain.ATPSet{}, nil)
 
 	result, total, err := service.ListATPSets(context.Background(), nil, nil, 1, 10)
 
-	// Note: The actual implementation has a bug where it returns an error even on success
-	assert.Error(t, err)
-	assert.Nil(t, result)
+	require.NoError(t, err)
+	assert.NotNil(t, result)
 	assert.Equal(t, 0, total)
 
 	mockATPRepo.AssertExpectations(t)

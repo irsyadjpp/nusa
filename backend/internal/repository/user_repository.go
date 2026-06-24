@@ -366,3 +366,68 @@ func (r *UserRepository) GetUsersBySchool(ctx context.Context, schoolID string) 
 
 	return users, nil
 }
+
+// ListUsersBySchool retrieves users belonging to a specific school with pagination
+func (r *UserRepository) ListUsersBySchool(ctx context.Context, schoolID string, limit, offset int) ([]*domain.User, error) {
+	query := `
+		SELECT id, email, password_hash, name, role_id, school_id, is_active, 
+		       failed_login_attempts, locked_until, created_at, updated_at, created_by, updated_by
+		FROM users WHERE school_id = $1
+		ORDER BY created_at DESC
+	`
+
+	args := []interface{}{schoolID}
+	argIndex := 2
+
+	if limit > 0 {
+		query += fmt.Sprintf(" LIMIT $%d", argIndex)
+		args = append(args, limit)
+		argIndex++
+	}
+
+	if offset > 0 {
+		query += fmt.Sprintf(" OFFSET $%d", argIndex)
+		args = append(args, offset)
+	}
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*domain.User
+	for rows.Next() {
+		var user domain.User
+		var userSchoolID sql.NullString
+		var lockedUntil sql.NullTime
+		var createdBy sql.NullString
+		var updatedBy sql.NullString
+
+		err := rows.Scan(
+			&user.ID, &user.Email, &user.PasswordHash, &user.Name, &user.RoleID, &userSchoolID,
+			&user.IsActive, &user.FailedLoginAttempts, &lockedUntil,
+			&user.CreatedAt, &user.UpdatedAt, &createdBy, &updatedBy,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if userSchoolID.Valid {
+			user.SchoolID = &userSchoolID.String
+		}
+		if lockedUntil.Valid {
+			user.LockedUntil = &lockedUntil.Time
+		}
+		if createdBy.Valid {
+			user.CreatedBy = &createdBy.String
+		}
+		if updatedBy.Valid {
+			user.UpdatedBy = &updatedBy.String
+		}
+
+		users = append(users, &user)
+	}
+
+	return users, nil
+}

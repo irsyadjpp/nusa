@@ -38,7 +38,7 @@ func (s *AssessmentService) CreateAssessment(ctx context.Context, req *domain.Cr
 	}
 
 	if err := s.assessmentRepo.CreateAssessment(ctx, assessment); err != nil {
-		return nil, fmt.Errorf("failed to create assessment: %w", err)
+		return nil, fmt.Errorf("failed to create assessment: %v", err)
 	}
 
 	return assessment, nil
@@ -54,14 +54,17 @@ func (s *AssessmentService) ListAssessments(ctx context.Context, tpID, userID *s
 	limit := pageSize
 	offset := (page - 1) * pageSize
 	assessments, err := s.assessmentRepo.ListAssessments(ctx, tpID, userID, assessmentType, status, limit, offset)
-	return assessments, len(assessments), fmt.Errorf("failed to list assessments: %w", err)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to list assessments: %v", err)
+	}
+	return assessments, len(assessments), nil
 }
 
 // UpdateAssessment updates an assessment
 func (s *AssessmentService) UpdateAssessment(ctx context.Context, id string, req *domain.UpdateAssessmentRequest) (*domain.Assessment, error) {
 	assessment, err := s.assessmentRepo.GetAssessmentByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("assessment not found: %w", err)
+		return nil, fmt.Errorf("assessment not found: %v", err)
 	}
 
 	if req.AssessmentItems != nil {
@@ -78,7 +81,7 @@ func (s *AssessmentService) UpdateAssessment(ctx context.Context, id string, req
 	}
 
 	if err := s.assessmentRepo.UpdateAssessment(ctx, assessment); err != nil {
-		return nil, fmt.Errorf("failed to update assessment: %w", err)
+		return nil, fmt.Errorf("failed to update assessment: %v", err)
 	}
 
 	return assessment, nil
@@ -100,7 +103,7 @@ func (s *AssessmentService) CreateRubric(ctx context.Context, req *domain.Create
 	}
 
 	if err := s.assessmentRepo.CreateRubric(ctx, rubric); err != nil {
-		return nil, fmt.Errorf("failed to create rubric: %w", err)
+		return nil, fmt.Errorf("failed to create rubric: %v", err)
 	}
 
 	return rubric, nil
@@ -116,14 +119,17 @@ func (s *AssessmentService) ListRubrics(ctx context.Context, assessmentID, userI
 	limit := pageSize
 	offset := (page - 1) * pageSize
 	rubrics, err := s.assessmentRepo.ListRubrics(ctx, assessmentID, userID, rubricType, status, limit, offset)
-	return rubrics, len(rubrics), fmt.Errorf("failed to list rubrics: %w", err)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to list rubrics: %v", err)
+	}
+	return rubrics, len(rubrics), nil
 }
 
 // UpdateRubric updates a rubric
 func (s *AssessmentService) UpdateRubric(ctx context.Context, id string, req *domain.UpdateRubricRequest) (*domain.Rubric, error) {
 	rubric, err := s.assessmentRepo.GetRubricByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("rubric not found: %w", err)
+		return nil, fmt.Errorf("rubric not found: %v", err)
 	}
 
 	if req.PerformanceCriteria != nil {
@@ -140,7 +146,7 @@ func (s *AssessmentService) UpdateRubric(ctx context.Context, id string, req *do
 	}
 
 	if err := s.assessmentRepo.UpdateRubric(ctx, rubric); err != nil {
-		return nil, fmt.Errorf("failed to update rubric: %w", err)
+		return nil, fmt.Errorf("failed to update rubric: %v", err)
 	}
 
 	return rubric, nil
@@ -167,7 +173,7 @@ func (s *AssessmentService) CreateEvidence(ctx context.Context, req *domain.Crea
 	}
 
 	if err := s.assessmentRepo.CreateEvidence(ctx, evidence); err != nil {
-		return nil, fmt.Errorf("failed to create evidence: %w", err)
+		return nil, fmt.Errorf("failed to create evidence: %v", err)
 	}
 
 	return evidence, nil
@@ -183,14 +189,17 @@ func (s *AssessmentService) ListEvidences(ctx context.Context, studentID, assess
 	limit := pageSize
 	offset := (page - 1) * pageSize
 	evidences, err := s.assessmentRepo.ListEvidences(ctx, studentID, assessmentID, evidenceType, status, limit, offset)
-	return evidences, len(evidences), fmt.Errorf("failed to list evidences: %w", err)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to list evidences: %v", err)
+	}
+	return evidences, len(evidences), nil
 }
 
 // UpdateEvidence updates an evidence
 func (s *AssessmentService) UpdateEvidence(ctx context.Context, id string, req *domain.UpdateEvidenceRequest) (*domain.Evidence, error) {
 	evidence, err := s.assessmentRepo.GetEvidenceByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("evidence not found: %w", err)
+		return nil, fmt.Errorf("evidence not found: %v", err)
 	}
 
 	if req.EvidenceData != nil {
@@ -213,7 +222,7 @@ func (s *AssessmentService) UpdateEvidence(ctx context.Context, id string, req *
 	}
 
 	if err := s.assessmentRepo.UpdateEvidence(ctx, evidence); err != nil {
-		return nil, fmt.Errorf("failed to update evidence: %w", err)
+		return nil, fmt.Errorf("failed to update evidence: %v", err)
 	}
 
 	return evidence, nil
@@ -246,7 +255,7 @@ func (s *AssessmentService) CreateEvaluation(ctx context.Context, req *domain.Cr
 	}
 
 	if err := s.assessmentRepo.CreateEvaluation(ctx, evaluation); err != nil {
-		return nil, fmt.Errorf("failed to create evaluation: %w", err)
+		return nil, fmt.Errorf("failed to create evaluation: %v", err)
 	}
 
 	// Create initial feedback history entry if feedback is provided
@@ -260,7 +269,7 @@ func (s *AssessmentService) CreateEvaluation(ctx context.Context, req *domain.Cr
 		}
 
 		if err := s.assessmentRepo.CreateFeedbackHistory(ctx, feedbackHistory); err != nil {
-			return nil, fmt.Errorf("failed to create feedback history: %w", err)
+			return nil, fmt.Errorf("failed to create feedback history: %v", err)
 		}
 	}
 
@@ -277,14 +286,14 @@ func (s *AssessmentService) ListEvaluations(ctx context.Context, studentID, evid
 	limit := pageSize
 	offset := (page - 1) * pageSize
 	evaluations, err := s.assessmentRepo.ListEvaluations(ctx, evidenceID, studentID, performanceLevel, limit, offset)
-	return evaluations, len(evaluations), fmt.Errorf("failed to list evaluations: %w", err)
+	return evaluations, len(evaluations), fmt.Errorf("failed to list evaluations: %v", err)
 }
 
 // UpdateEvaluation updates an evaluation (creates new revision instead of in-place update)
 func (s *AssessmentService) UpdateEvaluation(ctx context.Context, id string, req *domain.UpdateEvaluationRequest, userID string) (*domain.Evaluation, error) {
 	oldEval, err := s.assessmentRepo.GetEvaluationByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("evaluation not found: %w", err)
+		return nil, fmt.Errorf("evaluation not found: %v", err)
 	}
 
 	// Validate evaluation can be revised
@@ -294,7 +303,7 @@ func (s *AssessmentService) UpdateEvaluation(ctx context.Context, id string, req
 
 	// Archive current revision using new repository method
 	if err := s.assessmentRepo.ArchiveCurrentRevision(ctx, oldEval.ID); err != nil {
-		return nil, fmt.Errorf("failed to archive current revision: %w", err)
+		return nil, fmt.Errorf("failed to archive current revision: %v", err)
 	}
 
 	// Prepare new revision values
@@ -319,14 +328,14 @@ func (s *AssessmentService) UpdateEvaluation(ctx context.Context, id string, req
 	// Use domain method to create new revision
 	newEval, err := oldEval.CreateRevision(performanceScores, totalScore, maxScore, performanceLevel, req.TeacherFeedback, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create revision: %w", err)
+		return nil, fmt.Errorf("failed to create revision: %v", err)
 	}
 
 	// Generate new ID for revision
 	newEval.ID = uuid.New().String()
 
 	if err := s.assessmentRepo.CreateEvaluation(ctx, newEval); err != nil {
-		return nil, fmt.Errorf("failed to create new revision: %w", err)
+		return nil, fmt.Errorf("failed to create new revision: %v", err)
 	}
 
 	// Create feedback history entry if feedback changed
@@ -347,7 +356,7 @@ func (s *AssessmentService) UpdateEvaluation(ctx context.Context, id string, req
 		}
 
 		if err := s.assessmentRepo.CreateFeedbackHistory(ctx, feedbackHistory); err != nil {
-			return nil, fmt.Errorf("failed to create feedback history: %w", err)
+			return nil, fmt.Errorf("failed to create feedback history: %v", err)
 		}
 	}
 
@@ -368,7 +377,7 @@ func (s *AssessmentService) GetEvaluationFeedbackHistory(ctx context.Context, ev
 func (s *AssessmentService) ApproveAssessment(ctx context.Context, assessmentID string, approverID string) error {
 	assessment, err := s.assessmentRepo.GetAssessmentByID(ctx, assessmentID)
 	if err != nil {
-		return fmt.Errorf("assessment not found: %w", err)
+		return fmt.Errorf("assessment not found: %v", err)
 	}
 
 	if assessment.Status == domain.WorkflowStatusApproved {
@@ -376,7 +385,7 @@ func (s *AssessmentService) ApproveAssessment(ctx context.Context, assessmentID 
 	}
 
 	if err := s.assessmentRepo.UpdateAssessmentStatus(ctx, assessmentID, domain.WorkflowStatusApproved, &approverID); err != nil {
-		return fmt.Errorf("failed to approve assessment: %w", err)
+		return fmt.Errorf("failed to approve assessment: %v", err)
 	}
 
 	return nil
@@ -397,7 +406,7 @@ func (s *AssessmentService) UploadEvidence(ctx context.Context, req *domain.Crea
 	}
 
 	if err := s.assessmentRepo.CreateEvidence(ctx, evidence); err != nil {
-		return nil, fmt.Errorf("failed to create evidence: %w", err)
+		return nil, fmt.Errorf("failed to create evidence: %v", err)
 	}
 
 	return evidence, nil

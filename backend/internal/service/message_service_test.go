@@ -104,7 +104,7 @@ func TestMessageService_CreateMessage_Success(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotNil(t, result)
-	assert.Equal(t, "Test Subject", result.Subject)
+	assert.Equal(t, "Test Subject", *result.Subject)
 	assert.Equal(t, "user-1", result.SenderID)
 	assert.Equal(t, "user-2", result.ReceiverID)
 

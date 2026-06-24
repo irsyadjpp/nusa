@@ -225,14 +225,14 @@ func (r *TPRepository) UpdateTPSet(ctx context.Context, tpSet *domain.TPSet) err
 }
 
 // UpdateTPSetStatus updates only the status of a TP Set
-func (r *TPRepository) UpdateTPSetStatus(ctx context.Context, id string, status domain.WorkflowStatus, approvedBy *string, approvedAt *interface{}) error {
+func (r *TPRepository) UpdateTPSetStatus(ctx context.Context, id string, status domain.WorkflowStatus, approvedBy *string, rejectedReason *string) error {
 	query := `
 		UPDATE tp_sets 
-		SET status = $2, approved_by = $3, approved_at = $4, updated_at = NOW()
+		SET status = $2, approved_by = $3, rejected_reason = $4, updated_at = NOW()
 		WHERE id = $1
 	`
 
-	result, err := r.db.ExecContext(ctx, query, id, status, approvedBy, approvedAt)
+	result, err := r.db.ExecContext(ctx, query, id, status, approvedBy, rejectedReason)
 	if err != nil {
 		return err
 	}
@@ -354,11 +354,11 @@ func (r *TPRepository) ListTPsBySet(ctx context.Context, tpSetID string) ([]*dom
 }
 
 // ListTPs retrieves TPs with optional filters
-// Supports school scope filtering via JOIN with users table
-func (r *TPRepository) ListTPs(ctx context.Context, tpSetID, cpID *string, status *domain.WorkflowStatus, schoolID *string, limit, offset int) ([]*domain.TP, error) {
+// ListTPs retrieves TPs with optional filters
+func (r *TPRepository) ListTPs(ctx context.Context, tpSetID, subjectID, phaseID, status *string, limit, offset int) ([]*domain.TP, error) {
 	query := `
-		SELECT t.id, t.tp_set_id, t.sequence_number, t.cp_id, t.subject_id, t.phase_id, t.element_id, 
-		       t.subelement_id, t.user_id, t.status, t.title, t.learning_objectives, t.time_allocation, 
+		SELECT t.id, t.tp_set_id, t.sequence_number, t.cp_id, t.subject_id, t.phase_id, t.element_id,
+		       t.subelement_id, t.user_id, t.status, t.title, t.learning_objectives, t.time_allocation,
 		       t.prerequisites, t.estimated_weeks, t.success_criteria, t.created_at, t.updated_at
 		FROM tp t
 		WHERE 1=1
@@ -367,22 +367,21 @@ func (r *TPRepository) ListTPs(ctx context.Context, tpSetID, cpID *string, statu
 	args := []interface{}{}
 	argIndex := 1
 
-	// School scope filter: JOIN with users table to filter by school_id
-	if schoolID != nil {
-		query += fmt.Sprintf(" AND EXISTS (SELECT 1 FROM users u WHERE u.id = t.user_id AND u.school_id = $%d)", argIndex)
-		args = append(args, *schoolID)
-		argIndex++
-	}
-
 	if tpSetID != nil {
 		query += fmt.Sprintf(" AND t.tp_set_id = $%d", argIndex)
 		args = append(args, *tpSetID)
 		argIndex++
 	}
 
-	if cpID != nil {
-		query += fmt.Sprintf(" AND t.cp_id = $%d", argIndex)
-		args = append(args, *cpID)
+	if subjectID != nil {
+		query += fmt.Sprintf(" AND t.subject_id = $%d", argIndex)
+		args = append(args, *subjectID)
+		argIndex++
+	}
+
+	if phaseID != nil {
+		query += fmt.Sprintf(" AND t.phase_id = $%d", argIndex)
+		args = append(args, *phaseID)
 		argIndex++
 	}
 

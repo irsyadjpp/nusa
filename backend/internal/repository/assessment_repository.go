@@ -221,6 +221,23 @@ func (r *AssessmentRepository) UpdateAssessment(ctx context.Context, assessment 
 	return nil
 }
 
+// DeleteAssessment deletes an assessment
+func (r *AssessmentRepository) DeleteAssessment(ctx context.Context, id string) error {
+	query := `DELETE FROM assessments WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("assessment not found")
+	}
+
+	return nil
+}
+
 // ==================== Rubric Operations ====================
 
 // CreateRubric creates a new rubric
@@ -676,7 +693,7 @@ func (r *AssessmentRepository) GetEvaluationByID(ctx context.Context, id string)
 }
 
 // ListEvaluations retrieves evaluations with optional filters
-func (r *AssessmentRepository) ListEvaluations(ctx context.Context, studentID, rubricID, evidenceID *string, performanceLevel *domain.PerformanceLevel, limit, offset int) ([]*domain.Evaluation, error) {
+func (r *AssessmentRepository) ListEvaluations(ctx context.Context, evidenceID, studentID *string, performanceLevel *domain.PerformanceLevel, limit, offset int) ([]*domain.Evaluation, error) {
 	query := `
 		SELECT id, student_id, rubric_id, evidence_id, user_id, performance_scores, 
 		       total_score, max_score, performance_level, teacher_feedback, revision_no, 
@@ -691,12 +708,6 @@ func (r *AssessmentRepository) ListEvaluations(ctx context.Context, studentID, r
 	if studentID != nil {
 		query += fmt.Sprintf(" AND student_id = $%d", argIndex)
 		args = append(args, *studentID)
-		argIndex++
-	}
-
-	if rubricID != nil {
-		query += fmt.Sprintf(" AND rubric_id = $%d", argIndex)
-		args = append(args, *rubricID)
 		argIndex++
 	}
 
@@ -768,6 +779,23 @@ func (r *AssessmentRepository) UpdateEvaluation(ctx context.Context, evaluation 
 		evaluation.ID, evaluation.PerformanceScores, evaluation.TotalScore, evaluation.MaxScore,
 		evaluation.PerformanceLevel, evaluation.TeacherFeedback, evaluation.RevisionNo,
 		evaluation.IsCurrentVersion, evaluation.ParentRevisionID)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		return fmt.Errorf("evaluation not found")
+	}
+
+	return nil
+}
+
+// DeleteEvaluation deletes an evaluation by ID
+func (r *AssessmentRepository) DeleteEvaluation(ctx context.Context, id string) error {
+	query := `DELETE FROM evaluations WHERE id = $1`
+
+	result, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}

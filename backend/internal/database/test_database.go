@@ -35,7 +35,7 @@ func SetupTestDatabase(db *Database) error {
 	schema := `
 	-- Enable UUID extension
 	CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-	
+
 	-- Users table
 	CREATE TABLE IF NOT EXISTS users (
 		id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -44,16 +44,15 @@ func SetupTestDatabase(db *Database) error {
 		name VARCHAR(100) NOT NULL,
 		role_id UUID NOT NULL,
 		school_id UUID,
-		phone VARCHAR(20),
-		address VARCHAR(500),
-		status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
-		created_by UUID NOT NULL,
-		updated_by UUID NOT NULL,
+		is_active BOOLEAN NOT NULL DEFAULT true,
+		failed_login_attempts INTEGER NOT NULL DEFAULT 0,
+		locked_until TIMESTAMP WITH TIME ZONE,
+		created_by UUID,
+		updated_by UUID,
 		created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-		updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-		deleted_at TIMESTAMP WITH TIME ZONE
+		updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 	);
-	
+
 	-- Schools table
 	CREATE TABLE IF NOT EXISTS schools (
 		id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -62,44 +61,56 @@ func SetupTestDatabase(db *Database) error {
 		address VARCHAR(500),
 		phone VARCHAR(20),
 		email VARCHAR(255),
-		status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
-		created_by UUID NOT NULL,
-		updated_by UUID NOT NULL,
+		is_active BOOLEAN NOT NULL DEFAULT true,
+		created_by UUID,
+		updated_by UUID,
 		created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-		updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-		deleted_at TIMESTAMP WITH TIME ZONE
+		updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 	);
-	
+
 	-- Roles table
 	CREATE TABLE IF NOT EXISTS roles (
 		id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 		name VARCHAR(50) UNIQUE NOT NULL,
+		description VARCHAR(500),
 		is_active BOOLEAN NOT NULL DEFAULT true,
-		created_by UUID NOT NULL,
-		updated_by UUID NOT NULL,
+		created_by UUID,
+		updated_by UUID,
 		created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-		updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-		deleted_at TIMESTAMP WITH TIME ZONE
+		updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 	);
-	
+
+	-- Permissions table
+	CREATE TABLE IF NOT EXISTS permissions (
+		id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+		role_id UUID NOT NULL REFERENCES roles(id) ON DELETE CASCADE,
+		resource VARCHAR(100) NOT NULL,
+		action VARCHAR(50) NOT NULL,
+		UNIQUE (role_id, resource, action),
+		created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+	);
+
 	-- Refresh tokens table
 	CREATE TABLE IF NOT EXISTS refresh_tokens (
 		id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
 		user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 		token VARCHAR(500) UNIQUE NOT NULL,
 		expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+		ip_address VARCHAR(45),
 		created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-		revoked_at TIMESTAMP WITH TIME ZONE
+		revoked_at TIMESTAMP WITH TIME ZONE,
+		created_by UUID
 	);
-	
+
 	-- Create indexes
 	CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 	CREATE INDEX IF NOT EXISTS idx_users_role_id ON users(role_id);
 	CREATE INDEX IF NOT EXISTS idx_users_school_id ON users(school_id);
-	CREATE INDEX IF NOT EXISTS idx_users_status ON users(status);
+	CREATE INDEX IF NOT EXISTS idx_users_is_active ON users(is_active);
 	CREATE INDEX IF NOT EXISTS idx_schools_code ON schools(code);
-	CREATE INDEX IF NOT EXISTS idx_schools_status ON schools(status);
+	CREATE INDEX IF NOT EXISTS idx_schools_is_active ON schools(is_active);
 	CREATE INDEX IF NOT EXISTS idx_roles_name ON roles(name);
+	CREATE INDEX IF NOT EXISTS idx_permissions_role_id ON permissions(role_id);
 	CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
 	CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON refresh_tokens(token);
 	`
@@ -119,6 +130,7 @@ func CleanupTestDatabase(db *Database) error {
 	// Drop tables in correct order (reverse of creation due to foreign keys)
 	tables := []string{
 		"refresh_tokens",
+		"permissions",
 		"users",
 		"schools",
 		"roles",
@@ -141,6 +153,7 @@ func TruncateTestDatabase(db *Database) error {
 	// Truncate tables in correct order (reverse of creation due to foreign keys)
 	tables := []string{
 		"refresh_tokens",
+		"permissions",
 		"users",
 		"schools",
 		"roles",

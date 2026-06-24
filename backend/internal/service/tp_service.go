@@ -32,7 +32,7 @@ func (s *TPService) CreateTPSet(ctx context.Context, req *domain.CreateTPSetRequ
 	}
 
 	if err := s.tpRepo.CreateTPSet(ctx, tpSet); err != nil {
-		return nil, fmt.Errorf("failed to create TP set: %w", err)
+		return nil, fmt.Errorf("failed to create TP set: %v", err)
 	}
 
 	return tpSet, nil
@@ -50,7 +50,7 @@ func (s *TPService) ListTPSets(ctx context.Context, cpID *string, status *domain
 
 	sets, err := s.tpRepo.ListTPSets(ctx, cpID, status, nil, limit, offset)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to list TP sets: %w", err)
+		return nil, 0, fmt.Errorf("failed to list TP sets: %v", err)
 	}
 
 	return sets, len(sets), nil
@@ -60,7 +60,7 @@ func (s *TPService) ListTPSets(ctx context.Context, cpID *string, status *domain
 func (s *TPService) ApproveTPSet(ctx context.Context, id string, approverID string) error {
 	err := s.tpRepo.UpdateTPSetStatus(ctx, id, domain.WorkflowStatusApproved, &approverID, nil)
 	if err != nil {
-		return fmt.Errorf("failed to approve TP set: %w", err)
+		return fmt.Errorf("failed to approve TP set: %v", err)
 	}
 	return nil
 }
@@ -69,7 +69,7 @@ func (s *TPService) ApproveTPSet(ctx context.Context, id string, approverID stri
 func (s *TPService) RejectTPSet(ctx context.Context, id string, approverID string) error {
 	err := s.tpRepo.UpdateTPSetStatus(ctx, id, domain.WorkflowStatusRejected, &approverID, nil)
 	if err != nil {
-		return fmt.Errorf("failed to reject TP set: %w", err)
+		return fmt.Errorf("failed to reject TP set: %v", err)
 	}
 	return nil
 }
@@ -78,7 +78,7 @@ func (s *TPService) RejectTPSet(ctx context.Context, id string, approverID strin
 func (s *TPService) UpdateTPSet(ctx context.Context, id string, req *domain.UpdateTPSetRequest) error {
 	tpSet, err := s.tpRepo.GetTPSetByID(ctx, id)
 	if err != nil {
-		return fmt.Errorf("tp set not found: %w", err)
+		return fmt.Errorf("tp set not found: %v", err)
 	}
 
 	// Update only allowed fields
@@ -87,7 +87,7 @@ func (s *TPService) UpdateTPSet(ctx context.Context, id string, req *domain.Upda
 	}
 
 	if err := s.tpRepo.UpdateTPSet(ctx, tpSet); err != nil {
-		return fmt.Errorf("failed to update tp set: %w", err)
+		return fmt.Errorf("failed to update tp set: %v", err)
 	}
 
 	return nil
@@ -123,7 +123,7 @@ func (s *TPService) CreateTP(ctx context.Context, req *domain.CreateTPRequest) (
 	}
 
 	if err := s.tpRepo.CreateTP(ctx, tp); err != nil {
-		return nil, fmt.Errorf("failed to create TP: %w", err)
+		return nil, fmt.Errorf("failed to create TP: %v", err)
 	}
 
 	return tp, nil
@@ -145,7 +145,7 @@ func (s *TPService) ListTPs(ctx context.Context, tpSetID, cpID *string, status *
 	}
 	tps, err := s.tpRepo.ListTPs(ctx, tpSetID, cpID, nil, &statusStr, limit, offset)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to list TPs: %w", err)
+		return nil, 0, fmt.Errorf("failed to list TPs: %v", err)
 	}
 
 	return tps, len(tps), nil
@@ -155,13 +155,13 @@ func (s *TPService) ListTPs(ctx context.Context, tpSetID, cpID *string, status *
 func (s *TPService) UpdateTP(ctx context.Context, id string, req *domain.UpdateTPRequest) (*domain.TP, error) {
 	oldTP, err := s.tpRepo.GetTPByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("tp not found: %w", err)
+		return nil, fmt.Errorf("tp not found: %v", err)
 	}
 
 	// Check if TP has downstream assessments before allowing update
 	hasDownstream, err := s.tpRepo.HasDownstreamAssessments(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to check downstream assessments: %w", err)
+		return nil, fmt.Errorf("failed to check downstream assessments: %v", err)
 	}
 	if hasDownstream {
 		return nil, fmt.Errorf("cannot update TP with downstream assessments")
@@ -170,7 +170,7 @@ func (s *TPService) UpdateTP(ctx context.Context, id string, req *domain.UpdateT
 	// Mark old version as not current
 	oldTP.IsCurrentVersion = false
 	if err := s.tpRepo.UpdateTP(ctx, oldTP); err != nil {
-		return nil, fmt.Errorf("failed to mark old version: %w", err)
+		return nil, fmt.Errorf("failed to mark old version: %v", err)
 	}
 
 	// Prepare new version values
@@ -228,7 +228,7 @@ func (s *TPService) UpdateTP(ctx context.Context, id string, req *domain.UpdateT
 	}
 
 	if err := s.tpRepo.CreateTP(ctx, newTP); err != nil {
-		return nil, fmt.Errorf("failed to create new version: %w", err)
+		return nil, fmt.Errorf("failed to create new version: %v", err)
 	}
 
 	return newTP, nil

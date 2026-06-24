@@ -62,7 +62,7 @@ func (s *AnnouncementService) CreateAnnouncement(ctx context.Context, req *domai
 	}
 
 	if err := s.announcementRepo.Create(ctx, announcement); err != nil {
-		return nil, fmt.Errorf("failed to create announcement: %w", err)
+		return nil, fmt.Errorf("failed to create announcement: %v", err)
 	}
 
 	return announcement, nil
@@ -84,12 +84,12 @@ func (s *AnnouncementService) ListAnnouncements(ctx context.Context, schoolID *s
 
 	announcements, err := s.announcementRepo.List(ctx, schoolID, priority, targetAudience, isActive, limit, offset)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to list announcements: %w", err)
+		return nil, 0, fmt.Errorf("failed to list announcements: %v", err)
 	}
 
 	total, err := s.announcementRepo.Count(ctx, schoolID, priority, targetAudience, isActive)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to count announcements: %w", err)
+		return nil, 0, fmt.Errorf("failed to count announcements: %v", err)
 	}
 
 	return announcements, total, nil
@@ -122,7 +122,7 @@ func (s *AnnouncementService) UpdateAnnouncement(ctx context.Context, id string,
 	}
 
 	if err := s.announcementRepo.Update(ctx, announcement); err != nil {
-		return nil, fmt.Errorf("failed to update announcement: %w", err)
+		return nil, fmt.Errorf("failed to update announcement: %v", err)
 	}
 
 	return announcement, nil
@@ -143,7 +143,7 @@ func (s *AnnouncementService) GetSchoolAnnouncements(ctx context.Context, school
 
 	announcements, err := s.announcementRepo.GetBySchoolID(ctx, schoolID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get school announcements: %w", err)
+		return nil, fmt.Errorf("failed to get school announcements: %v", err)
 	}
 
 	return announcements, nil

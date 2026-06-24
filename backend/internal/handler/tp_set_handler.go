@@ -454,15 +454,14 @@ func (h *TPSetHandler) ListTPs(c *gin.Context) {
 		tpSetID = &tpSetIDStr
 	}
 
-	var status *domain.WorkflowStatus
-	if statusStr := c.Query("status"); statusStr != "" {
-		s := domain.WorkflowStatus(statusStr)
-		status = &s
+	var statusStr *string
+	if statusValue := c.Query("status"); statusValue != "" {
+		statusStr = &statusValue
 	}
 
 	query := &application.ListTPsQuery{
 		TPSetID:  tpSetID,
-		Status:   status,
+		Status:   statusStr,
 		UserID:   authCtx.UserID,
 		Page:     page,
 		PageSize: pageSize,

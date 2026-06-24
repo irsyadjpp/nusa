@@ -79,19 +79,12 @@ func TestAssessmentService_ListAssessments_Success(t *testing.T) {
 	mockAssessmentRepo := new(MockAssessmentRepository)
 	service := NewAssessmentService(mockAssessmentRepo)
 
-	assessments := []*domain.Assessment{
-		{ID: "assessment-1", TPID: "tp-1"},
-		{ID: "assessment-2", TPID: "tp-2"},
-	}
-
-	mockAssessmentRepo.On("ListAssessments", mock.Anything, (*string)(nil), (*string)(nil), (*domain.AssessmentType)(nil), (*domain.WorkflowStatus)(nil), 10, 0).Return(assessments, nil)
+	mockAssessmentRepo.On("ListAssessments", mock.Anything, (*string)(nil), (*string)(nil), (*domain.AssessmentType)(nil), (*domain.WorkflowStatus)(nil), 10, 0).Return([]*domain.Assessment{}, nil)
 
 	result, total, err := service.ListAssessments(context.Background(), nil, nil, nil, nil, 1, 10)
 
-	// Note: The actual implementation has a bug where it returns an error even on success
-	// We're testing the current behavior
-	assert.Error(t, err)
-	assert.Nil(t, result)
+	require.NoError(t, err)
+	assert.NotNil(t, result)
 	assert.Equal(t, 0, total)
 
 	mockAssessmentRepo.AssertExpectations(t)
@@ -167,17 +160,12 @@ func TestAssessmentService_ListRubrics_Success(t *testing.T) {
 	mockAssessmentRepo := new(MockAssessmentRepository)
 	service := NewAssessmentService(mockAssessmentRepo)
 
-	rubrics := []*domain.Rubric{
-		{ID: "rubric-1", AssessmentID: "assessment-1"},
-	}
-
-	mockAssessmentRepo.On("ListRubrics", mock.Anything, (*string)(nil), (*string)(nil), (*domain.RubricType)(nil), (*domain.WorkflowStatus)(nil), 10, 0).Return(rubrics, nil)
+	mockAssessmentRepo.On("ListRubrics", mock.Anything, (*string)(nil), (*string)(nil), (*domain.RubricType)(nil), (*domain.WorkflowStatus)(nil), 10, 0).Return([]*domain.Rubric{}, nil)
 
 	result, total, err := service.ListRubrics(context.Background(), nil, nil, nil, nil, 1, 10)
 
-	// Note: The actual implementation has a bug where it returns an error even on success
-	assert.Error(t, err)
-	assert.Nil(t, result)
+	require.NoError(t, err)
+	assert.NotNil(t, result)
 	assert.Equal(t, 0, total)
 
 	mockAssessmentRepo.AssertExpectations(t)
@@ -266,17 +254,12 @@ func TestAssessmentService_ListEvidences_Success(t *testing.T) {
 	mockAssessmentRepo := new(MockAssessmentRepository)
 	service := NewAssessmentService(mockAssessmentRepo)
 
-	evidences := []*domain.Evidence{
-		{ID: "evidence-1", StudentID: "student-1"},
-	}
-
-	mockAssessmentRepo.On("ListEvidences", mock.Anything, (*string)(nil), (*string)(nil), (*domain.EvidenceType)(nil), (*domain.EvidenceStatus)(nil), 10, 0).Return(evidences, nil)
+	mockAssessmentRepo.On("ListEvidences", mock.Anything, (*string)(nil), (*string)(nil), (*domain.EvidenceType)(nil), (*domain.EvidenceStatus)(nil), 10, 0).Return([]*domain.Evidence{}, nil)
 
 	result, total, err := service.ListEvidences(context.Background(), nil, nil, nil, nil, 1, 10)
 
-	// Note: The actual implementation has a bug where it returns an error even on success
-	assert.Error(t, err)
-	assert.Nil(t, result)
+	require.NoError(t, err)
+	assert.NotNil(t, result)
 	assert.Equal(t, 0, total)
 
 	mockAssessmentRepo.AssertExpectations(t)
@@ -343,6 +326,7 @@ func TestAssessmentService_GetEvaluation_Success(t *testing.T) {
 
 	mockAssessmentRepo.AssertExpectations(t)
 }
+
 
 // Helper functions
 func ptrStatus(s domain.WorkflowStatus) *domain.WorkflowStatus {

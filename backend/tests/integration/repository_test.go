@@ -1,144 +1,182 @@
 package integration
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-// TestUserRepository_Create validates user creation in repository
-func TestUserRepository_Create(t *testing.T) {
+// TestAdvancedUserRepositoryOperations tests advanced user repository operations
+func TestAdvancedUserRepositoryOperations(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	t.Log("UserRepository.Create should:")
-	t.Log("1. Insert user into database")
-	t.Log("2. Hash password before storage")
-	t.Log("3. Set audit fields (created_at, created_by)")
-	t.Log("4. Return created user with ID")
-	t.Log("5. Handle duplicate email error")
+	testDB := SetupTestDB(t)
+	if testDB == nil {
+		return
+	}
+	defer TeardownTestDB(t, testDB)
 
-	assert.True(t, true, "UserRepository.Create test placeholder - requires database setup")
+	ctx := context.Background()
+	roleID := "00000000-0000-0000-0000-000000000001"
+
+	t.Run("User count with filters", func(t *testing.T) {
+		school := CreateTestSchool(t, ctx, testDB.SchoolRepo, "Count School", "CS001")
+
+		// Create users in the school
+		CreateTestUser(t, ctx, testDB.UserRepo, "count1@example.com", "password123", "Count User 1", roleID, &school.ID)
+		CreateTestUser(t, ctx, testDB.UserRepo, "count2@example.com", "password123", "Count User 2", roleID, &school.ID)
+
+		// Count all users
+		totalCount, err := testDB.UserRepo.Count(ctx, nil, nil, nil)
+		require.NoError(t, err)
+		assert.GreaterOrEqual(t, totalCount, 2)
+
+		// Count users by school
+		schoolCount, err := testDB.UserRepo.Count(ctx, &school.ID, nil, nil)
+		require.NoError(t, err)
+		assert.GreaterOrEqual(t, schoolCount, 2)
+
+		// Count active users
+		isActive := true
+		activeCount, err := testDB.UserRepo.Count(ctx, nil, nil, &isActive)
+		require.NoError(t, err)
+		assert.GreaterOrEqual(t, activeCount, 2)
+	})
+
+	t.Run("User with null school ID", func(t *testing.T) {
+		user := CreateTestUser(t, ctx, testDB.UserRepo, "nullschool@example.com", "password123", "Null School User", roleID, nil)
+
+		retrieved, err := testDB.UserRepo.GetByID(ctx, user.ID)
+		require.NoError(t, err)
+		assert.Nil(t, retrieved.SchoolID)
+	})
+
+	t.Run("User with set school ID", func(t *testing.T) {
+		school := CreateTestSchool(t, ctx, testDB.SchoolRepo, "Set School", "SS001")
+		user := CreateTestUser(t, ctx, testDB.UserRepo, "setschool@example.com", "password123", "Set School User", roleID, &school.ID)
+
+		retrieved, err := testDB.UserRepo.GetByID(ctx, user.ID)
+		require.NoError(t, err)
+		assert.NotNil(t, retrieved.SchoolID)
+		assert.Equal(t, school.ID, *retrieved.SchoolID)
+	})
 }
 
-// TestUserRepository_GetByEmail validates email lookup in repository
-func TestUserRepository_GetByEmail(t *testing.T) {
+// TestAdvancedSchoolRepositoryOperations tests advanced school repository operations
+func TestAdvancedSchoolRepositoryOperations(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	t.Log("UserRepository.GetByEmail should:")
-	t.Log("1. Find user by email")
-	t.Log("2. Return user if found")
-	t.Log("3. Return error if not found")
-	t.Log("4. Handle case-insensitive email lookup")
+	testDB := SetupTestDB(t)
+	if testDB == nil {
+		return
+	}
+	defer TeardownTestDB(t, testDB)
 
-	assert.True(t, true, "UserRepository.GetByEmail test placeholder - requires database setup")
+	ctx := context.Background()
+
+	t.Run("School count with filters", func(t *testing.T) {
+		// Create some schools
+		CreateTestSchool(t, ctx, testDB.SchoolRepo, "Count School 1", "CS001")
+		CreateTestSchool(t, ctx, testDB.SchoolRepo, "Count School 2", "CS002")
+		CreateTestSchool(t, ctx, testDB.SchoolRepo, "Count School 3", "CS003")
+
+		// Count all schools
+		totalCount, err := testDB.SchoolRepo.Count(ctx, nil)
+		require.NoError(t, err)
+		assert.GreaterOrEqual(t, totalCount, 3)
+
+		// Count active schools
+		isActive := true
+		activeCount, err := testDB.SchoolRepo.Count(ctx, &isActive)
+		require.NoError(t, err)
+		assert.GreaterOrEqual(t, activeCount, 3)
+	})
+
+	t.Run("School with null optional fields", func(t *testing.T) {
+		school := CreateTestSchool(t, ctx, testDB.SchoolRepo, "Null Fields School", "NFS001")
+
+		retrieved, err := testDB.SchoolRepo.GetByID(ctx, school.ID)
+		require.NoError(t, err)
+		assert.Nil(t, retrieved.Address)
+		assert.Nil(t, retrieved.Phone)
+		assert.Nil(t, retrieved.Email)
+	})
+
+	t.Run("School with set optional fields", func(t *testing.T) {
+		address := "123 Test Street"
+		phone := "555-TEST"
+		email := "test@school.com"
+
+		school := CreateTestSchool(t, ctx, testDB.SchoolRepo, "Full Fields School", "FFS001")
+		school.Address = &address
+		school.Phone = &phone
+		school.Email = &email
+
+		err := testDB.SchoolRepo.Update(ctx, school)
+		require.NoError(t, err)
+
+		retrieved, err := testDB.SchoolRepo.GetByID(ctx, school.ID)
+		require.NoError(t, err)
+		assert.NotNil(t, retrieved.Address)
+		assert.Equal(t, address, *retrieved.Address)
+		assert.NotNil(t, retrieved.Phone)
+		assert.Equal(t, phone, *retrieved.Phone)
+		assert.NotNil(t, retrieved.Email)
+		assert.Equal(t, email, *retrieved.Email)
+	})
 }
 
-// TestUserRepository_Update validates user update in repository
-func TestUserRepository_Update(t *testing.T) {
+// TestAdvancedRoleRepositoryOperations tests advanced role repository operations
+func TestAdvancedRoleRepositoryOperations(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	t.Log("UserRepository.Update should:")
-	t.Log("1. Update user fields")
-	t.Log("2. Update audit fields (updated_at, updated_by)")
-	t.Log("3. Handle duplicate email on update")
-	t.Log("4. Return updated user")
-
-	assert.True(t, true, "UserRepository.Update test placeholder - requires database setup")
-}
-
-// TestSchoolRepository_Create validates school creation in repository
-func TestSchoolRepository_Create(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
+	testDB := SetupTestDB(t)
+	if testDB == nil {
+		return
 	}
+	defer TeardownTestDB(t, testDB)
 
-	t.Log("SchoolRepository.Create should:")
-	t.Log("1. Insert school into database")
-	t.Log("2. Set audit fields (created_at, created_by)")
-	t.Log("3. Return created school with ID")
-	t.Log("4. Handle duplicate school code error")
+	ctx := context.Background()
 
-	assert.True(t, true, "SchoolRepository.Create test placeholder - requires database setup")
-}
+	t.Run("Add duplicate permission", func(t *testing.T) {
+		roleID := "00000000-0000-0000-0000-000000000001"
+		resource := "duplicate_resource"
+		action := "duplicate_action"
 
-// TestSchoolRepository_GetByCode validates school code lookup in repository
-func TestSchoolRepository_GetByCode(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
+		// Add permission first time
+		err := testDB.RoleRepo.AddPermission(ctx, roleID, resource, action)
+		require.NoError(t, err)
 
-	t.Log("SchoolRepository.GetByCode should:")
-	t.Log("1. Find school by code")
-	t.Log("2. Return school if found")
-	t.Log("3. Return error if not found")
-	t.Log("4. Handle case-insensitive code lookup")
+		// Try to add same permission again (should not error due to ON CONFLICT DO NOTHING)
+		err = testDB.RoleRepo.AddPermission(ctx, roleID, resource, action)
+		require.NoError(t, err)
 
-	assert.True(t, true, "SchoolRepository.GetByCode test placeholder - requires database setup")
-}
+		// Verify only one permission exists
+		permissions, err := testDB.RoleRepo.GetPermissions(ctx, roleID)
+		require.NoError(t, err)
 
-// TestRoleRepository_Create validates role creation in repository
-func TestRoleRepository_Create(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
+		count := 0
+		for _, perm := range permissions {
+			if perm.Resource == resource && perm.Action == action {
+				count++
+			}
+		}
+		assert.Equal(t, 1, count, "Duplicate permission should not be added")
+	})
 
-	t.Log("RoleRepository.Create should:")
-	t.Log("1. Insert role into database")
-	t.Log("2. Set audit fields (created_at, created_by)")
-	t.Log("3. Return created role with ID")
-	t.Log("4. Handle duplicate role name error")
+	t.Run("Remove non-existent permission", func(t *testing.T) {
+		roleID := "00000000-0000-0000-0000-000000000001"
 
-	assert.True(t, true, "RoleRepository.Create test placeholder - requires database setup")
-}
-
-// TestRoleRepository_GetByName validates role name lookup in repository
-func TestRoleRepository_GetByName(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	t.Log("RoleRepository.GetByName should:")
-	t.Log("1. Find role by name")
-	t.Log("2. Return role if found")
-	t.Log("3. Return error if not found")
-	t.Log("4. Handle case-insensitive name lookup")
-
-	assert.True(t, true, "RoleRepository.GetByName test placeholder - requires database setup")
-}
-
-// TestRefreshTokenRepository_Create validates refresh token creation in repository
-func TestRefreshTokenRepository_Create(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	t.Log("RefreshTokenRepository.Create should:")
-	t.Log("1. Insert refresh token into database")
-	t.Log("2. Set expiry time")
-	t.Log("3. Set user_id")
-	t.Log("4. Return created token with ID")
-	t.Log("5. Handle token uniqueness")
-
-	assert.True(t, true, "RefreshTokenRepository.Create test placeholder - requires database setup")
-}
-
-// TestRefreshTokenRepository_Revoke validates token revocation in repository
-func TestRefreshTokenRepository_Revoke(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping integration test in short mode")
-	}
-
-	t.Log("RefreshTokenRepository.Revoke should:")
-	t.Log("1. Mark token as revoked")
-	t.Log("2. Set revoked_at timestamp")
-	t.Log("3. Prevent token reuse")
-	t.Log("4. Handle already revoked tokens")
-
-	assert.True(t, true, "RefreshTokenRepository.Revoke test placeholder - requires database setup")
+		// Try to remove non-existent permission (should not error)
+		err := testDB.RoleRepo.RemovePermission(ctx, roleID, "nonexistent", "action")
+		require.NoError(t, err)
+	})
 }

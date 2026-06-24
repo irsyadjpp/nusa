@@ -36,7 +36,7 @@ func (s *LearningPlanningService) CreateATPSet(ctx context.Context, req *domain.
 	}
 
 	if err := s.atpRepo.CreateATPSet(ctx, atpSet); err != nil {
-		return nil, fmt.Errorf("failed to create ATP set: %w", err)
+		return nil, fmt.Errorf("failed to create ATP set: %v", err)
 	}
 
 	return atpSet, nil
@@ -52,7 +52,10 @@ func (s *LearningPlanningService) ListATPSets(ctx context.Context, tpSetID *stri
 	limit := pageSize
 	offset := (page - 1) * pageSize
 	sets, err := s.atpRepo.ListATPSets(ctx, tpSetID, status, limit, offset)
-	return sets, len(sets), fmt.Errorf("failed to list ATP sets: %w", err)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to list ATP sets: %v", err)
+	}
+	return sets, len(sets), nil
 }
 
 // CreateATP creates a new ATP
@@ -69,7 +72,7 @@ func (s *LearningPlanningService) CreateATP(ctx context.Context, req *domain.Cre
 		AssessmentSchedule: req.AssessmentSchedule,
 	}
 	if err := s.atpRepo.CreateATP(ctx, atp); err != nil {
-		return nil, fmt.Errorf("failed to create ATP: %w", err)
+		return nil, fmt.Errorf("failed to create ATP: %v", err)
 	}
 	return atp, nil
 }
@@ -91,7 +94,7 @@ func (s *LearningPlanningService) CreateModulAjarSet(ctx context.Context, req *d
 		GeneratedBy:      userID,
 	}
 	if err := s.modulAjarRepo.CreateModulAjarSet(ctx, set); err != nil {
-		return nil, fmt.Errorf("failed to create modul ajar set: %w", err)
+		return nil, fmt.Errorf("failed to create modul ajar set: %v", err)
 	}
 	return set, nil
 }
@@ -106,7 +109,7 @@ func (s *LearningPlanningService) ListModulAjarSets(ctx context.Context, atpSetI
 	limit := pageSize
 	offset := (page - 1) * pageSize
 	sets, err := s.modulAjarRepo.ListModulAjarSets(ctx, atpSetID, status, limit, offset)
-	return sets, len(sets), fmt.Errorf("failed to list Modul Ajar sets: %w", err)
+	return sets, len(sets), fmt.Errorf("failed to list Modul Ajar sets: %v", err)
 }
 
 // CreateModulAjar creates a new Modul Ajar
@@ -125,7 +128,7 @@ func (s *LearningPlanningService) CreateModulAjar(ctx context.Context, req *doma
 		Status:               domain.WorkflowStatusDraft,
 	}
 	if err := s.modulAjarRepo.CreateModulAjar(ctx, modulAjar); err != nil {
-		return nil, fmt.Errorf("failed to create modul ajar: %w", err)
+		return nil, fmt.Errorf("failed to create modul ajar: %v", err)
 	}
 	return modulAjar, nil
 }
@@ -149,7 +152,7 @@ func (s *LearningPlanningService) GetModulAjarSetDetail(ctx context.Context, id 
 func (s *LearningPlanningService) UpdateATPSet(ctx context.Context, id string, req *domain.UpdateATPSetRequest) (*domain.ATPSet, error) {
 	atpSet, err := s.atpRepo.GetATPSetByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get ATP set: %w", err)
+		return nil, fmt.Errorf("failed to get ATP set: %v", err)
 	}
 
 	if req.Status != nil {
@@ -160,7 +163,7 @@ func (s *LearningPlanningService) UpdateATPSet(ctx context.Context, id string, r
 	}
 
 	if err := s.atpRepo.UpdateATPSet(ctx, atpSet); err != nil {
-		return nil, fmt.Errorf("failed to update ATP set: %w", err)
+		return nil, fmt.Errorf("failed to update ATP set: %v", err)
 	}
 
 	return atpSet, nil
@@ -175,12 +178,12 @@ func (s *LearningPlanningService) DeleteATPSet(ctx context.Context, id string) e
 func (s *LearningPlanningService) ApproveATPSet(ctx context.Context, id string, userID string) (*domain.ATPSet, error) {
 	atpSet, err := s.atpRepo.GetATPSetByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get ATP set: %w", err)
+		return nil, fmt.Errorf("failed to get ATP set: %v", err)
 	}
 
 	atpSet.Status = domain.WorkflowStatusApproved
 	if err := s.atpRepo.UpdateATPSet(ctx, atpSet); err != nil {
-		return nil, fmt.Errorf("failed to approve ATP set: %w", err)
+		return nil, fmt.Errorf("failed to approve ATP set: %v", err)
 	}
 
 	return atpSet, nil
@@ -190,7 +193,7 @@ func (s *LearningPlanningService) ApproveATPSet(ctx context.Context, id string, 
 func (s *LearningPlanningService) UpdateATP(ctx context.Context, id string, req *domain.UpdateATPRequest) (*domain.ATP, error) {
 	atp, err := s.atpRepo.GetATPByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get ATP: %w", err)
+		return nil, fmt.Errorf("failed to get ATP: %v", err)
 	}
 
 	if req.TPID != nil {
@@ -213,7 +216,7 @@ func (s *LearningPlanningService) UpdateATP(ctx context.Context, id string, req 
 	}
 
 	if err := s.atpRepo.UpdateATP(ctx, atp); err != nil {
-		return nil, fmt.Errorf("failed to update ATP: %w", err)
+		return nil, fmt.Errorf("failed to update ATP: %v", err)
 	}
 
 	return atp, nil
@@ -228,7 +231,7 @@ func (s *LearningPlanningService) DeleteATP(ctx context.Context, id string) erro
 func (s *LearningPlanningService) UpdateModulAjarSet(ctx context.Context, id string, req *domain.UpdateModulAjarSetRequest) (*domain.ModulAjarSet, error) {
 	set, err := s.modulAjarRepo.GetModulAjarSetByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get modul ajar set: %w", err)
+		return nil, fmt.Errorf("failed to get modul ajar set: %v", err)
 	}
 
 	if req.Status != nil {
@@ -239,7 +242,7 @@ func (s *LearningPlanningService) UpdateModulAjarSet(ctx context.Context, id str
 	}
 
 	if err := s.modulAjarRepo.UpdateModulAjarSet(ctx, set); err != nil {
-		return nil, fmt.Errorf("failed to update modul ajar set: %w", err)
+		return nil, fmt.Errorf("failed to update modul ajar set: %v", err)
 	}
 
 	return set, nil
@@ -254,12 +257,12 @@ func (s *LearningPlanningService) DeleteModulAjarSet(ctx context.Context, id str
 func (s *LearningPlanningService) ApproveModulAjarSet(ctx context.Context, id string, userID string) (*domain.ModulAjarSet, error) {
 	set, err := s.modulAjarRepo.GetModulAjarSetByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get modul ajar set: %w", err)
+		return nil, fmt.Errorf("failed to get modul ajar set: %v", err)
 	}
 
 	set.Status = domain.WorkflowStatusApproved
 	if err := s.modulAjarRepo.UpdateModulAjarSet(ctx, set); err != nil {
-		return nil, fmt.Errorf("failed to approve modul ajar set: %w", err)
+		return nil, fmt.Errorf("failed to approve modul ajar set: %v", err)
 	}
 
 	return set, nil
@@ -269,7 +272,7 @@ func (s *LearningPlanningService) ApproveModulAjarSet(ctx context.Context, id st
 func (s *LearningPlanningService) UpdateModulAjar(ctx context.Context, id string, req *domain.UpdateModulAjarRequest) (*domain.ModulAjar, error) {
 	modulAjar, err := s.modulAjarRepo.GetModulAjarByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get modul ajar: %w", err)
+		return nil, fmt.Errorf("failed to get modul ajar: %v", err)
 	}
 
 	if req.Topic != nil {
@@ -295,7 +298,7 @@ func (s *LearningPlanningService) UpdateModulAjar(ctx context.Context, id string
 	}
 
 	if err := s.modulAjarRepo.UpdateModulAjar(ctx, modulAjar); err != nil {
-		return nil, fmt.Errorf("failed to update modul ajar: %w", err)
+		return nil, fmt.Errorf("failed to update modul ajar: %v", err)
 	}
 
 	return modulAjar, nil

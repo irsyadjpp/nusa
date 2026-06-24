@@ -50,7 +50,10 @@
       "Exec(npm run)",
       "Exec(npx tsc)",
       "Exec(ls)",
-      "Exec(cp)"
+      "Exec(cp)",
+      "Exec(go tool)",
+      "Exec(wc)",
+      "Exec(timeout go)"
     ]
   }
 }

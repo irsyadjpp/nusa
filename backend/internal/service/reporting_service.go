@@ -43,7 +43,7 @@ func (s *ReportingService) CreateNarrativeReport(ctx context.Context, req *domai
 	}
 
 	if err := s.reportingRepo.CreateNarrativeReport(ctx, report); err != nil {
-		return nil, fmt.Errorf("failed to create narrative report: %w", err)
+		return nil, fmt.Errorf("failed to create narrative report: %v", err)
 	}
 
 	// Calculate initial achievement data
@@ -54,7 +54,7 @@ func (s *ReportingService) CreateNarrativeReport(ctx context.Context, req *domai
 		ctx, report.StudentID, studentName, report.ClassID, className, report.ReportPeriod,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to calculate initial achievement: %w", err)
+		return nil, fmt.Errorf("failed to calculate initial achievement: %v", err)
 	}
 	report.AchievementData = achievementData
 
@@ -63,7 +63,7 @@ func (s *ReportingService) CreateNarrativeReport(ctx context.Context, req *domai
 
 	// Update report with achievement data
 	if err := s.reportingRepo.UpdateNarrativeReport(ctx, report); err != nil {
-		return nil, fmt.Errorf("failed to update report with achievement data: %w", err)
+		return nil, fmt.Errorf("failed to update report with achievement data: %v", err)
 	}
 
 	return report, nil
@@ -79,14 +79,17 @@ func (s *ReportingService) ListNarrativeReports(ctx context.Context, studentID, 
 	limit := pageSize
 	offset := (page - 1) * pageSize
 	reports, err := s.reportingRepo.ListNarrativeReports(ctx, studentID, userID, language, status, limit, offset)
-	return reports, len(reports), fmt.Errorf("failed to list narrative reports: %w", err)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to list narrative reports: %v", err)
+	}
+	return reports, len(reports), nil
 }
 
 // UpdateNarrativeReport updates a narrative report
 func (s *ReportingService) UpdateNarrativeReport(ctx context.Context, id string, req *domain.UpdateNarrativeReportRequest) (*domain.NarrativeReport, error) {
 	report, err := s.reportingRepo.GetNarrativeReportByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("narrative report not found: %w", err)
+		return nil, fmt.Errorf("narrative report not found: %v", err)
 	}
 
 	if req.ReportPeriod != nil {
@@ -100,7 +103,7 @@ func (s *ReportingService) UpdateNarrativeReport(ctx context.Context, id string,
 	}
 
 	if err := s.reportingRepo.UpdateNarrativeReport(ctx, report); err != nil {
-		return nil, fmt.Errorf("failed to update narrative report: %w", err)
+		return nil, fmt.Errorf("failed to update narrative report: %v", err)
 	}
 
 	return report, nil
@@ -110,7 +113,7 @@ func (s *ReportingService) UpdateNarrativeReport(ctx context.Context, id string,
 func (s *ReportingService) RefreshAchievementData(ctx context.Context, reportID string) (*domain.NarrativeReport, error) {
 	report, err := s.reportingRepo.GetNarrativeReportByID(ctx, reportID)
 	if err != nil {
-		return nil, fmt.Errorf("narrative report not found: %w", err)
+		return nil, fmt.Errorf("narrative report not found: %v", err)
 	}
 
 	// Calculate achievement data using achievement service
@@ -121,7 +124,7 @@ func (s *ReportingService) RefreshAchievementData(ctx context.Context, reportID 
 		ctx, report.StudentID, studentName, report.ClassID, className, report.ReportPeriod,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to calculate achievement: %w", err)
+		return nil, fmt.Errorf("failed to calculate achievement: %v", err)
 	}
 	report.AchievementData = achievementData
 
@@ -129,7 +132,7 @@ func (s *ReportingService) RefreshAchievementData(ctx context.Context, reportID 
 	report.LastAchievementCalculatedAt = &now
 
 	if err := s.reportingRepo.UpdateNarrativeReport(ctx, report); err != nil {
-		return nil, fmt.Errorf("failed to update report with achievement data: %w", err)
+		return nil, fmt.Errorf("failed to update report with achievement data: %v", err)
 	}
 
 	return report, nil

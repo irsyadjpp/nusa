@@ -71,7 +71,7 @@ func (s *AttendanceService) RecordAttendance(ctx context.Context, req *domain.Cr
 	}
 
 	if err := s.attendanceRepo.Create(ctx, attendance); err != nil {
-		return nil, fmt.Errorf("failed to record attendance: %w", err)
+		return nil, fmt.Errorf("failed to record attendance: %v", err)
 	}
 
 	return attendance, nil
@@ -93,12 +93,12 @@ func (s *AttendanceService) ListAttendances(ctx context.Context, classID, studen
 
 	attendances, err := s.attendanceRepo.List(ctx, classID, studentID, status, startDate, endDate, limit, offset)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to list attendances: %w", err)
+		return nil, 0, fmt.Errorf("failed to list attendances: %v", err)
 	}
 
 	total, err := s.attendanceRepo.Count(ctx, classID, studentID, status, startDate, endDate)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to count attendances: %w", err)
+		return nil, 0, fmt.Errorf("failed to count attendances: %v", err)
 	}
 
 	return attendances, total, nil
@@ -126,7 +126,7 @@ func (s *AttendanceService) UpdateAttendance(ctx context.Context, id string, req
 	attendance.UpdatedAt = time.Now()
 
 	if err := s.attendanceRepo.Update(ctx, attendance); err != nil {
-		return nil, fmt.Errorf("failed to update attendance: %w", err)
+		return nil, fmt.Errorf("failed to update attendance: %v", err)
 	}
 
 	return attendance, nil
@@ -147,7 +147,7 @@ func (s *AttendanceService) GetClassAttendanceStats(ctx context.Context, classID
 
 	stats, err := s.attendanceRepo.GetAttendanceStats(ctx, classID, startDate, endDate)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get class attendance stats: %w", err)
+		return nil, fmt.Errorf("failed to get class attendance stats: %v", err)
 	}
 
 	return stats, nil
@@ -163,7 +163,7 @@ func (s *AttendanceService) GetStudentAttendanceStats(ctx context.Context, stude
 
 	stats, err := s.attendanceRepo.GetStudentAttendanceStats(ctx, studentID, startDate, endDate)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get student attendance stats: %w", err)
+		return nil, fmt.Errorf("failed to get student attendance stats: %v", err)
 	}
 
 	return stats, nil

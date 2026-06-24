@@ -7,17 +7,24 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { Add as AddIcon } from '@mui/icons-material';
 import { CP } from '@/shared/types/domain';
 
+interface FilterState {
+  subject_id?: string;
+  phase_id?: string;
+  element_id?: string;
+  search?: string;
+}
+
 const CurriculumPlanPage: React.FC = () => {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<any>({});
+  const [filters, setFilters] = useState<FilterState>({});
   const [selectedCP, setSelectedCP] = useState<CP | null>(null);
 
-  // Query data - using type narrowing and array safety
+  // Query data - using proper types
   const { data: cpsData, isLoading, error } = useCPs(filters);
   const { data: subjectsData } = useSubjects();
   const { data: phasesData } = usePhases();
-  const { data: elementsData } = useElementsByPhase((filters as any).phase_id || '');
-  const { data: subelementsData } = useSubelementsByElement((filters as any).element_id || '');
+  const { data: elementsData } = useElementsByPhase(filters.phase_id || '');
+  const { data: subelementsData } = useSubelementsByElement(filters.element_id || '');
 
   // Ensure data is always an array - context7 best practice for data safety
   const cps = Array.isArray(cpsData) ? cpsData : [];
@@ -26,7 +33,7 @@ const CurriculumPlanPage: React.FC = () => {
   const elements = Array.isArray(elementsData) ? elementsData : [];
   const subelements = Array.isArray(subelementsData) ? subelementsData : [];
 
-  const handleFilterChange = (newFilters: any) => {
+  const handleFilterChange = (newFilters: FilterState) => {
     setFilters(newFilters);
   };
 
@@ -34,11 +41,11 @@ const CurriculumPlanPage: React.FC = () => {
     setFilters({});
   };
 
-  const handleSelectCP = (cp: any) => {
+  const handleSelectCP = (cp: CP) => {
     setSelectedCP(cp);
   };
 
-  const handleCreateTPFromCP = (cp: any) => {
+  const handleCreateTPFromCP = (cp: CP) => {
     navigate('/tp/create', { state: { selectedCP: cp } });
   };
 

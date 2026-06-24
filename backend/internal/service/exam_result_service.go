@@ -74,7 +74,7 @@ func (s *ExamResultService) CreateExamResult(ctx context.Context, req *domain.Cr
 	}
 
 	if err := s.examResultRepo.Create(ctx, examResult); err != nil {
-		return nil, fmt.Errorf("failed to create exam result: %w", err)
+		return nil, fmt.Errorf("failed to create exam result: %v", err)
 	}
 
 	return examResult, nil
@@ -105,12 +105,12 @@ func (s *ExamResultService) ListExamResults(ctx context.Context, examID, student
 
 	examResults, err := s.examResultRepo.List(ctx, examID, studentID, grade, limit, offset)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to list exam results: %w", err)
+		return nil, 0, fmt.Errorf("failed to list exam results: %v", err)
 	}
 
 	total, err := s.examResultRepo.Count(ctx, examID, studentID, grade)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to count exam results: %w", err)
+		return nil, 0, fmt.Errorf("failed to count exam results: %v", err)
 	}
 
 	return examResults, total, nil
@@ -142,7 +142,7 @@ func (s *ExamResultService) UpdateExamResult(ctx context.Context, id string, req
 	}
 
 	if err := s.examResultRepo.Update(ctx, examResult); err != nil {
-		return nil, fmt.Errorf("failed to update exam result: %w", err)
+		return nil, fmt.Errorf("failed to update exam result: %v", err)
 	}
 
 	return examResult, nil
@@ -163,7 +163,7 @@ func (s *ExamResultService) GetExamResultsByExam(ctx context.Context, examID str
 
 	examResults, err := s.examResultRepo.GetByExamID(ctx, examID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get exam results by exam: %w", err)
+		return nil, fmt.Errorf("failed to get exam results by exam: %v", err)
 	}
 
 	return examResults, nil
@@ -182,7 +182,7 @@ func (s *ExamResultService) GetExamResultsByStudent(ctx context.Context, student
 
 	examResults, err := s.examResultRepo.GetByStudentID(ctx, studentID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get exam results by student: %w", err)
+		return nil, fmt.Errorf("failed to get exam results by student: %v", err)
 	}
 
 	return examResults, nil

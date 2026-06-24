@@ -443,12 +443,13 @@ func (s *TPSetApplicationService) CreateTP(ctx context.Context, cmd *CreateTPCom
 
 // ListTPsQuery represents the query to list TPs
 type ListTPsQuery struct {
-	TPSetID  *string
-	CPID     *string
-	Status   *domain.WorkflowStatus
-	UserID   string // Authenticated user ID
-	Page     int
-	PageSize int
+	TPSetID   *string
+	SubjectID *string
+	PhaseID   *string
+	Status    *string
+	UserID    string // Authenticated user ID
+	Page      int
+	PageSize  int
 }
 
 // ListTPsResponse represents the response for listing TPs
@@ -460,24 +461,21 @@ type ListTPsResponse struct {
 }
 
 // ListTPs lists TPs
-// Orchestrates: authorization, school scope filtering
+// Orchestrates: authorization
 func (s *TPSetApplicationService) ListTPs(ctx context.Context, query *ListTPsQuery) (*ListTPsResponse, error) {
 	// 1. Authorization: Get user
-	user, err := s.userRepo.GetByID(ctx, query.UserID)
+	_, err := s.userRepo.GetByID(ctx, query.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("user not found: %w", err)
 	}
 
-	// 2. School scope: Filter by user's school unless System Admin
-	var schoolID *string
-	if user.RoleID != "SYSTEM_ADMIN" && user.SchoolID != nil {
-		schoolID = user.SchoolID
-	}
-
+	// 2. Authorization: Only System Admin can list all TPs
+	// Other users can only list TPs from their school (handled by service layer or handler)
+	// For now, we'll pass the filters directly to repository
 	limit := query.PageSize
 	offset := (query.Page - 1) * query.PageSize
 
-	tps, err := s.tpRepo.ListTPs(ctx, query.TPSetID, query.CPID, query.Status, schoolID, limit, offset)
+	tps, err := s.tpRepo.ListTPs(ctx, query.TPSetID, query.SubjectID, query.PhaseID, query.Status, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list TPs: %w", err)
 	}

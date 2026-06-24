@@ -293,7 +293,8 @@ func TestTPService_ListTPs_Success(t *testing.T) {
 		{ID: "tp-2", TPSetID: "tpset-2"},
 	}
 
-	mockTPRepo.On("ListTPs", mock.Anything, (*string)(nil), (*string)(nil), (*domain.WorkflowStatus)(nil), nil, 10, 0).Return(tps, nil)
+	emptyStr := ""
+	mockTPRepo.On("ListTPs", mock.Anything, (*string)(nil), (*string)(nil), (*string)(nil), &emptyStr, 10, 0).Return(tps, nil)
 
 	result, total, err := service.ListTPs(context.Background(), nil, nil, nil, 1, 10)
 
@@ -333,7 +334,7 @@ func TestTPService_UpdateTP_Success(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, 2, result.VersionNo)
-	assert.False(t, result.IsCurrentVersion) // This should be true for the new version, but we're checking the old one
+	assert.True(t, result.IsCurrentVersion) // New version should be marked as current
 
 	mockTPRepo.AssertExpectations(t)
 }

@@ -63,7 +63,7 @@ func (s *MessageService) CreateMessage(ctx context.Context, req *domain.CreateMe
 	}
 
 	if err := s.messageRepo.Create(ctx, message); err != nil {
-		return nil, fmt.Errorf("failed to create message: %w", err)
+		return nil, fmt.Errorf("failed to create message: %v", err)
 	}
 
 	return message, nil
@@ -85,12 +85,12 @@ func (s *MessageService) ListMessages(ctx context.Context, senderID, receiverID 
 
 	messages, err := s.messageRepo.List(ctx, senderID, receiverID, isRead, limit, offset)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to list messages: %w", err)
+		return nil, 0, fmt.Errorf("failed to list messages: %v", err)
 	}
 
 	total, err := s.messageRepo.Count(ctx, senderID, receiverID, isRead)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to count messages: %w", err)
+		return nil, 0, fmt.Errorf("failed to count messages: %v", err)
 	}
 
 	return messages, total, nil
@@ -106,7 +106,7 @@ func (s *MessageService) MarkAsRead(ctx context.Context, id string) error {
 	message.MarkAsRead()
 
 	if err := s.messageRepo.Update(ctx, message); err != nil {
-		return fmt.Errorf("failed to mark message as read: %w", err)
+		return fmt.Errorf("failed to mark message as read: %v", err)
 	}
 
 	return nil
@@ -134,7 +134,7 @@ func (s *MessageService) GetConversation(ctx context.Context, userID1, userID2 s
 
 	messages, err := s.messageRepo.GetConversation(ctx, userID1, userID2, limit, offset)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get conversation: %w", err)
+		return nil, fmt.Errorf("failed to get conversation: %v", err)
 	}
 
 	return messages, nil
@@ -150,7 +150,7 @@ func (s *MessageService) GetUnreadCount(ctx context.Context, userID string) (int
 
 	count, err := s.messageRepo.GetUnreadCount(ctx, userID)
 	if err != nil {
-		return 0, fmt.Errorf("failed to get unread count: %w", err)
+		return 0, fmt.Errorf("failed to get unread count: %v", err)
 	}
 
 	return count, nil

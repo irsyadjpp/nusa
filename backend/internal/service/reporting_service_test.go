@@ -97,17 +97,12 @@ func TestReportingService_ListNarrativeReports_Success(t *testing.T) {
 	mockAchievementService := new(AchievementService)
 	service := NewReportingService(mockReportingRepo, mockAchievementService)
 
-	reports := []*domain.NarrativeReport{
-		{ID: "report-1", StudentID: "student-1"},
-	}
-
-	mockReportingRepo.On("ListNarrativeReports", mock.Anything, (*string)(nil), (*string)(nil), (*domain.ReportLanguage)(nil), (*domain.WorkflowStatus)(nil), 10, 0).Return(reports, nil)
+	mockReportingRepo.On("ListNarrativeReports", mock.Anything, (*string)(nil), (*string)(nil), (*domain.ReportLanguage)(nil), (*domain.WorkflowStatus)(nil), 10, 0).Return([]*domain.NarrativeReport{}, nil)
 
 	result, total, err := service.ListNarrativeReports(context.Background(), nil, nil, nil, nil, 1, 10)
 
-	// Note: The actual implementation has a bug where it returns an error even on success
-	assert.Error(t, err)
-	assert.Nil(t, result)
+	require.NoError(t, err)
+	assert.NotNil(t, result)
 	assert.Equal(t, 0, total)
 
 	mockReportingRepo.AssertExpectations(t)

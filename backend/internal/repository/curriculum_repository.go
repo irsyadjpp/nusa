@@ -663,10 +663,10 @@ func (r *CurriculumRepository) GetCPByHierarchy(ctx context.Context, subjectID, 
 }
 
 // ListCPs retrieves CPs with optional filters
-func (r *CurriculumRepository) ListCPs(ctx context.Context, subjectID, phaseID, elementID *string, version *string, isActive *bool, limit, offset int) ([]*domain.CP, error) {
+func (r *CurriculumRepository) ListCPs(ctx context.Context, subjectID, phaseID *string, limit, offset int) ([]*domain.CP, error) {
 	query := `
-		SELECT id, subject_id, phase_id, element_id, subelement_id, code, description, 
-		       competency_code, learning_objectives, competency_standards, time_allocation_hours, 
+		SELECT id, subject_id, phase_id, element_id, subelement_id, code, description,
+		       competency_code, learning_objectives, competency_standards, time_allocation_hours,
 		       hours_per_week, version, is_active, imported_at, imported_by
 		FROM cp
 		WHERE 1=1
@@ -684,24 +684,6 @@ func (r *CurriculumRepository) ListCPs(ctx context.Context, subjectID, phaseID, 
 	if phaseID != nil {
 		query += fmt.Sprintf(" AND phase_id = $%d", argIndex)
 		args = append(args, *phaseID)
-		argIndex++
-	}
-
-	if elementID != nil {
-		query += fmt.Sprintf(" AND element_id = $%d", argIndex)
-		args = append(args, *elementID)
-		argIndex++
-	}
-
-	if version != nil {
-		query += fmt.Sprintf(" AND version = $%d", argIndex)
-		args = append(args, *version)
-		argIndex++
-	}
-
-	if isActive != nil {
-		query += fmt.Sprintf(" AND is_active = $%d", argIndex)
-		args = append(args, *isActive)
 		argIndex++
 	}
 

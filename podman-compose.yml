@@ -145,7 +145,7 @@ services:
       - DB_USER=${DB_USER:-nusa_user}
       - DB_PASSWORD=${DB_PASSWORD:-nusa_password}
       - DB_SSLMODE=${DB_SSLMODE:-disable}
-      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
+      - JWT_SECRET=${JWT_SECRET:-kkRe5fteKvZr5yMEm5dQQyr4qAftgMtlxFnkCZb/vQo}
       - JWT_EXPIRATION=${JWT_EXPIRATION:-24h}
       - RABBITMQ_HOST=rabbitmq
       - RABBITMQ_PORT=5672

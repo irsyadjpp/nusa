@@ -74,7 +74,7 @@ func (s *AssignmentService) CreateAssignment(ctx context.Context, req *domain.Cr
 	}
 
 	if err := s.assignmentRepo.Create(ctx, assignment); err != nil {
-		return nil, fmt.Errorf("failed to create assignment: %w", err)
+		return nil, fmt.Errorf("failed to create assignment: %v", err)
 	}
 
 	return assignment, nil
@@ -96,12 +96,12 @@ func (s *AssignmentService) ListAssignments(ctx context.Context, classID, assess
 
 	assignments, err := s.assignmentRepo.List(ctx, classID, assessmentID, status, limit, offset)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to list assignments: %w", err)
+		return nil, 0, fmt.Errorf("failed to list assignments: %v", err)
 	}
 
 	total, err := s.assignmentRepo.Count(ctx, classID, assessmentID, status)
 	if err != nil {
-		return nil, 0, fmt.Errorf("failed to count assignments: %w", err)
+		return nil, 0, fmt.Errorf("failed to count assignments: %v", err)
 	}
 
 	return assignments, total, nil
@@ -133,7 +133,7 @@ func (s *AssignmentService) UpdateAssignment(ctx context.Context, id string, req
 	assignment.UpdatedBy = &updaterID
 
 	if err := s.assignmentRepo.Update(ctx, assignment); err != nil {
-		return nil, fmt.Errorf("failed to update assignment: %w", err)
+		return nil, fmt.Errorf("failed to update assignment: %v", err)
 	}
 
 	return assignment, nil
@@ -154,7 +154,7 @@ func (s *AssignmentService) GetClassAssignments(ctx context.Context, classID str
 
 	assignments, err := s.assignmentRepo.GetByClassID(ctx, classID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get class assignments: %w", err)
+		return nil, fmt.Errorf("failed to get class assignments: %v", err)
 	}
 
 	return assignments, nil
